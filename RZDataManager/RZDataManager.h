@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
 
 typedef void (^RZDataManagerCompletionBlock)();
 typedef void (^RZDataManagerImportBlock)(NSManagedObjectContext* moc);
