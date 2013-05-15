@@ -41,9 +41,9 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 
 - (NSDictionary*)mappingForClass:(Class)objClass;
 
-- (void)importData:(NSDictionary *)data toObject:(id<RZDataImporterModelObject>)object withMapping:(NSDictionary*)mapping;
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object withMapping:(NSDictionary*)mapping;
 
-- (void)importValue:(id)value toObject:(id<RZDataImporterModelObject>)object fromKey:(NSString*)key withKeyMapping:(NSDictionary*)mappingInfo;
+- (void)importValue:(id)value toObject:(NSObject<RZDataImporterModelObject>*)object fromKey:(NSString*)key withKeyMapping:(NSDictionary*)mappingInfo;
 
 - (SEL)setterFromObjectKey:(NSString*)key;
 
@@ -83,7 +83,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 
 #pragma mark - Public
 
-- (void)importData:(NSDictionary *)data toObject:(id<RZDataImporterModelObject>)object
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object
 {
     // TODO: Maybe raise exception here
     if (object && data){
@@ -233,7 +233,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
     return mapping;
 }
 
-- (void)importData:(NSDictionary *)data toObject:(id<RZDataImporterModelObject>)object withMapping:(NSDictionary *)mapping
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object withMapping:(NSDictionary *)mapping
 {
     NSDictionary *keyMappings = [mapping objectForKey:kRZDataImporterDataKeys];
     
@@ -281,7 +281,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
     
 }
 
-- (void)importValue:(id)value toObject:(id<RZDataImporterModelObject>)object fromKey:key withKeyMapping:(NSDictionary *)mappingInfo
+- (void)importValue:(id)value toObject:(NSObject<RZDataImporterModelObject>*)object fromKey:key withKeyMapping:(NSDictionary *)mappingInfo
 {
     
     // If value is string and we decode HTML, do it now
@@ -306,10 +306,10 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
         SEL importSelector = NSSelectorFromString(selectorName);
         if ([object respondsToSelector:importSelector]){
             
-            NSMethodSignature *selectorSig = [[object class] instanceMethodSignatureForSelector:importSelector];
+            NSMethodSignature *selectorSig = [object methodSignatureForSelector:importSelector];
             if (selectorSig.numberOfArguments > 2){
                 
-                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[[object class] instanceMethodSignatureForSelector:importSelector]];
+                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:importSelector]];
                 [invocation setSelector:importSelector];
                 [invocation setTarget:object];
                 [invocation setArgument:&value atIndex:2];
@@ -346,9 +346,8 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
         
         SEL setter = [self setterFromObjectKey:objectKey];
         if ([object respondsToSelector:setter]){
-            
             // NSInvocation allows passing scalars to setter
-            NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[[object class] instanceMethodSignatureForSelector:setter]];
+            NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:setter]];
             [invocation setSelector:setter];
             [invocation setTarget:object];
             
