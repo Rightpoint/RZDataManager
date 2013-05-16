@@ -309,7 +309,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
             NSMethodSignature *selectorSig = [object methodSignatureForSelector:importSelector];
             if (selectorSig.numberOfArguments > 2){
                 
-                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:importSelector]];
+                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:selectorSig];
                 [invocation setSelector:importSelector];
                 [invocation setTarget:object];
                 [invocation setArgument:&value atIndex:2];
