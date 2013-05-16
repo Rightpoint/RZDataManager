@@ -32,7 +32,7 @@
 @property (nonatomic, assign) BOOL shouldDecodeHTML;
 
 //! Import data from a dictionary to an object based on a provided (or TBD: assumed) mapping
-- (void)importData:(NSDictionary*)data toObject:(id<RZDataImporterModelObject>)object;
+- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataImporterModelObject>*)object;
 
 //! Update objects passed in with data passed in, and optionally return array of objects that will be added and removed from array passed in. Basically does a diff-update of model object collection with incoming data set.
 /*!
