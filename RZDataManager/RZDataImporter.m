@@ -49,6 +49,13 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 
 - (id)convertValue:(id)value toType:(NSString*)conversionType withFormat:(NSString*)format;
 
+- (RZDataImporterDiffInfo*)updateObjects:(NSArray*)objects
+                                 ofClass:(__unsafe_unretained Class)objClass
+                                withData:(id)data
+                           dataIdKeyPath:(NSString *)dataIdKeyPath
+                          modelIdKeyPath:(NSString *)modelIdKeyPath
+                     objectCreationBlock:(id(^)(id uniqueValue))creationBlock;
+
 @end
 
 @implementation RZDataImporter
@@ -115,92 +122,69 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
                            dataIdKeyPath:(NSString*)dataIdKeyPath
                           modelIdKeyPath:(NSString*)modelIdKeyPath
 {
-    
-    RZDataImporterDiffInfo *diffInfo = [[RZDataImporterDiffInfo alloc] init];
-    
-    NSArray *dataDicts = nil;
-    if ([data isKindOfClass:[NSArray class]]){
-        dataDicts = data;
-    }
-    else if ([data isKindOfClass:[NSDictionary class]]){
-        dataDicts = @[data];
-    }
-    
-    if (dataDicts != nil){
-        
-        // Update and insert new items
-        if (dataDicts.count > 0){
-            
-            [dataDicts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                if ([obj isKindOfClass:[NSDictionary class]]){
-                    
-                    NSDictionary* dataDict = obj;
-                    __block id item = nil;
-                    id uniqueValue = nil;
-                    NSArray* matchingItems = nil;
-                    
-                    // try to find matching object
-                    if (dataIdKeyPath != nil && modelIdKeyPath != nil){
-                        
-                        uniqueValue = [dataDict validObjectForKeyPath:dataIdKeyPath decodeHTML:self.shouldDecodeHTML];
-                        if (uniqueValue != nil){
-                            
-                            // find existing item
-                            NSPredicate *matchPred = [NSPredicate predicateWithFormat:@"%K == %@", modelIdKeyPath, uniqueValue];
-                            matchingItems = [objects filteredArrayUsingPredicate:matchPred];
-                            if (matchingItems.count > 0){
-                                item = [matchingItems objectAtIndex:0];
-                            }
-                        }
-                    }
-                    
-                    // create new object if necessary
-                    if (item == nil){
-                        
-                        // see if it implements RZDataImporterModelObject, and try to get cached instance
-                        if (uniqueValue != nil && [objClass instancesRespondToSelector:@selector(cachedObjectWithUniqueValue:forKey:)]){
-                            item = [objClass cachedObjectWithUniqueValue:uniqueValue forKeyPath:modelIdKeyPath];
-                        }
-                        
-                        // if still nil, allocate new one
-                        if (item == nil){
-                            item = [[objClass alloc] init];
-                        }
-                        
-                        [diffInfo.addedObjects addObject:item];
-                        [diffInfo.insertionIndices addObject:[NSNumber numberWithInteger:idx]];
-                    }
-                    else if (matchingItems.count == 1){
-                        
-                        [diffInfo.movedObjects addObject:item];
-                        [diffInfo.moveIndices addObject:[NSNumber numberWithInteger:idx]];
-                    }
-                    
-                    // set item data
-                    if (item != nil){
-                        [self importData:dataDict toObject:item];
-                    }                
+    return [self updateObjects:objects
+                       ofClass:objClass
+                      withData:data
+                 dataIdKeyPath:dataIdKeyPath
+                modelIdKeyPath:modelIdKeyPath
+           objectCreationBlock:^id(id uniqueValue){
+               
+               id item = nil;
+               
+               // try to get cached object
+               if (uniqueValue != nil && [objClass instancesRespondToSelector:@selector(cachedObjectWithUniqueValue:forKeyPath:fromMOC:)]){
+                   item = [objClass cachedObjectWithUniqueValue:uniqueValue forKeyPath:modelIdKeyPath fromMOC:nil];
+               }
+               
+               // if still nil, allocate new one
+               if (item == nil){
+                   item = [[objClass alloc] init];
+               }
+               
+               return item;
+           }];
+}
 
-                }
-            }];
+- (RZDataImporterDiffInfo*)updateObjects:(NSArray*)objects
+                                 ofClass:(Class)objClass
+                          withEntityName:(NSString*)entityName
+                                 fromMOC:(NSManagedObjectContext*)moc
+                                withData:(id)data
+                           dataIdKeyPath:(NSString*)dataIdKeyPath
+                          modelIdKeyPath:(NSString*)modelIdKeyPath
+{
 
-        }
-        
-        // Enumerate items that aren't in array
-        NSArray *currentUniqueVals = [dataDicts valueForKeyPath:dataIdKeyPath];
-        [objects enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if ([obj isKindOfClass:objClass]){
-                id objValue = [obj valueForKeyPath:modelIdKeyPath];
-                if (![currentUniqueVals containsObject:objValue]){
-                    [diffInfo.removedObjects addObject:obj];
-                }
-            }
-        }];
-    }
+    RZDataImporterDiffInfo *diffInfo =  [self updateObjects:objects
+                                                    ofClass:objClass
+                                                   withData:data
+                                              dataIdKeyPath:dataIdKeyPath
+                                             modelIdKeyPath:modelIdKeyPath
+                                        objectCreationBlock:^id(id uniqueValue){
+                                            
+                                            id item = nil;
+                                            
+                                            // try to get cached object
+                                            if (uniqueValue != nil && [objClass instancesRespondToSelector:@selector(cachedObjectWithUniqueValue:forKeyPath:fromMOC:)]){
+                                                item = [objClass cachedObjectWithUniqueValue:uniqueValue forKeyPath:modelIdKeyPath fromMOC:moc];
+                                            }
+                                            
+                                            // if still nil, allocate new one
+                                            if (item == nil){
+                                                item = [NSEntityDescription insertNewObjectForEntityForName:entityName
+                                                                                     inManagedObjectContext:moc];
+                                            }
+                                            
+                                            return item;
+                                            
+                                        }];
+    
+    // remove deleted objects
+    [diffInfo.removedObjects enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        [moc deleteObject:obj];
+    }];
     
     return diffInfo;
 }
-
 
 #pragma mark - Private
 
@@ -470,6 +454,92 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
     NSString *setterString = [NSString stringWithFormat:@"set%@:", mutableKey];
     
     return NSSelectorFromString(setterString);
+}
+
+- (RZDataImporterDiffInfo*)updateObjects:(NSArray*)objects
+                                 ofClass:(__unsafe_unretained Class)objClass
+                                withData:(id)data
+                           dataIdKeyPath:(NSString *)dataIdKeyPath
+                          modelIdKeyPath:(NSString *)modelIdKeyPath
+                     objectCreationBlock:(id(^)(id uniqueValue))creationBlock
+{
+    
+    RZDataImporterDiffInfo *diffInfo = [[RZDataImporterDiffInfo alloc] init];
+    
+    NSArray *dataDicts = nil;
+    if ([data isKindOfClass:[NSArray class]]){
+        dataDicts = data;
+    }
+    else if ([data isKindOfClass:[NSDictionary class]]){
+        dataDicts = @[data];
+    }
+    
+    if (dataDicts != nil){
+        
+        // Update and insert new items
+        if (dataDicts.count > 0){
+            
+            [dataDicts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                if ([obj isKindOfClass:[NSDictionary class]]){
+                    
+                    NSDictionary* dataDict = obj;
+                    __block id item = nil;
+                    id uniqueValue = nil;
+                    NSArray* matchingItems = nil;
+                    
+                    // try to find matching object
+                    if (dataIdKeyPath != nil && modelIdKeyPath != nil){
+                        
+                        uniqueValue = [dataDict validObjectForKeyPath:dataIdKeyPath decodeHTML:self.shouldDecodeHTML];
+                        if (uniqueValue != nil){
+                            
+                            // find existing item
+                            NSPredicate *matchPred = [NSPredicate predicateWithFormat:@"%K == %@", modelIdKeyPath, uniqueValue];
+                            matchingItems = [objects filteredArrayUsingPredicate:matchPred];
+                            if (matchingItems.count > 0){
+                                item = [matchingItems objectAtIndex:0];
+                            }
+                        }
+                    }
+                    
+                    // create new object if necessary
+                    if (item == nil){
+                        
+                        // create item based on method used (CoreData or direct allocation)
+                        item = creationBlock(uniqueValue);
+                        
+                        [diffInfo.addedObjects addObject:item];
+                        [diffInfo.insertionIndices addObject:[NSNumber numberWithInteger:idx]];
+                    }
+                    else if (matchingItems.count == 1){
+                        
+                        [diffInfo.movedObjects addObject:item];
+                        [diffInfo.moveIndices addObject:[NSNumber numberWithInteger:idx]];
+                    }
+                    
+                    // set item data
+                    if (item != nil){
+                        [self importData:dataDict toObject:item];
+                    }
+                    
+                }
+            }];
+            
+        }
+        
+        // Enumerate items that aren't in array
+        NSArray *currentUniqueVals = [dataDicts valueForKeyPath:dataIdKeyPath];
+        [objects enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            if ([obj isKindOfClass:objClass]){
+                id objValue = [obj valueForKeyPath:modelIdKeyPath];
+                if (![currentUniqueVals containsObject:objValue]){
+                    [diffInfo.removedObjects addObject:obj];
+                }
+            }
+        }];
+    }
+    
+    return diffInfo;
 }
 
 @end
