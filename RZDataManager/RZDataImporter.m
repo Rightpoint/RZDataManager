@@ -58,12 +58,13 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
     static RZDataImporter *sharedImporter;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        sharedImporter = [[RZDataImporter alloc] initInternal];
+        sharedImporter = [[[self class] alloc] initInternal];
     });
     return sharedImporter;
 }
 
-- (id)init{
+- (id)init
+{
     [NSException raise:NSInternalInconsistencyException format:@"-init is not a valid initializer for singleton RZDataImporter. Use +sharedImporter"];
     return nil;
 }
