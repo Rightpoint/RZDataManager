@@ -6,13 +6,14 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <CoreData/CoreData.h>
 
 @protocol RZDataImporterModelObject <NSObject>
 
 @optional
 
-//! Implement this method to return a cached object matching the passed-in unique key-value pair
-+ (id)cachedObjectWithUniqueValue:(id)uniqueValue forKeyPath:(id)key;
+//! Implement this method to return an existing cached object matching the passed-in unique key-value pair. MOC is optional.
++ (id)cachedObjectWithUniqueValue:(id)uniqueValue forKeyPath:(id)key fromMOC:(NSManagedObjectContext*)moc;
 
 //! Implement this method to prepare the object to be updated with new data
 - (void)prepareForImportFromData:(NSDictionary*)data;
@@ -46,6 +47,15 @@
 
 - (RZDataImporterDiffInfo*)updateObjects:(NSArray*)objects
                                  ofClass:(Class)objClass
+                                withData:(id)data
+                           dataIdKeyPath:(NSString*)dataIdKeyPath
+                          modelIdKeyPath:(NSString*)modelIdKeyPath;
+
+//! Similar to updateObjects:ofClass: but for managed objects. Automatically updates MOC but does not save it.
+- (RZDataImporterDiffInfo*)updateObjects:(NSArray*)objects
+                                 ofClass:(Class)objClass
+                          withEntityName:(NSString*)entityName
+                                 fromMOC:(NSManagedObjectContext*)moc
                                 withData:(id)data
                            dataIdKeyPath:(NSString*)dataIdKeyPath
                           modelIdKeyPath:(NSString*)modelIdKeyPath;

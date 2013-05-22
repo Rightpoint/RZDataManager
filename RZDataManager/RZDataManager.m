@@ -110,7 +110,6 @@
     
     id fetchedObject = [filteredObjects anyObject];
     
-    
     if (nil == fetchedObject && create)
     {
         fetchedObject = [NSEntityDescription insertNewObjectForEntityForName:entity inManagedObjectContext:moc];
@@ -118,6 +117,27 @@
     }
     
     return fetchedObject;
+}
+
+- (NSArray*)objectsForEntity:(NSString *)entity usingMOC:(NSManagedObjectContext *)moc
+{
+    return [self objectsForEntity:entity sortDescriptors:nil usingMOC:moc];
+}
+
+- (NSArray*)objectsForEntity:(NSString*)entity sortDescriptors:(NSArray*)sortDescriptors usingMOC:(NSManagedObjectContext*)moc;
+{
+    NSFetchRequest* request = [NSFetchRequest fetchRequestWithEntityName:entity];
+    
+    if (sortDescriptors){
+        [request setSortDescriptors:sortDescriptors];
+    }
+    
+    NSError* error = nil;
+    NSArray* results = [moc executeFetchRequest:request error:&error];
+    
+    // error handling?
+    
+    return results;
 }
 
 #pragma mark - Core Data Stack
