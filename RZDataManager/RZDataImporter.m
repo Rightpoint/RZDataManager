@@ -6,6 +6,7 @@
 //
 
 #import "RZDataImporter.h"
+#import "RZDataManager.h"
 #import "NSDictionary+NonNSNull.h"
 #import "NSString+HTMLEntities.h"
 
@@ -37,8 +38,6 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 @property (nonatomic, strong) NSNumberFormatter *numberFormatter;
 @property (nonatomic, strong) NSString *objectDateFormat;
 
-- (id)initInternal;
-
 - (NSDictionary*)mappingForClass:(Class)objClass;
 
 - (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object withMapping:(NSDictionary*)mapping;
@@ -53,26 +52,11 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 
 @implementation RZDataImporter
 
-+ (RZDataImporter*)sharedImporter
-{
-    static RZDataImporter *sharedImporter;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sharedImporter = [[RZDataImporter alloc] initInternal];
-    });
-    return sharedImporter;
-}
-
-- (id)init{
-    [NSException raise:NSInternalInconsistencyException format:@"-init is not a valid initializer for singleton RZDataImporter. Use +sharedImporter"];
-    return nil;
-}
-
-- (id)initInternal
+- (id)init
 {
     self = [super init];
     if (self){
-        self.shouldDecodeHTML = YES;
+        self.shouldDecodeHTML = NO;
         self.modelMappings = [[NSCache alloc] init];
         self.dateFormatter = [[NSDateFormatter alloc] init];
         self.numberFormatter = [[NSNumberFormatter alloc] init];

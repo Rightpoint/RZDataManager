@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class RZDataManager;
+
 @protocol RZDataImporterModelObject <NSObject>
 
 @optional
@@ -26,9 +28,10 @@
 
 @interface RZDataImporter : NSObject
 
-+ (RZDataImporter*)sharedImporter;
+//! Weak reference to parent Data Manager
+@property (nonatomic, weak) RZDataManager *dataManager;
 
-//! Set to override on importer-level whether should decode HTML entities from strings (defaults to YES)
+//! Set to override on importer-level whether should decode HTML entities from strings (defaults to NO)
 @property (nonatomic, assign) BOOL shouldDecodeHTML;
 
 //! Import data from a dictionary to an object based on a provided (or TBD: assumed) mapping
@@ -43,7 +46,6 @@
     data - either an array of dictionaries or a dictionary containing data with which to update objects
     diffInfo - object containing arrays of added, moved, and removed objects 
 */
-
 - (RZDataImporterDiffInfo*)updateObjects:(NSArray*)objects
                                  ofClass:(Class)objClass
                                 withData:(id)data
