@@ -13,10 +13,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 @interface RZCoreDataManager ()
 
-@property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
-@property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
-@property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
-
 @property (nonatomic, readonly) NSManagedObjectContext *currentMoc;
 @property (nonatomic, strong) NSManagedObjectContext *backgroundMoc;
 

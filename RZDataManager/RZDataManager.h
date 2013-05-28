@@ -17,7 +17,10 @@ typedef void (^RZDataManagerImportBlock)();
 
 @property (nonatomic, readonly, strong) RZDataImporter *dataImporter;
 
-//-------- FETCHING --------
+// Directory helpers
+- (NSURL*)applicationDocumentsDirectory;
+
+#pragma mark - Fetching
 
 // Catch-all method for retrieving an individual object
 // "type" represents either class name as string or entity name for managed objects
@@ -27,7 +30,7 @@ typedef void (^RZDataManagerImportBlock)();
 
 - (NSArray*)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate;
 
-// --------- PERSISTING ---------
+#pragma mark - Persisting
 
 - (void)importData:(NSDictionary*)data toObjectOfType:(NSString*)type dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerCompletionBlock)completion;
 

@@ -29,6 +29,11 @@
     return _dataImporter;
 }
 
+- (NSURL*)applicationDocumentsDirectory
+{
+    return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
 - (NSException*)abstractMethodException:(SEL)selector
 {
     return [NSException exceptionWithName:NSInternalInconsistencyException
