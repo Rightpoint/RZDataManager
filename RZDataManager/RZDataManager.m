@@ -19,6 +19,18 @@
     RZDataImporter * _dataImporter;
 }
 
+
++ (instancetype)defaultManager
+{
+    static RZDataManager * s_defaultManager = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        s_defaultManager = [[[self class] alloc] init];
+    });
+    return s_defaultManager;
+}
+
+
 // Allocate data importer via lazy load
 - (RZDataImporter*)dataImporter
 {

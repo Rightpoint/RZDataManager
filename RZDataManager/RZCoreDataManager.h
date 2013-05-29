@@ -13,8 +13,6 @@
 
 @interface RZCoreDataManager : RZDataManager
 
-+ (RZCoreDataManager*)defaultManager;
-
 @property (nonatomic, strong) NSString *managedObjectModelName;
 @property (nonatomic, strong) NSString *persistentStoreType;
 @property (nonatomic, strong) NSURL *persistentStoreURL;

@@ -32,16 +32,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 @implementation RZCoreDataManager
 
-+ (RZCoreDataManager*)defaultManager
-{
-    static RZCoreDataManager * s_defaultManager = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        s_defaultManager = [[RZCoreDataManager alloc] init];
-    });
-    return s_defaultManager;
-}
-
 #pragma mark - RZDataManager Subclass
 
 - (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath createNew:(BOOL)createNew

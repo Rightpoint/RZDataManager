@@ -12,7 +12,11 @@
 typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, array, or nil
 
 // This is an ABSTRACT BASE CLASS and should not be used directly. Use one of the provided concrete subclasses or create your own.
+
 @interface RZDataManager : NSObject
+
+// Singleton accessor that will work for subclasses.
++ (instancetype)defaultManager;
 
 @property (nonatomic, readonly, strong) RZDataImporter *dataImporter;
 
