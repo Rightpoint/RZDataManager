@@ -27,7 +27,7 @@
     
     // since this is a test we need to load the model from our own bundle, not main bundle
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-    NSURL *url = [bundle URLForResource:@"RZDataManager_Demo" withExtension:@"momd"];
+    NSURL *url = [bundle URLForResource:@"RZDataManager_Test" withExtension:@"momd"];
     
     self.dataManager.managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
     self.dataManager.persistentStoreType = NSInMemoryStoreType;
@@ -101,6 +101,40 @@
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"collection.name == %@", @"Red"];
     NSArray *entries = [self.dataManager objectsOfType:@"DMEntry" matchingPredicate:pred];
     STAssertTrue(entries.count == 5, @"Wrong number of entries returned");
+}
+
+#pragma mark - Import tests
+
+- (void)test200ImportObject
+{
+    // load plist mapping from test bundle
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    NSURL *mappingUrl = [bundle URLForResource:@"DMEntryMapping" withExtension:@"plist"];
+    NSDictionary *mapping = [NSDictionary dictionaryWithContentsOfURL:mappingUrl];
+    
+    [self.dataManager.dataImporter setMapping:mapping forClassNamed:@"DMEntry"];
+    
+    NSDictionary * mockData = @{@"name" : @"Omicron",
+                                @"uid" : @"1000",
+                                @"date" : @"2013-07-01T12:00:00Z"};
+    __block BOOL finished = NO;
+    [self.dataManager importData:mockData toObjectOfType:@"DMEntry" dataIdKeyPath:@"uid" modelIdKeyPath:@"uid" completion:^(id result, NSError *error)
+    {
+        STAssertNotNil(result, @"Result should not be nil");
+        STAssertNil(error, @"Error during import: %@", error);
+        
+        // attempt fetch of new object
+        DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
+        STAssertNotNil(entry, @"Newly created entry not found");
+        STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
+        STAssertTrue([entry.date isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+        
+        finished = YES;
+    }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+    }
 }
 
 @end

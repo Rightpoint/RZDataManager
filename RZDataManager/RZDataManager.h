@@ -9,8 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
 
-typedef void (^RZDataManagerCompletionBlock)();
-typedef void (^RZDataManagerImportBlock)();
+typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, array, or nil
 
 // This is an ABSTRACT BASE CLASS and should not be used directly. Use one of the provided concrete subclasses or create your own.
 @interface RZDataManager : NSObject
@@ -32,9 +31,10 @@ typedef void (^RZDataManagerImportBlock)();
 
 #pragma mark - Persisting
 
-- (void)importData:(NSDictionary*)data toObjectOfType:(NSString*)type dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerCompletionBlock)completion;
+// Either updates existing object, if any, or creates and inserts new object
+- (void)importData:(NSDictionary*)data toObjectOfType:(NSString*)type dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion;
 
-- (void)updateObjects:(NSArray*)objects ofType:(NSString*)type withData:(NSArray*)data dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerCompletionBlock)completion;
+- (void)updateObjects:(NSArray*)objects ofType:(NSString*)type withData:(NSArray*)data dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion;
 
 // Save method. Not all subclasses may need to be explicitly saved/persisted, so this is optional.
 - (void)saveData:(BOOL)synchronous;

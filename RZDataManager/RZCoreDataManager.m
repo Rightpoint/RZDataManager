@@ -8,6 +8,9 @@
 #import "RZCoreDataManager.h"
 #import "NSDictionary+NonNSNull.h"
 
+
+typedef id (^RZDataManagerImportBlock)(); // returns result of import (new or updated object(s))
+
 // For storing moc reference in thread dictionary
 static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
 
@@ -16,7 +19,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 @property (nonatomic, readonly) NSManagedObjectContext *currentMoc;
 @property (nonatomic, strong) NSManagedObjectContext *backgroundMoc;
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerCompletionBlock)completionBlock;
+- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerImportCompletionBlock)completionBlock;
 
 - (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create;
 - (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath inSet:(NSSet*)objects usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create;
@@ -58,21 +61,24 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     return [self objectsForEntity:type matchingPredicate:predicate usingMOC:self.currentMoc];
 }
 
-- (void)importData:(NSDictionary *)data toObjectOfType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath completion:(RZDataManagerCompletionBlock)completion
+- (void)importData:(NSDictionary *)data toObjectOfType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion
 {
-    [self importInBackgroundUsingBlock:^{
+    [self importInBackgroundUsingBlock:^id{
         
+        id obj = nil;
         id uid = [data validObjectForKey:dataIdKeyPath decodeHTML:NO];
         
         if (uid){
-            id obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath createNew:YES];
+            obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath createNew:YES];
             [self.dataImporter importData:data toObject:obj];
         }
+        
+        return obj;
         
     } completion:completion];
 }
 
-- (void)updateObjects:(NSArray *)objects ofType:(NSString *)type withData:(NSArray *)data dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath completion:(RZDataManagerCompletionBlock)completion
+- (void)updateObjects:(NSArray *)objects ofType:(NSString *)type withData:(NSArray *)data dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion
 {
     // TODO:
 }
@@ -101,7 +107,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 #pragma mark - Import Methods
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerCompletionBlock)completionBlock;
+- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerImportCompletionBlock)completionBlock;
 {
     NSManagedObjectContext *privateMoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
     privateMoc.parentContext = self.managedObjectContext;
@@ -112,7 +118,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             [[[NSThread currentThread] threadDictionary] setObject:privateMoc forKey:kRZCoreDataManagerConfinedMocKey];
         }
         
-        importBlock();
+        id result = importBlock();
         
         NSError *error = nil;
         if(![privateMoc save:&error])
@@ -121,11 +127,12 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         }
         
         dispatch_sync(dispatch_get_main_queue(), ^{
+            
             [self saveContext:NO];
             
             if (completionBlock)
             {
-                completionBlock();
+                completionBlock(result, error);
             }
         });
     }];

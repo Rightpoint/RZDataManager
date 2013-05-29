@@ -29,7 +29,7 @@ static NSString* const kRZDataImporterConversionTypeFloat = @"float";
 static NSString* const kRZDataImporterConversionTypeDouble = @"double";
 static NSString* const kRZDataImporterConversionTypeBool = @"BOOL";
 
-static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'";
+static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
 
 @interface RZDataImporter ()
 
@@ -408,10 +408,13 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
         if ([value isKindOfClass:[NSString class]]){
             
             if (format){
+                [self.dateFormatter setLocale:[NSLocale currentLocale]];
                 [self.dateFormatter setDateFormat:format];
             }
             else{
+                [self.dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
                 [self.dateFormatter setDateFormat:kRZDataImporterISODateFormat];
+                [self.dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
             }
             
             newValue = [self.dateFormatter dateFromString:(NSString*)value];

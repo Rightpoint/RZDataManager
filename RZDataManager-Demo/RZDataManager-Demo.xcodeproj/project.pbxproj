@@ -9,16 +9,15 @@
 /* Begin PBXBuildFile section */
 		9A3366591755378800FCF766 /* RZDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A3366581755378800FCF766 /* RZDataManager.m */; };
 		9A33665C17553CFC00FCF766 /* RZCoreDataManager-Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A33665B17553CFC00FCF766 /* RZCoreDataManager-Tests.m */; };
-		9A33665F17553E0A00FCF766 /* DMCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A33665E17553E0A00FCF766 /* DMCollection.m */; };
 		9A33666017553E0A00FCF766 /* DMCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A33665E17553E0A00FCF766 /* DMCollection.m */; };
-		9A33666317553E0B00FCF766 /* DMEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A33666217553E0B00FCF766 /* DMEntry.m */; };
 		9A33666417553E0B00FCF766 /* DMEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A33666217553E0B00FCF766 /* DMEntry.m */; };
-		9A33666517553E1300FCF766 /* RZDataManager_Demo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FEA82A911742AFFE00FA206C /* RZDataManager_Demo.xcdatamodeld */; };
+		9A33666517553E1300FCF766 /* RZDataManager_Test.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FEA82A911742AFFE00FA206C /* RZDataManager_Test.xcdatamodeld */; };
 		9A33666717553E1F00FCF766 /* RZDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = FEA82AFF1742CB5600FA206C /* RZDataImporter.m */; };
 		9A33666817553E1F00FCF766 /* RZDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A3366581755378800FCF766 /* RZDataManager.m */; };
 		9A33666917553E1F00FCF766 /* RZCoreDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FEA82AB41742B05100FA206C /* RZCoreDataManager.m */; };
 		9A33666A17553E1F00FCF766 /* NSDictionary+NonNSNull.m in Sources */ = {isa = PBXBuildFile; fileRef = FEA82B041742CC1B00FA206C /* NSDictionary+NonNSNull.m */; };
 		9A33666B17553E1F00FCF766 /* NSString+HTMLEntities.m in Sources */ = {isa = PBXBuildFile; fileRef = FEA82B061742CC1B00FA206C /* NSString+HTMLEntities.m */; };
+		9AD0C3EF1756377D004F978E /* DMEntryMapping.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9AD0C3EE1756377D004F978E /* DMEntryMapping.plist */; };
 		FEA82A781742AFFE00FA206C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A771742AFFE00FA206C /* UIKit.framework */; };
 		FEA82A7A1742AFFE00FA206C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A791742AFFE00FA206C /* Foundation.framework */; };
 		FEA82A7C1742AFFE00FA206C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A7B1742AFFE00FA206C /* CoreGraphics.framework */; };
@@ -29,7 +28,6 @@
 		FEA82A8C1742AFFE00FA206C /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = FEA82A8B1742AFFE00FA206C /* Default.png */; };
 		FEA82A8E1742AFFE00FA206C /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FEA82A8D1742AFFE00FA206C /* Default@2x.png */; };
 		FEA82A901742AFFE00FA206C /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FEA82A8F1742AFFE00FA206C /* Default-568h@2x.png */; };
-		FEA82A931742AFFE00FA206C /* RZDataManager_Demo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FEA82A911742AFFE00FA206C /* RZDataManager_Demo.xcdatamodeld */; };
 		FEA82A9B1742AFFF00FA206C /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A9A1742AFFF00FA206C /* SenTestingKit.framework */; };
 		FEA82A9C1742AFFF00FA206C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A771742AFFE00FA206C /* UIKit.framework */; };
 		FEA82A9D1742AFFF00FA206C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A791742AFFE00FA206C /* Foundation.framework */; };
@@ -56,10 +54,11 @@
 		9A3366581755378800FCF766 /* RZDataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZDataManager.m; sourceTree = "<group>"; };
 		9A33665A17553CFC00FCF766 /* RZCoreDataManager-Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RZCoreDataManager-Tests.h"; sourceTree = "<group>"; };
 		9A33665B17553CFC00FCF766 /* RZCoreDataManager-Tests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RZCoreDataManager-Tests.m"; sourceTree = "<group>"; };
-		9A33665D17553E0A00FCF766 /* DMCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DMCollection.h; sourceTree = "<group>"; };
-		9A33665E17553E0A00FCF766 /* DMCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DMCollection.m; sourceTree = "<group>"; };
-		9A33666117553E0B00FCF766 /* DMEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DMEntry.h; sourceTree = "<group>"; };
-		9A33666217553E0B00FCF766 /* DMEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DMEntry.m; sourceTree = "<group>"; };
+		9A33665D17553E0A00FCF766 /* DMCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMCollection.h; path = "../RZDataManager-Demo/DMCollection.h"; sourceTree = "<group>"; };
+		9A33665E17553E0A00FCF766 /* DMCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMCollection.m; path = "../RZDataManager-Demo/DMCollection.m"; sourceTree = "<group>"; };
+		9A33666117553E0B00FCF766 /* DMEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMEntry.h; path = "../RZDataManager-Demo/DMEntry.h"; sourceTree = "<group>"; };
+		9A33666217553E0B00FCF766 /* DMEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMEntry.m; path = "../RZDataManager-Demo/DMEntry.m"; sourceTree = "<group>"; };
+		9AD0C3EE1756377D004F978E /* DMEntryMapping.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = DMEntryMapping.plist; sourceTree = "<group>"; };
 		FEA82A741742AFFE00FA206C /* RZDataManager-Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "RZDataManager-Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEA82A771742AFFE00FA206C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FEA82A791742AFFE00FA206C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -74,7 +73,7 @@
 		FEA82A8B1742AFFE00FA206C /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		FEA82A8D1742AFFE00FA206C /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		FEA82A8F1742AFFE00FA206C /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
-		FEA82A921742AFFE00FA206C /* RZDataManager_Demo.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = RZDataManager_Demo.xcdatamodel; sourceTree = "<group>"; };
+		FEA82A921742AFFE00FA206C /* RZDataManager_Test.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = RZDataManager_Test.xcdatamodel; sourceTree = "<group>"; };
 		FEA82A991742AFFF00FA206C /* RZDataManager-DemoTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "RZDataManager-DemoTests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEA82A9A1742AFFF00FA206C /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		FEA82AA31742AFFF00FA206C /* RZDataManager-DemoTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "RZDataManager-DemoTests-Info.plist"; sourceTree = "<group>"; };
@@ -152,11 +151,6 @@
 			children = (
 				FEA82A881742AFFE00FA206C /* AppDelegate.h */,
 				FEA82A891742AFFE00FA206C /* AppDelegate.m */,
-				FEA82A911742AFFE00FA206C /* RZDataManager_Demo.xcdatamodeld */,
-				9A33666117553E0B00FCF766 /* DMEntry.h */,
-				9A33666217553E0B00FCF766 /* DMEntry.m */,
-				9A33665D17553E0A00FCF766 /* DMCollection.h */,
-				9A33665E17553E0A00FCF766 /* DMCollection.m */,
 				FEA82A801742AFFE00FA206C /* Supporting Files */,
 			);
 			path = "RZDataManager-Demo";
@@ -180,6 +174,12 @@
 			isa = PBXGroup;
 			children = (
 				FEA82AA21742AFFF00FA206C /* Supporting Files */,
+				FEA82A911742AFFE00FA206C /* RZDataManager_Test.xcdatamodeld */,
+				9A33666117553E0B00FCF766 /* DMEntry.h */,
+				9A33666217553E0B00FCF766 /* DMEntry.m */,
+				9AD0C3EE1756377D004F978E /* DMEntryMapping.plist */,
+				9A33665D17553E0A00FCF766 /* DMCollection.h */,
+				9A33665E17553E0A00FCF766 /* DMCollection.m */,
 				9A33665A17553CFC00FCF766 /* RZCoreDataManager-Tests.h */,
 				9A33665B17553CFC00FCF766 /* RZCoreDataManager-Tests.m */,
 			);
@@ -304,6 +304,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FEA82AA61742AFFF00FA206C /* InfoPlist.strings in Resources */,
+				9AD0C3EF1756377D004F978E /* DMEntryMapping.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -332,14 +333,11 @@
 			files = (
 				FEA82A861742AFFE00FA206C /* main.m in Sources */,
 				FEA82A8A1742AFFE00FA206C /* AppDelegate.m in Sources */,
-				FEA82A931742AFFE00FA206C /* RZDataManager_Demo.xcdatamodeld in Sources */,
 				FEA82AB51742B05100FA206C /* RZCoreDataManager.m in Sources */,
 				FEA82B001742CB5600FA206C /* RZDataImporter.m in Sources */,
 				FEA82B071742CC1B00FA206C /* NSDictionary+NonNSNull.m in Sources */,
 				FEA82B091742CC1B00FA206C /* NSString+HTMLEntities.m in Sources */,
 				9A3366591755378800FCF766 /* RZDataManager.m in Sources */,
-				9A33665F17553E0A00FCF766 /* DMCollection.m in Sources */,
-				9A33666317553E0B00FCF766 /* DMEntry.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -350,7 +348,7 @@
 				9A33665C17553CFC00FCF766 /* RZCoreDataManager-Tests.m in Sources */,
 				9A33666017553E0A00FCF766 /* DMCollection.m in Sources */,
 				9A33666417553E0B00FCF766 /* DMEntry.m in Sources */,
-				9A33666517553E1300FCF766 /* RZDataManager_Demo.xcdatamodeld in Sources */,
+				9A33666517553E1300FCF766 /* RZDataManager_Test.xcdatamodeld in Sources */,
 				9A33666717553E1F00FCF766 /* RZDataImporter.m in Sources */,
 				9A33666817553E1F00FCF766 /* RZDataManager.m in Sources */,
 				9A33666917553E1F00FCF766 /* RZCoreDataManager.m in Sources */,
@@ -538,13 +536,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCVersionGroup section */
-		FEA82A911742AFFE00FA206C /* RZDataManager_Demo.xcdatamodeld */ = {
+		FEA82A911742AFFE00FA206C /* RZDataManager_Test.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				FEA82A921742AFFE00FA206C /* RZDataManager_Demo.xcdatamodel */,
+				FEA82A921742AFFE00FA206C /* RZDataManager_Test.xcdatamodel */,
 			);
-			currentVersion = FEA82A921742AFFE00FA206C /* RZDataManager_Demo.xcdatamodel */;
-			path = RZDataManager_Demo.xcdatamodeld;
+			currentVersion = FEA82A921742AFFE00FA206C /* RZDataManager_Test.xcdatamodel */;
+			name = RZDataManager_Test.xcdatamodeld;
+			path = "../RZDataManager-Demo/RZDataManager_Test.xcdatamodeld";
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};
