@@ -126,7 +126,9 @@
         STAssertNotNil(result, @"Result should not be nil");
         STAssertNil(error, @"Error during import: %@", error);
         
-        // attempt fetch of new object
+        STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
+        
+        // attempt clean fetch of new object
         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
         STAssertNotNil(entry, @"Newly created entry not found");
         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
@@ -136,7 +138,7 @@
     }];
     
     while (!finished){
-        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
     }
 }
 
@@ -153,7 +155,9 @@
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
          
-         // attempt fetch of collection containing new object
+         STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
+         
+         // attempt clean fetch of collection containing new object
          DMCollection *redcollection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO];
          STAssertNotNil(redcollection, @"Collection not found");
          STAssertTrue(redcollection.entries.count == 6, @"New entry not correctly added");
@@ -165,7 +169,7 @@
      }];
     
     while (!finished){
-        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
     }
 }
 

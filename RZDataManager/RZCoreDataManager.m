@@ -9,7 +9,7 @@
 #import "NSDictionary+NonNSNull.h"
 
 
-typedef id (^RZDataManagerImportBlock)(); // returns result of import (new or updated object(s))
+typedef void (^RZDataManagerImportBlock)();
 
 // For storing moc reference in thread dictionary
 static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
@@ -19,7 +19,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 @property (nonatomic, readonly) NSManagedObjectContext *currentMoc;
 @property (nonatomic, strong) NSManagedObjectContext *backgroundMoc;
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerImportCompletionBlock)completionBlock;
+- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(void(^)(NSError *error))completionBlock;
 
 - (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create;
 - (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath inSet:(NSSet*)objects usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create;
@@ -53,10 +53,11 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 - (void)importData:(NSDictionary *)data toObjectOfType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion
 {
-    [self importInBackgroundUsingBlock:^id{
+    id uid = [data validObjectForKey:dataIdKeyPath decodeHTML:NO];
+    
+    [self importInBackgroundUsingBlock:^{
         
         id obj = nil;
-        id uid = [data validObjectForKey:dataIdKeyPath decodeHTML:NO];
         
         if (uid){
             obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath createNew:YES];
@@ -65,18 +66,30 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         else{
             NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKeyPath, type);
         }
+                
+    } completion:^(NSError *error){
         
-        return obj;
+        if (completion){
+            
+            // Need to fetch object from main thread moc for completion block
+            id result = nil;
+            if (!error && uid){
+                result = [self objectOfType:type withValue:uid forKeyPath:dataIdKeyPath createNew:NO];
+            }
         
-    } completion:completion];
+            completion(result, error);
+        }
+        
+    }];
 }
 
 - (void)importData:(NSDictionary *)data toObjectOfType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath forRelationship:(NSString*)relationshipKey onObject:(id)otherObject completion:(RZDataManagerImportCompletionBlock)completion
 {
-    [self importInBackgroundUsingBlock:^id{
+    id uid = [data validObjectForKey:dataIdKeyPath decodeHTML:NO];
+    
+    [self importInBackgroundUsingBlock:^{
         
         id obj = nil;
-        id uid = [data validObjectForKey:dataIdKeyPath decodeHTML:NO];
         if (uid){
             
             NSEntityDescription *entityDesc = [(NSManagedObject*)otherObject entity];
@@ -120,10 +133,21 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKeyPath, type);
         }
 
+                
+    } completion:^(NSError *error) {
         
-        return obj;
+        if (completion){
+            
+            // Need to fetch object from main thread moc for completion block
+            id result = nil;
+            if (!error && uid){
+                result = [self objectOfType:type withValue:uid forKeyPath:dataIdKeyPath createNew:NO];
+            }
+            
+            completion(result, error);
+        }
         
-    } completion:completion];
+    }];
 }
 
 - (void)updateObjects:(NSArray *)objects ofType:(NSString *)type withData:(NSArray *)data dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion
@@ -155,13 +179,13 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 #pragma mark - Import Methods
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerImportCompletionBlock)completionBlock;
+- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(void(^)(NSError *error))completionBlock;
 {
     // only setup new moc if on main thread, otherwise assume we are on a background thread with associated moc
     
     void (^internalImportBlock)(NSManagedObjectContext *privateMoc) = ^(NSManagedObjectContext *privateMoc){
         
-        id result = importBlock();
+        importBlock();
         
         NSError *error = nil;
         if(![privateMoc save:&error])
@@ -175,7 +199,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             
             if (completionBlock)
             {
-                completionBlock(result, error);
+                completionBlock(error);
             }
         });
     };
