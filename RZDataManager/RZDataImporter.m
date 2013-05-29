@@ -110,11 +110,10 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
 }
 
 
-- (RZDataImporterDiffInfo*)updateObjects:(NSArray*)objects
-                                 ofClass:(Class)objClass
-                                withData:(id)data
-                           dataIdKeyPath:(NSString*)dataIdKeyPath
-                          modelIdKeyPath:(NSString*)modelIdKeyPath
+- (RZDataImporterDiffInfo*)diffInfoForObjects:(NSArray*)objects
+                                     withData:(id)data
+                                dataIdKeyPath:(NSString*)dataIdKeyPath
+                               modelIdKeyPath:(NSString*)modelIdKeyPath
 {
     
     RZDataImporterDiffInfo *diffInfo = [[RZDataImporterDiffInfo alloc] init];
@@ -136,9 +135,10 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
                 if ([obj isKindOfClass:[NSDictionary class]]){
                     
                     NSDictionary* dataDict = obj;
-                    __block id item = nil;
                     id uniqueValue = nil;
                     NSArray* matchingItems = nil;
+                    
+                    BOOL itemExists = NO;
                     
                     // try to find matching object
                     if (dataIdKeyPath != nil && modelIdKeyPath != nil){
@@ -149,39 +149,17 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
                             // find existing item
                             NSPredicate *matchPred = [NSPredicate predicateWithFormat:@"%K == %@", modelIdKeyPath, uniqueValue];
                             matchingItems = [objects filteredArrayUsingPredicate:matchPred];
-                            if (matchingItems.count > 0){
-                                item = [matchingItems objectAtIndex:0];
-                            }
+                            itemExists = (matchingItems.count > 0);
                         }
                     }
                     
                     // create new object if necessary
-                    if (item == nil){
-                        
-                        // see if it implements RZDataImporterModelObject, and try to get cached instance
-                        if (uniqueValue != nil && [objClass instancesRespondToSelector:@selector(cachedObjectWithUniqueValue:forKey:)]){
-                            item = [objClass cachedObjectWithUniqueValue:uniqueValue forKeyPath:modelIdKeyPath];
-                        }
-                        
-                        // if still nil, allocate new one
-                        if (item == nil){
-                            item = [[objClass alloc] init];
-                        }
-                        
-                        [diffInfo.addedObjects addObject:item];
-                        [diffInfo.insertionIndices addObject:[NSNumber numberWithInteger:idx]];
+                    if (!itemExists){
+                        [diffInfo.insertedObjectIndices addObject:@(idx)];
                     }
                     else if (matchingItems.count == 1){
-                        
-                        [diffInfo.movedObjects addObject:item];
-                        [diffInfo.moveIndices addObject:[NSNumber numberWithInteger:idx]];
+                        [diffInfo.movedObjectIndices addObject:@(idx)];
                     }
-                    
-                    // set item data
-                    if (item != nil){
-                        [self importData:dataDict toObject:item];
-                    }                
-
                 }
             }];
 
@@ -190,11 +168,9 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
         // Enumerate items that aren't in array
         NSArray *currentUniqueVals = [dataDicts valueForKeyPath:dataIdKeyPath];
         [objects enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if ([obj isKindOfClass:objClass]){
-                id objValue = [obj valueForKeyPath:modelIdKeyPath];
-                if (![currentUniqueVals containsObject:objValue]){
-                    [diffInfo.removedObjects addObject:obj];
-                }
+            id objValue = [obj valueForKeyPath:modelIdKeyPath];
+            if (![currentUniqueVals containsObject:objValue]){
+                [diffInfo.removedObjectIndices addObject:@(idx)];
             }
         }];
     }
@@ -545,12 +521,9 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
 - (id)init{
     self = [super init];
     if (self){
-        
-        self.addedObjects = [NSMutableArray arrayWithCapacity:16];
-        self.insertionIndices = [NSMutableArray arrayWithCapacity:16];
-        self.removedObjects = [NSMutableArray arrayWithCapacity:16];
-        self.movedObjects = [NSMutableArray arrayWithCapacity:16];
-        self.moveIndices = [NSMutableArray arrayWithCapacity:16];
+        self.insertedObjectIndices = [NSMutableArray arrayWithCapacity:16];
+        self.removedObjectIndices = [NSMutableArray arrayWithCapacity:16];
+        self.movedObjectIndices = [NSMutableArray arrayWithCapacity:16];
     }
     return self;
 }

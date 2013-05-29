@@ -42,20 +42,17 @@
 - (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataImporterModelObject>*)object;
 - (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataImporterModelObject>*)object ofType:(NSString*)objTypeName;
 
-//! Update objects passed in with data passed in, and optionally return array of objects that will be added and removed from array passed in. Basically does a diff-update of model object collection with incoming data set.
+//! Return array of indices for objects that have been inserted, deleted, or moved, based on passed-in object array and data array. Basically calculates diff-update info of model object collection with incoming data set.
 /*!
     objects - array of objects to update. Should be of type objClass.
-    objClass - type of objects in objects array.
+ data - either an array of dictionaries or a dictionary containing data with which to update objects
     dataIdKeyPath - key path to value uniquely identifying object in raw dictionary
     modelIdKeyPath - key path to value uniquely identifying model object. Value will be compared against value for dataIdKey in raw data
-    data - either an array of dictionaries or a dictionary containing data with which to update objects
-    diffInfo - object containing arrays of added, moved, and removed objects 
 */
-- (RZDataImporterDiffInfo*)updateObjects:(NSArray*)objects
-                                 ofClass:(Class)objClass
-                                withData:(id)data
-                           dataIdKeyPath:(NSString*)dataIdKeyPath
-                          modelIdKeyPath:(NSString*)modelIdKeyPath;
+- (RZDataImporterDiffInfo*)diffInfoForObjects:(NSArray*)objects
+                                     withData:(id)data
+                                dataIdKeyPath:(NSString*)dataIdKeyPath
+                               modelIdKeyPath:(NSString*)modelIdKeyPath;
 
 
 @end
@@ -63,15 +60,13 @@
 
 @interface RZDataImporterDiffInfo : NSObject
 
-// Objects which were added and the indices at which they were added
-@property (strong, nonatomic) NSMutableArray* addedObjects;
-@property (strong, nonatomic) NSMutableArray* insertionIndices;
+// Indices at which new objects are present in data array
+@property (strong, nonatomic) NSMutableArray* insertedObjectIndices;
 
-// Objects which were removed
-@property (strong, nonatomic) NSMutableArray* removedObjects;
+// Indices in the object array of objects that should be removed (not present in data array)
+@property (strong, nonatomic) NSMutableArray* removedObjectIndices;
 
-// Objects which were moved and to which indices they were moved (in the final array)
-@property (strong, nonatomic) NSMutableArray* movedObjects;
-@property (strong, nonatomic) NSMutableArray* moveIndices;
+// Indices for objects that have moved (the indices in the data array, which represent the final index of the object after the update)
+@property (strong, nonatomic) NSMutableArray* movedObjectIndices;
 
 @end
