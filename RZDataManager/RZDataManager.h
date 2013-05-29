@@ -38,6 +38,9 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 // Either updates existing object, if any, or creates and inserts new object
 - (void)importData:(NSDictionary*)data toObjectOfType:(NSString*)type dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion;
 
+// Updates existing object or creates new, then attempts to create relationship with "otherObject" specified by "relationshipKey"
+- (void)importData:(NSDictionary *)data toObjectOfType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath forRelationship:(NSString*)relationshipKey onObject:(id)otherObject completion:(RZDataManagerImportCompletionBlock)completion;
+
 - (void)updateObjects:(NSArray*)objects ofType:(NSString*)type withData:(NSArray*)data dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion;
 
 // Save method. Not all subclasses may need to be explicitly saved/persisted, so this is optional.

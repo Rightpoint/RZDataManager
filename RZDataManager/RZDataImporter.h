@@ -37,8 +37,10 @@
 //! Externally set a mapping dictionary for a particular class
 - (void)setMapping:(NSDictionary*)mapping forClassNamed:(NSString*)className;
 
-//! Import data from a dictionary to an object based on a provided (or TBD: assumed) mapping
+//! Import data from a dictionary to an object based on a provided (or TBD: assumed) mapping. Can provide a type name (maybe useful for
+//  managed objects with entity name different from class) or infer name from class.
 - (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataImporterModelObject>*)object;
+- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataImporterModelObject>*)object ofType:(NSString*)objTypeName;
 
 //! Update objects passed in with data passed in, and optionally return array of objects that will be added and removed from array passed in. Basically does a diff-update of model object collection with incoming data set.
 /*!

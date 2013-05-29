@@ -18,6 +18,7 @@
 		9A33666A17553E1F00FCF766 /* NSDictionary+NonNSNull.m in Sources */ = {isa = PBXBuildFile; fileRef = FEA82B041742CC1B00FA206C /* NSDictionary+NonNSNull.m */; };
 		9A33666B17553E1F00FCF766 /* NSString+HTMLEntities.m in Sources */ = {isa = PBXBuildFile; fileRef = FEA82B061742CC1B00FA206C /* NSString+HTMLEntities.m */; };
 		9AD0C3EF1756377D004F978E /* DMEntryMapping.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9AD0C3EE1756377D004F978E /* DMEntryMapping.plist */; };
+		9AD0C3F117563F21004F978E /* DMCollectionMapping.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9AD0C3F017563F21004F978E /* DMCollectionMapping.plist */; };
 		FEA82A781742AFFE00FA206C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A771742AFFE00FA206C /* UIKit.framework */; };
 		FEA82A7A1742AFFE00FA206C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A791742AFFE00FA206C /* Foundation.framework */; };
 		FEA82A7C1742AFFE00FA206C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A7B1742AFFE00FA206C /* CoreGraphics.framework */; };
@@ -59,6 +60,7 @@
 		9A33666117553E0B00FCF766 /* DMEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMEntry.h; path = "../RZDataManager-Demo/DMEntry.h"; sourceTree = "<group>"; };
 		9A33666217553E0B00FCF766 /* DMEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMEntry.m; path = "../RZDataManager-Demo/DMEntry.m"; sourceTree = "<group>"; };
 		9AD0C3EE1756377D004F978E /* DMEntryMapping.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = DMEntryMapping.plist; sourceTree = "<group>"; };
+		9AD0C3F017563F21004F978E /* DMCollectionMapping.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = DMCollectionMapping.plist; sourceTree = "<group>"; };
 		FEA82A741742AFFE00FA206C /* RZDataManager-Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "RZDataManager-Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEA82A771742AFFE00FA206C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FEA82A791742AFFE00FA206C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -180,6 +182,7 @@
 				9AD0C3EE1756377D004F978E /* DMEntryMapping.plist */,
 				9A33665D17553E0A00FCF766 /* DMCollection.h */,
 				9A33665E17553E0A00FCF766 /* DMCollection.m */,
+				9AD0C3F017563F21004F978E /* DMCollectionMapping.plist */,
 				9A33665A17553CFC00FCF766 /* RZCoreDataManager-Tests.h */,
 				9A33665B17553CFC00FCF766 /* RZCoreDataManager-Tests.m */,
 			);
@@ -305,6 +308,7 @@
 			files = (
 				FEA82AA61742AFFF00FA206C /* InfoPlist.strings in Resources */,
 				9AD0C3EF1756377D004F978E /* DMEntryMapping.plist in Resources */,
+				9AD0C3F117563F21004F978E /* DMCollectionMapping.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

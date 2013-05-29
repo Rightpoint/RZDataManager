@@ -62,6 +62,64 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath createNew:YES];
             [self.dataImporter importData:data toObject:obj];
         }
+        else{
+            NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKeyPath, type);
+        }
+        
+        return obj;
+        
+    } completion:completion];
+}
+
+- (void)importData:(NSDictionary *)data toObjectOfType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath forRelationship:(NSString*)relationshipKey onObject:(id)otherObject completion:(RZDataManagerImportCompletionBlock)completion
+{
+    [self importInBackgroundUsingBlock:^id{
+        
+        id obj = nil;
+        id uid = [data validObjectForKey:dataIdKeyPath decodeHTML:NO];
+        if (uid){
+            
+            NSEntityDescription *entityDesc = [(NSManagedObject*)otherObject entity];
+            NSRelationshipDescription *relationshipDesc = [[entityDesc relationshipsByName] objectForKey:relationshipKey];
+            if (relationshipDesc){
+                
+                // need to be able to handle many-to-many
+                if (relationshipDesc.isToMany){
+                    
+                    // find object within other object's relationship set
+                    NSSet * existingObjs = [otherObject valueForKey:relationshipKey];
+                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath inSet:existingObjs createNew:YES];
+                    [self.dataImporter importData:data toObject:obj ofType:type];
+                    
+                    // create selector string for making relationship
+                    NSString *selectorString = [NSString stringWithFormat:@"add%@Object:", relationshipKey.capitalizedString];
+                    SEL relationshipSel = NSSelectorFromString(selectorString);
+                    
+                    // Ignore selector leak warning - it won't leak
+                    #pragma clang diagnostic push
+                    #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+                    [otherObject performSelector:relationshipSel withObject:obj];
+                    #pragma clang diagnostic pop
+                    
+                }
+                else{
+                    
+                    // create or update object
+                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath createNew:YES];
+                    [self.dataImporter importData:data toObject:obj ofType:type];
+                    
+                    // set relationship on other object
+                    [otherObject setValue:obj forKey:relationshipKey];
+                }
+            }
+            else{
+                NSLog(@"RZCoreDataManger: Could not find relationship %@ on entity named %@", relationshipKey, entityDesc.name);
+            }
+        }
+        else{
+            NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKeyPath, type);
+        }
+
         
         return obj;
         
@@ -99,14 +157,9 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 - (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerImportCompletionBlock)completionBlock;
 {
-    NSManagedObjectContext *privateMoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-    privateMoc.parentContext = self.managedObjectContext;
+    // only setup new moc if on main thread, otherwise assume we are on a background thread with associated moc
     
-    [privateMoc performBlock:^{
-        
-        if (![NSThread isMainThread]){
-            [[[NSThread currentThread] threadDictionary] setObject:privateMoc forKey:kRZCoreDataManagerConfinedMocKey];
-        }
+    void (^internalImportBlock)(NSManagedObjectContext *privateMoc) = ^(NSManagedObjectContext *privateMoc){
         
         id result = importBlock();
         
@@ -125,7 +178,31 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 completionBlock(result, error);
             }
         });
-    }];
+    };
+    
+    if ([NSThread isMainThread]){
+        
+        NSManagedObjectContext *privateMoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+        privateMoc.parentContext = self.managedObjectContext;
+
+        [privateMoc performBlock:^{
+            
+            if (![NSThread isMainThread]){
+                [[[NSThread currentThread] threadDictionary] setObject:privateMoc forKey:kRZCoreDataManagerConfinedMocKey];
+            }
+            
+            internalImportBlock(privateMoc);
+        }];
+    }
+    else{
+        NSManagedObjectContext *moc = self.currentMoc;
+        if (moc){
+            internalImportBlock(moc);
+        }
+        else{
+            @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"RZDataManager attempting to import on a thread with no MOC" userInfo:nil];
+        }
+    }
 }
 
 #pragma mark - Retrieval Methods

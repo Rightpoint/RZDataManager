@@ -3,25 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>Data ID Key</key>
-	<string>uid</string>
+	<string>name</string>
 	<key>Model ID Key</key>
-	<string>uid</string>
+	<string>name</string>
 	<key>Data Keys</key>
 	<dict>
 		<key>name</key>
 		<dict/>
-		<key>uid</key>
-		<dict/>
-		<key>date</key>
-		<dict>
-			<key>Conversion</key>
-			<string>NSDate</string>
-		</dict>
-		<key>collection</key>
-		<dict>
-			<key>Relationship</key>
-			<string>DMCollection</string>
-		</dict>
 	</dict>
 </dict>
 </plist>

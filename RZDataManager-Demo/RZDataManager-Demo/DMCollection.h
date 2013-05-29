@@ -13,7 +13,6 @@
 @interface DMCollection : NSManagedObject
 
 @property (nonatomic, retain) NSString * name;
-@property (nonatomic, retain) NSNumber * isPublic;
 @property (nonatomic, retain) NSSet *entries;
 @end
 

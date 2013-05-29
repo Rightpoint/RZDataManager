@@ -25,12 +25,23 @@
     
     self.dataManager = [[RZCoreDataManager alloc] init];
     
-    // since this is a test we need to load the model from our own bundle, not main bundle
+    // since this is a test we need to load resources from our own bundle, not main bundle
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
     NSURL *url = [bundle URLForResource:@"RZDataManager_Test" withExtension:@"momd"];
     
     self.dataManager.managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
     self.dataManager.persistentStoreType = NSInMemoryStoreType;
+    
+    // load plist mapping from test bundle
+    NSURL *mappingUrl = [bundle URLForResource:@"DMEntryMapping" withExtension:@"plist"];
+    NSDictionary *mapping = [NSDictionary dictionaryWithContentsOfURL:mappingUrl];
+    
+    [self.dataManager.dataImporter setMapping:mapping forClassNamed:@"DMEntry"];
+    
+    mappingUrl = [bundle URLForResource:@"DMCollectionMapping" withExtension:@"plist"];
+    mapping = [NSDictionary dictionaryWithContentsOfURL:mappingUrl];
+    
+    [self.dataManager.dataImporter setMapping:mapping forClassNamed:@"DMCollection"];
     
     // Insert a few dummy objects and collections
     NSManagedObjectContext *moc = [self.dataManager managedObjectContext];
@@ -39,7 +50,6 @@
         
         DMCollection *collection = [NSEntityDescription insertNewObjectForEntityForName:@"DMCollection" inManagedObjectContext:moc];
         collection.name = @"Red";
-        collection.isPublic = @(YES);
         
         for (unsigned int i=0; i<5; i++){
             DMEntry *entry = [NSEntityDescription insertNewObjectForEntityForName:@"DMEntry" inManagedObjectContext:moc];
@@ -55,7 +65,6 @@
         
         DMCollection *collection = [NSEntityDescription insertNewObjectForEntityForName:@"DMCollection" inManagedObjectContext:moc];
         collection.name = @"Blue";
-        collection.isPublic = @(NO);
         
         for (unsigned int i=0; i<5; i++){
             DMEntry *entry = [NSEntityDescription insertNewObjectForEntityForName:@"DMEntry" inManagedObjectContext:moc];
@@ -107,12 +116,6 @@
 
 - (void)test200ImportObject
 {
-    // load plist mapping from test bundle
-    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
-    NSURL *mappingUrl = [bundle URLForResource:@"DMEntryMapping" withExtension:@"plist"];
-    NSDictionary *mapping = [NSDictionary dictionaryWithContentsOfURL:mappingUrl];
-    
-    [self.dataManager.dataImporter setMapping:mapping forClassNamed:@"DMEntry"];
     
     NSDictionary * mockData = @{@"name" : @"Omicron",
                                 @"uid" : @"1000",
@@ -131,6 +134,35 @@
         
         finished = YES;
     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+    }
+}
+
+- (void)test201ImportObjectWithRelationship
+{
+    NSDictionary * mockData = @{@"name" : @"Omicron",
+                                @"uid" : @"1000",
+                                @"date" : @"2013-07-01T12:00:00Z",
+                                @"collection" : @"Red"};
+    
+    __block BOOL finished = NO;
+    [self.dataManager importData:mockData toObjectOfType:@"DMEntry" dataIdKeyPath:@"uid" modelIdKeyPath:@"uid" completion:^(id result, NSError *error)
+     {
+         STAssertNotNil(result, @"Result should not be nil");
+         STAssertNil(error, @"Error during import: %@", error);
+         
+         // attempt fetch of collection containing new object
+         DMCollection *redcollection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO];
+         STAssertNotNil(redcollection, @"Collection not found");
+         STAssertTrue(redcollection.entries.count == 6, @"New entry not correctly added");
+         
+         DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inSet:redcollection.entries createNew:NO];
+         STAssertNotNil(newEntry, @"New entry not found in collection");
+         
+         finished = YES;
+     }];
     
     while (!finished){
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];

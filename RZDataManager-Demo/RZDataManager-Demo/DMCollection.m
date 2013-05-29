@@ -12,7 +12,6 @@
 @implementation DMCollection
 
 @dynamic name;
-@dynamic isPublic;
 @dynamic entries;
 
 @end
