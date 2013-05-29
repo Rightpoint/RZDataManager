@@ -6,6 +6,13 @@
 	<dict>
 		<key>name</key>
 		<dict/>
+		<key>entries</key>
+		<dict>
+			<key>Relationship</key>
+			<string>DMEntry</string>
+			<key>Relationship ID Key</key>
+			<string>uid</string>
+		</dict>
 	</dict>
 </dict>
 </plist>

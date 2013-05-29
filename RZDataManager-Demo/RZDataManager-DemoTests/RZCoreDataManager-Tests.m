@@ -173,4 +173,66 @@
     }
 }
 
+- (void)test202ImportObjectsWithNewRelationships
+{
+    // import a few new collections, each with a few entries
+    
+    NSDictionary *yellowCollection = @{
+                                       @"name" : @"Yellow",
+                                       @"entries" :
+                                           @[
+                                               @{
+                                                   @"name" : @"Omicron",
+                                                   @"uid" : @"1000"
+                                                },
+                                               @{
+                                                   @"name" : @"Pi",
+                                                   @"uid" : @"1001"
+                                                }
+                                            ]
+                                       };
+    
+    NSDictionary *greenCollection = @{
+                                       @"name" : @"Green",
+                                       @"entries" :
+                                           @[
+                                               @{
+                                                   @"name" : @"Mu",
+                                                   @"uid" : @"1002"
+                                                },
+                                               @{
+                                                   @"name" : @"Nu",
+                                                   @"uid" : @"1003"
+                                                }
+                                            ]
+                                       };
+    
+    __block BOOL finished = NO;
+    [self.dataManager importData:@[yellowCollection, greenCollection]
+                      objectType:@"DMCollection"
+                   dataIdKeyPath:@"name"
+                  modelIdKeyPath:@"name"
+                      completion:^(id result, NSError *error)
+    {
+        STAssertTrue(error == nil, @"Import error occured: %@", error);
+        
+        // returned result should be array with two objects
+        STAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be an array");
+        STAssertTrue([result count] == 2, @"Resulting array should have two objects");
+        
+        // first object should be collection named "Yellow" with two entries
+        DMCollection *collection = [(NSArray*)result objectAtIndex:0];
+        STAssertEqualObjects([collection name], @"Yellow", @"Returned collection has incorrect name");
+        STAssertTrue(collection.entries.count == 2, @"Returned collection has wrong number of entries");
+        
+        finished = YES;
+    }];
+    
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+    
+}
+
 @end
