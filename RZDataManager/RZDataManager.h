@@ -35,11 +35,11 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 
 #pragma mark - Persisting
 
-// Either updates existing object, if any, or creates and inserts new object
-- (void)importData:(NSDictionary*)data toObjectOfType:(NSString*)type dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion;
+// Either updates existing object(s), if any, or creates and inserts new object. "data" expected to be either NSDictionary or NSArray
+- (void)importData:(id)data objectType:(NSString*)type dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion;
 
 // Updates existing object or creates new, then attempts to create relationship with "otherObject" specified by "relationshipKey"
-- (void)importData:(NSDictionary *)data toObjectOfType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath forRelationship:(NSString*)relationshipKey onObject:(id)otherObject completion:(RZDataManagerImportCompletionBlock)completion;
+- (void)importData:(id)data objectType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath forRelationship:(NSString*)relationshipKey onObject:(id)otherObject completion:(RZDataManagerImportCompletionBlock)completion;
 
 // Update an array of objects with a new array of dictionaries, representing objects of the same type.
 // Will update, insert, remove, and re-order objects as necessary.

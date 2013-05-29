@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>Data ID Key</key>
-	<string>name</string>
-	<key>Model ID Key</key>
-	<string>name</string>
 	<key>Data Keys</key>
 	<dict>
 		<key>name</key>

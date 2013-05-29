@@ -13,11 +13,10 @@
 static NSString* const kRZDataImporterDateFormat = @"Date Format";
 static NSString* const kRZDataImporterDataKeys = @"Data Keys";
 static NSString* const kRZDataImporterIgnoreKeys = @"Ignore Keys";
-static NSString* const kRZDataImporterDataIDKey = @"Data ID Key";
-static NSString* const kRZDataImporterModelIDKey = @"Model ID Key";
 static NSString* const kRZDataImporterObjectKey = @"Object Key";
 static NSString* const kRZDataImporterConversion = @"Conversion";
 static NSString* const kRZDataImporterRelationship = @"Relationship";
+static NSString* const kRZDataImporterRelationshipIDKey = @"Relationship ID Key";
 static NSString* const kRZDataImporterFormat = @"Format";
 static NSString* const kRZDataImporterSelector = @"Selector";
 static NSString* const kRZDataImporterDecodeHTML = @"Decode HTML";
@@ -284,49 +283,67 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
         
         if (relMapping != nil){
             
-            NSString *dataIdKey = [relMapping objectForKey:kRZDataImporterDataIDKey];
-            NSString *modelIdKey = [relMapping objectForKey:kRZDataImporterModelIDKey];
-        
-            if (dataIdKey && modelIdKey){
+            NSString *relationshipModelIDKey = nil;
+            NSString *relationshipIDKey = [mappingInfo objectForKey:kRZDataImporterRelationshipIDKey];
+            
+            if (relationshipIDKey){
                 
-                if ([value isKindOfClass:[NSDictionary class]]){
+                // find the model key mapping for the identifier key
+                NSDictionary *relDataKeys = [relMapping objectForKey:kRZDataImporterDataKeys];
+                NSDictionary *relKeyMapping = [relDataKeys objectForKey:relationshipIDKey];
+                if (relKeyMapping){
+                    relationshipModelIDKey = [relKeyMapping objectForKey:kRZDataImporterObjectKey];
+                    if (relationshipModelIDKey == nil){
+                        relationshipModelIDKey = relationshipIDKey;
+                    }
+                }
+            }
+            
+            if (relationshipIDKey && relationshipModelIDKey){
+                
+                if ([value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSArray class]])
+                {
+                    id importData = value;
                     
-                    [self.dataManager importData:value
-                                  toObjectOfType:relationshipObjType
-                                   dataIdKeyPath:dataIdKey
-                                  modelIdKeyPath:modelIdKey
+                    if ([value isKindOfClass:[NSArray class]]){
+                        
+                        // if array does not contain dictionaries, assume each value is a unique id value, wrap in dictionary
+                        if (![[(NSArray*)value objectAtIndex:0] isKindOfClass:[NSDictionary class]])
+                        {
+                            NSMutableArray *dataKeyPairs = [NSMutableArray arrayWithCapacity:[(NSArray*)value count]];
+                            
+                            [(NSArray*)value enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                                [dataKeyPairs addObject:@{relationshipIDKey : obj}];
+                            }];
+                            
+                            importData = dataKeyPairs;
+                        }
+                        
+                    }
+                    [self.dataManager importData:importData
+                                      objectType:relationshipObjType
+                                   dataIdKeyPath:relationshipIDKey
+                                  modelIdKeyPath:relationshipModelIDKey
                                  forRelationship:key
                                         onObject:object
                                       completion:nil];
-                }
-                else if ([value isKindOfClass:[NSArray class]]){
-                    
-                    [(NSArray*)value enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                        [self.dataManager importData:obj
-                                      toObjectOfType:relationshipObjType
-                                       dataIdKeyPath:dataIdKey
-                                      modelIdKeyPath:modelIdKey
-                                     forRelationship:key
-                                            onObject:object
-                                          completion:nil];
-                    }];
                 }
                 else{
                     // wrap in a dictionary - we will assume it's the unique identifier
                     // this is for cases when the relationship is specified by one key-value pair instead of fully-qualified
                     // data for the other object
-                    NSDictionary *relData = @{dataIdKey : value};
-                    [self.dataManager importData:relData
-                                  toObjectOfType:relationshipObjType
-                                   dataIdKeyPath:dataIdKey
-                                  modelIdKeyPath:modelIdKey
+                    NSDictionary *importData = @{relationshipIDKey : value};
+                    [self.dataManager importData:importData
+                                      objectType:relationshipObjType
+                                   dataIdKeyPath:relationshipIDKey
+                                  modelIdKeyPath:relationshipModelIDKey
                                  forRelationship:key
                                         onObject:object
                                       completion:nil];
                 }
             }
             else{
-                NSLog(@"Missing data id key and/or model id key for relationship object type %@", relationshipObjType);
+                NSLog(@"Missing relationship id key and/or model id key for relationship object type %@", relationshipObjType);
             }
         }
         else{

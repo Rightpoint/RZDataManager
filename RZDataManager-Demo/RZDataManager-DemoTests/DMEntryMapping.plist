@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>Data ID Key</key>
-	<string>uid</string>
-	<key>Model ID Key</key>
-	<string>uid</string>
 	<key>Data Keys</key>
 	<dict>
 		<key>name</key>
@@ -21,6 +17,8 @@
 		<dict>
 			<key>Relationship</key>
 			<string>DMCollection</string>
+			<key>Relationship ID Key</key>
+			<string>name</string>
 		</dict>
 	</dict>
 </dict>

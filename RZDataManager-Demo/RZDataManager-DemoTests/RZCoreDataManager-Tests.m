@@ -121,7 +121,7 @@
                                 @"uid" : @"1000",
                                 @"date" : @"2013-07-01T12:00:00Z"};
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData toObjectOfType:@"DMEntry" dataIdKeyPath:@"uid" modelIdKeyPath:@"uid" completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData objectType:@"DMEntry" dataIdKeyPath:@"uid" modelIdKeyPath:@"uid" completion:^(id result, NSError *error)
     {
         STAssertNotNil(result, @"Result should not be nil");
         STAssertNil(error, @"Error during import: %@", error);
@@ -150,7 +150,7 @@
                                 @"collection" : @"Red"};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData toObjectOfType:@"DMEntry" dataIdKeyPath:@"uid" modelIdKeyPath:@"uid" completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData objectType:@"DMEntry" dataIdKeyPath:@"uid" modelIdKeyPath:@"uid" completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
