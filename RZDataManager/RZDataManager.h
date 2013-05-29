@@ -41,6 +41,8 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 // Updates existing object or creates new, then attempts to create relationship with "otherObject" specified by "relationshipKey"
 - (void)importData:(NSDictionary *)data toObjectOfType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath forRelationship:(NSString*)relationshipKey onObject:(id)otherObject completion:(RZDataManagerImportCompletionBlock)completion;
 
+// Update an array of objects with a new array of dictionaries, representing objects of the same type.
+// Will update, insert, remove, and re-order objects as necessary.
 - (void)updateObjects:(NSArray*)objects ofType:(NSString*)type withData:(NSArray*)data dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion;
 
 // Save method. Not all subclasses may need to be explicitly saved/persisted, so this is optional.

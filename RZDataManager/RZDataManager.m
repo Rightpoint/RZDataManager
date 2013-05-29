@@ -24,7 +24,7 @@
     static RZDataManager * s_defaultManager = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        s_defaultManager = [[[self class] alloc] init];
+        s_defaultManager = [[self alloc] init];
     });
     return s_defaultManager;
 }
