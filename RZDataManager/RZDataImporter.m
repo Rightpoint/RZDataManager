@@ -33,7 +33,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 
 @interface RZDataImporter ()
 
-@property (nonatomic, strong) NSCache *modelMappings;
+@property (nonatomic, strong) NSMutableDictionary *modelMappings;
 @property (nonatomic, strong) NSDateFormatter *dateFormatter;
 @property (nonatomic, strong) NSNumberFormatter *numberFormatter;
 @property (nonatomic, strong) NSString *objectDateFormat;
@@ -57,7 +57,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
     self = [super init];
     if (self){
         self.shouldDecodeHTML = NO;
-        self.modelMappings = [[NSCache alloc] init];
+        self.modelMappings = [[NSMutableDictionary alloc] init];
         self.dateFormatter = [[NSDateFormatter alloc] init];
         self.numberFormatter = [[NSNumberFormatter alloc] init];
         self.numberFormatter.numberStyle = NSNumberFormatterDecimalStyle;
@@ -66,6 +66,13 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 }
 
 #pragma mark - Public
+
+- (void)setMapping:(NSDictionary *)mapping forClassNamed:(NSString *)className
+{
+    if (mapping && className){
+        [self.modelMappings setObject:mapping forKey:className];
+    }
+}
 
 - (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object
 {

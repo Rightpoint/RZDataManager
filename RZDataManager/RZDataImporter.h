@@ -34,6 +34,9 @@
 //! Set to override on importer-level whether should decode HTML entities from strings (defaults to NO)
 @property (nonatomic, assign) BOOL shouldDecodeHTML;
 
+//! Externally set a mapping dictionary for a particular class
+- (void)setMapping:(NSDictionary*)mapping forClassNamed:(NSString*)className;
+
 //! Import data from a dictionary to an object based on a provided (or TBD: assumed) mapping
 - (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataImporterModelObject>*)object;
 
