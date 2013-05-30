@@ -6,7 +6,7 @@
 //
 
 #import "RZDataImporter.h"
-#import "RZDataManager.h"
+#import "RZDataManager_Base.h"
 #import "NSDictionary+NonNSNull.h"
 #import "NSString+HTMLEntities.h"
 #import "NSObject+PropertyTypes.h"

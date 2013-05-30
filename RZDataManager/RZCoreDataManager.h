@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
-#import "RZDataManager.h"
+#import "RZDataManager_Base.h"
 
 @class RZDataImporter;
 

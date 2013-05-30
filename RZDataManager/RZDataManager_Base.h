@@ -1,5 +1,5 @@
 //
-//  RZDataManager.h
+//  RZDataManager_Base.h
 //  RZDataManager-Demo
 //
 //  Created by Nick Donaldson on 5/28/13.
@@ -39,6 +39,8 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 
 #pragma mark - Persisting
 
+// These versions use the default ID key provided by the mapping plist for a given object
+
 // Either updates existing object(s), if any, or creates and inserts new object.
 // "data" expected to be either NSDictionary or NSArray
 // Infers unique identifier keys from mapping plist if possible.
@@ -66,14 +68,14 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 
 // -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
 
-// Version which allows override for which keys are used to uniquely identify data/model objects
+// These versions allow override for which keys are used to uniquely identify data/model objects
+
 - (void)importData:(id)data
         objectType:(NSString*)type
      dataIdKeyPath:(NSString*)dataIdKeyPath
     modelIdKeyPath:(NSString*)modelIdKeyPath
         completion:(RZDataManagerImportCompletionBlock)completion;
 
-// Version which allows override for which keys are used to uniquely identify data/model objects
 - (void)importData:(id)data
         objectType:(NSString *)type
      dataIdKeyPath:(NSString *)dataIdKeyPath
@@ -82,8 +84,6 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
           onObject:(id)otherObject
         completion:(RZDataManagerImportCompletionBlock)completion;
 
-
-// Version which allows override for which keys are used to uniquely identify data/model objects
 - (void)updateObjects:(NSArray*)objects
                ofType:(NSString*)type
              withData:(NSArray*)data
