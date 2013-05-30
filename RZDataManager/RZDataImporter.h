@@ -6,24 +6,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RZDataManagerModelObject.h"
 
 @class RZDataManager;
-
-@protocol RZDataImporterModelObject <NSObject>
-
-@optional
-
-//! Implement this method to return a cached object matching the passed-in unique key-value pair
-+ (id)cachedObjectWithUniqueValue:(id)uniqueValue forKeyPath:(id)key;
-
-//! Implement this method to prepare the object to be updated with new data
-- (void)prepareForImportFromData:(NSDictionary*)data;
-
-//! Implement this method to finalize the import and send "updated" notifications
-- (void)finalizeImportFromData:(NSDictionary*)data;
-
-@end
-
 @class RZDataImporterDiffInfo;
 
 @interface RZDataImporter : NSObject
@@ -47,8 +32,8 @@
 
 //! Import data from a dictionary to an object based on a provided (or TBD: assumed) mapping. Can provide a type name (maybe useful for
 //  managed objects with entity name different from class) or infer name from class.
-- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataImporterModelObject>*)object;
-- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataImporterModelObject>*)object ofType:(NSString*)objTypeName;
+- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataManagerModelObject>*)object;
+- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataManagerModelObject>*)object ofType:(NSString*)objTypeName;
 
 //! Return array of indices for objects that have been inserted, deleted, or moved, based on passed-in object array and data array. Basically calculates diff-update info of model object collection with incoming data set.
 /*!

@@ -44,11 +44,11 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
 @property (nonatomic, strong) NSNumberFormatter *numberFormatter;
 @property (nonatomic, strong) NSString *objectDateFormat;
 
-- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object withMapping:(NSDictionary*)mapping;
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject>*)object withMapping:(NSDictionary*)mapping;
 
-- (void)importValue:(id)value toObject:(NSObject<RZDataImporterModelObject>*)object fromKey:(NSString*)key withKeyMapping:(NSDictionary*)mappingInfo;
+- (void)importValue:(id)value toObject:(NSObject<RZDataManagerModelObject>*)object fromKey:(NSString*)key withKeyMapping:(NSDictionary*)mappingInfo;
 
-- (void)setPropertyValue:(id)value onObject:(NSObject<RZDataImporterModelObject>*)object fromKey:(NSString*)key withKeyMapping:(NSDictionary*)mappingInfo;
+- (void)setPropertyValue:(id)value onObject:(NSObject<RZDataManagerModelObject>*)object fromKey:(NSString*)key withKeyMapping:(NSDictionary*)mappingInfo;
 
 - (SEL)setterFromObjectKey:(NSString*)key;
 
@@ -155,12 +155,12 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
     }
 }
 
-- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject> *)object
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject> *)object
 {
     [self importData:data toObject:object ofType:NSStringFromClass([object class])];
 }
 
-- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object ofType:(NSString *)objTypeName
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject>*)object ofType:(NSString *)objTypeName
 {
     // TODO: Maybe raise exception here
     if (object && data){
@@ -257,7 +257,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
 
 #pragma mark - Private
 
-- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object withMapping:(NSDictionary *)mapping
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject>*)object withMapping:(NSDictionary *)mapping
 {
     NSDictionary *keyMappings = [mapping objectForKey:kRZDataImporterDataKeys];
     
@@ -305,7 +305,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
     
 }
 
-- (void)importValue:(id)value toObject:(NSObject<RZDataImporterModelObject>*)object fromKey:key withKeyMapping:(NSDictionary *)mappingInfo
+- (void)importValue:(id)value toObject:(NSObject<RZDataManagerModelObject>*)object fromKey:key withKeyMapping:(NSDictionary *)mappingInfo
 {
     
     // If value is string and we decode HTML, do it now
@@ -441,7 +441,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
     }
 }
 
-- (void)setPropertyValue:(id)value onObject:(NSObject<RZDataImporterModelObject> *)object fromKey:(NSString *)key withKeyMapping:(NSDictionary *)mappingInfo
+- (void)setPropertyValue:(id)value onObject:(NSObject<RZDataManagerModelObject> *)object fromKey:(NSString *)key withKeyMapping:(NSDictionary *)mappingInfo
 {
     // otherwise, at bare minimum we need an object key
     // if it's not overridden, just use the data key
