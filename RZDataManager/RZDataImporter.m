@@ -9,6 +9,7 @@
 #import "RZDataManager.h"
 #import "NSDictionary+NonNSNull.h"
 #import "NSString+HTMLEntities.h"
+#import "NSObject+PropertyTypes.h"
 
 static NSString* const kRZDataImporterDateFormat = @"Date Format";
 static NSString* const kRZDataImporterDataKeys = @"Data Keys";
@@ -20,7 +21,6 @@ static NSString* const kRZDataImporterRelationshipIDKey = @"Relationship ID Key"
 static NSString* const kRZDataImporterFormat = @"Format";
 static NSString* const kRZDataImporterSelector = @"Selector";
 static NSString* const kRZDataImporterDecodeHTML = @"Decode HTML";
-
 
 static NSString* const kRZDataImporterConversionTypeString = @"NSString";
 static NSString* const kRZDataImporterConversionTypeDate = @"NSDate";
@@ -351,7 +351,9 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
         }
     }
     else if (selectorName != nil){
+        
         SEL importSelector = NSSelectorFromString(selectorName);
+        
         if ([object respondsToSelector:importSelector]){
             
             NSMethodSignature *selectorSig = [object methodSignatureForSelector:importSelector];
@@ -400,13 +402,19 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
     
     SEL setter = [self setterFromObjectKey:objectKey];
     if ([object respondsToSelector:setter]){
+        
         // NSInvocation allows passing scalars to setter
         NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:setter]];
         [invocation setSelector:setter];
         [invocation setTarget:object];
         
-        // Check for conversion
+        // Check for explicit conversion
         NSString *conversion = [mappingInfo objectForKey:kRZDataImporterConversion];
+        
+        // if no explicit conversion, infer from property type
+        if (conversion == nil){
+            conversion = [object typeNameForProperty:objectKey];
+        }
         
         // Perform scalar conversions - need to set invocation argument separately since
         // we can't assign a scalar value to id
@@ -511,7 +519,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
         {
             newValue = [value stringValue];
         }
-        else
+        else if (![value isKindOfClass:[NSString class]])
         {
             newValue = [NSString stringWithFormat:@"%@", value];
         }

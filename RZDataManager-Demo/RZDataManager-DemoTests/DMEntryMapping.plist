@@ -9,10 +9,7 @@
 		<key>uid</key>
 		<dict/>
 		<key>date</key>
-		<dict>
-			<key>Conversion</key>
-			<string>NSDate</string>
-		</dict>
+		<dict/>
 		<key>collection</key>
 		<dict>
 			<key>Relationship</key>

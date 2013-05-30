@@ -116,7 +116,6 @@
 
 - (void)test200ImportObject
 {
-    
     NSDictionary * mockData = @{@"name" : @"Omicron",
                                 @"uid" : @"1000",
                                 @"date" : @"2013-07-01T12:00:00Z"};
