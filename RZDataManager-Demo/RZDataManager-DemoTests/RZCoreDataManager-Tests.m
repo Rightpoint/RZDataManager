@@ -56,6 +56,7 @@
             entry.name = names[i];
             entry.uid = [NSString stringWithFormat:@"%d", i];
             entry.date = [NSDate dateWithTimeIntervalSinceNow:i * 60];
+            entry.popularity = @((float)rand()/RAND_MAX);
             entry.collection = collection;
         }
     }
@@ -71,6 +72,7 @@
             entry.name = names[i];
             entry.uid = [NSString stringWithFormat:@"%d", i + 5];
             entry.date = [NSDate dateWithTimeIntervalSinceNow:i * 60];
+            entry.popularity = @((float)rand()/RAND_MAX);
             entry.collection = collection;
         }
     }
@@ -118,7 +120,14 @@
 {
     NSDictionary * mockData = @{@"name" : @"Omicron",
                                 @"uid" : @"1000",
+                                @"popularity" : @(0.5),
+                                @"testFloat" : @(1.0f),
+                                @"testDouble" : @(1.0),
+                                @"testUInt" : @(-1), // should wrap back to 0xFFFFFFFF
+                                @"testInt" : @(-100),
+                                @"testBool" : @(YES),
                                 @"date" : @"2013-07-01T12:00:00Z"};
+    
     __block BOOL finished = NO;
     [self.dataManager importData:mockData objectType:@"DMEntry" completion:^(id result, NSError *error)
     {
@@ -129,10 +138,17 @@
         
         // attempt clean fetch of new object
         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
+
         STAssertNotNil(entry, @"Newly created entry not found");
         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
         STAssertTrue([entry.date isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
         
+        STAssertEquals(entry.testFloat, 1.0f, @"Float conversion failed");
+        STAssertEquals(entry.testDouble, 1.0, @"Double conversion failed");
+        STAssertEquals(entry.testUInt, (unsigned int)0xFFFFFFFF, @"Unsigned int conversion failed");
+        STAssertEquals(entry.testInt, (int)-100, @"Int conversion failed");
+        STAssertEquals(entry.testBool, (BOOL)YES, @"Bool conversion failed");
+
         finished = YES;
     }];
     

@@ -23,14 +23,37 @@
     
     if (propAttrString != NULL){
         
-        static char buffer[256];
-        const char * commaLoc = strchr(propAttrString, ','); // find first comma
-        int len = (int)(commaLoc - propAttrString - PROP_TYPE_START_OFFS - 1);
-        if (commaLoc != NULL){
-            memcpy(buffer, propAttrString + PROP_TYPE_START_OFFS, (size_t)len);
-            buffer[len] = '\0'; // null terminated
-            typenameString = [NSString stringWithUTF8String:buffer];
+        NSString * propString = [NSString stringWithUTF8String:propAttrString];
+        
+        NSScanner *scanner = [NSScanner scannerWithString:propString];
+        [scanner setCaseSensitive:YES];
+        [scanner setCharactersToBeSkipped:nil];
+        
+        if ([scanner scanString:@"T" intoString:NULL]){
+            [scanner scanUpToString:@"," intoString:&typenameString];
+            typenameString = [typenameString stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"@\""]];
         }
+    }
+    
+    if ([typenameString isEqualToString:@"f"])
+    {
+        typenameString = @"float";
+    }
+    else if ([typenameString isEqualToString:@"d"])
+    {
+        typenameString = @"double";
+    }
+    else if ([typenameString isEqualToString:@"i"])
+    {
+        typenameString = @"int";
+    }
+    else if ([typenameString isEqualToString:@"I"])
+    {
+        typenameString = @"unsigned int";
+    }
+    else if ([typenameString isEqualToString:@"c"])
+    {
+        typenameString = @"char";
     }
     
     return typenameString;

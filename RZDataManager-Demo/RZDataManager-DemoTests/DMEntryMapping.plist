@@ -9,11 +9,20 @@
 		<key>name</key>
 		<dict/>
 		<key>uid</key>
-		<dict>
-			<key>Default ID Key</key>
-			<true/>
-		</dict>
+		<dict/>
 		<key>date</key>
+		<dict/>
+		<key>popularity</key>
+		<dict/>
+		<key>testFloat</key>
+		<dict/>
+		<key>testDouble</key>
+		<dict/>
+		<key>testUInt</key>
+		<dict/>
+		<key>testInt</key>
+		<dict/>
+		<key>testBool</key>
 		<dict/>
 		<key>collection</key>
 		<dict>

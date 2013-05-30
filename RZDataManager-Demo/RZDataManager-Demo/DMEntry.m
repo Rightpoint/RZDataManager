@@ -14,7 +14,14 @@
 
 @dynamic name;
 @dynamic uid;
+@dynamic popularity;
 @dynamic date;
 @dynamic collection;
+
+@dynamic testFloat;
+@dynamic testDouble;
+@dynamic testInt;
+@dynamic testUInt;
+@dynamic testBool;
 
 @end

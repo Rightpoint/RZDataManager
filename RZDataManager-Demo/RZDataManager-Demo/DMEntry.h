@@ -15,7 +15,15 @@
 
 @property (nonatomic, retain) NSString * name;
 @property (nonatomic, retain) NSString * uid;
+@property (nonatomic, retain) NSNumber * popularity;
 @property (nonatomic, retain) NSDate * date;
 @property (nonatomic, retain) DMCollection *collection;
+
+// extra datatypes for testing importer conversion
+@property (nonatomic, assign) float testFloat;
+@property (nonatomic, assign) double testDouble;
+@property (nonatomic, assign) NSUInteger testUInt;
+@property (nonatomic, assign) NSInteger testInt;
+@property (nonatomic, assign) BOOL testBool;
 
 @end

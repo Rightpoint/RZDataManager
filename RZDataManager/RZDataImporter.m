@@ -23,11 +23,12 @@ static NSString* const kRZDataImporterFormat = @"Format";
 static NSString* const kRZDataImporterSelector = @"Selector";
 static NSString* const kRZDataImporterDecodeHTML = @"Decode HTML";
 
-static NSString* const kRZDataImporterConversionTypeString = @"NSString";
-static NSString* const kRZDataImporterConversionTypeDate = @"NSDate";
-static NSString* const kRZDataImporterConversionTypeNumber = @"NSNumber";
-static NSString* const kRZDataImporterConversionTypeInt = @"NSInteger";
-static NSString* const kRZDataImporterConversionTypeUnsignedInt = @"NSUInteger";
+static NSString* const kRZDataImporterConversionTypeNSString = @"NSString";
+static NSString* const kRZDataImporterConversionTypeNSDate = @"NSDate";
+static NSString* const kRZDataImporterConversionTypeNSNumber = @"NSNumber";
+static NSString* const kRZDataImporterConversionTypeChar = @"char";
+static NSString* const kRZDataImporterConversionTypeInt = @"int";
+static NSString* const kRZDataImporterConversionTypeUnsignedInt = @"unsigned int";
 static NSString* const kRZDataImporterConversionTypeFloat = @"float";
 static NSString* const kRZDataImporterConversionTypeDouble = @"double";
 static NSString* const kRZDataImporterConversionTypeBool = @"BOOL";
@@ -468,23 +469,30 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
         
         // Perform scalar conversions - need to set invocation argument separately since
         // we can't assign a scalar value to id
-        if ([conversion isEqualToString:kRZDataImporterConversionTypeBool] && [value isKindOfClass:[NSValue class]]){
+        
+        BOOL isNSValue = [value isKindOfClass:[NSValue class]];
+        
+        if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeBool]){
             BOOL boolValue = [value boolValue];
             [invocation setArgument:&boolValue atIndex:2];
         }
-        else if ([conversion isEqualToString:kRZDataImporterConversionTypeInt] && [value isKindOfClass:[NSValue class]]){
+        else if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeChar]){
+            char charValue = [value charValue];
+            [invocation setArgument:&charValue atIndex:2];
+        }
+        else if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeInt]){
             NSInteger intValue = [value integerValue];
             [invocation setArgument:&intValue atIndex:2];
         }
-        else if ([conversion isEqualToString:kRZDataImporterConversionTypeUnsignedInt] && [value isKindOfClass:[NSValue class]]){
+        else if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeUnsignedInt]){
             NSUInteger uIntValue = [value unsignedIntegerValue];
             [invocation setArgument:&uIntValue atIndex:2];
         }
-        else if ([conversion isEqualToString:kRZDataImporterConversionTypeFloat] && [value isKindOfClass:[NSValue class]]){
+        else if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeFloat]){
             float floatValue = [value floatValue];
             [invocation setArgument:&floatValue atIndex:2];
         }
-        else if ([conversion isEqualToString:kRZDataImporterConversionTypeDouble] && [value isKindOfClass:[NSValue class]]){
+        else if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeDouble]){
             double doubleValue = [value doubleValue];
             [invocation setArgument:&doubleValue atIndex:2];
         }
@@ -523,7 +531,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
 {
     id newValue = value;
     
-    if ([conversionType isEqualToString:kRZDataImporterConversionTypeDate])
+    if ([conversionType isEqualToString:kRZDataImporterConversionTypeNSDate])
     {
         if ([value isKindOfClass:[NSString class]]){
             
@@ -552,7 +560,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
         
         
     }
-    else if ([conversionType isEqualToString:kRZDataImporterConversionTypeNumber])
+    else if ([conversionType isEqualToString:kRZDataImporterConversionTypeNSNumber])
     {
         if ([value isKindOfClass:[NSString class]]){
             @synchronized(self.numberFormatter){
@@ -563,7 +571,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
             NSLog(@"RZDataImporter: Object of class %@ cannot be converted to NSNumber", NSStringFromClass([value class]));
         }
     }
-    else if ([conversionType isEqualToString:kRZDataImporterConversionTypeString])
+    else if ([conversionType isEqualToString:kRZDataImporterConversionTypeNSString])
     {
         if ([value respondsToSelector:@selector(stringValue)])
         {
