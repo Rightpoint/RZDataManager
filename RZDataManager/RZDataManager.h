@@ -25,6 +25,8 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 
 #pragma mark - Fetching
 
+// -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
+
 // Catch-all method for retrieving an individual object
 // "type" represents either class name as string or entity name for managed objects
 - (id)objectOfType:(NSString*)type withValue:(id)value forKeyPath:(NSString*)keyPath createNew:(BOOL)createNew;
@@ -33,17 +35,63 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 
 - (NSArray*)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate;
 
+// -------------------------------------------------------------
+
 #pragma mark - Persisting
 
-// Either updates existing object(s), if any, or creates and inserts new object. "data" expected to be either NSDictionary or NSArray
-- (void)importData:(id)data objectType:(NSString*)type dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion;
+// Either updates existing object(s), if any, or creates and inserts new object.
+// "data" expected to be either NSDictionary or NSArray
+// Infers unique identifier keys from mapping plist if possible.
+- (void)importData:(id)data
+        objectType:(NSString*)type
+        completion:(RZDataManagerImportCompletionBlock)completion;
 
 // Updates existing object or creates new, then attempts to create relationship with "otherObject" specified by "relationshipKey"
-- (void)importData:(id)data objectType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath forRelationship:(NSString*)relationshipKey onObject:(id)otherObject completion:(RZDataManagerImportCompletionBlock)completion;
+// Infers unique identifier keys from mapping plist if possible.
+- (void)importData:(id)data
+        objectType:(NSString *)type
+   forRelationship:(NSString*)relationshipKey
+          onObject:(id)otherObject
+        completion:(RZDataManagerImportCompletionBlock)completion;
+
 
 // Update an array of objects with a new array of dictionaries, representing objects of the same type.
 // Will update, insert, remove, and re-order objects as necessary.
-- (void)updateObjects:(NSArray*)objects ofType:(NSString*)type withData:(NSArray*)data dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion;
+// Infers unique identifier keys from mapping plist if possible.
+- (void)updateObjects:(NSArray*)objects
+               ofType:(NSString*)type
+             withData:(NSArray*)data
+           completion:(RZDataManagerImportCompletionBlock)completion;
+
+
+// -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
+
+// Version which allows override for which keys are used to uniquely identify data/model objects
+- (void)importData:(id)data
+        objectType:(NSString*)type
+     dataIdKeyPath:(NSString*)dataIdKeyPath
+    modelIdKeyPath:(NSString*)modelIdKeyPath
+        completion:(RZDataManagerImportCompletionBlock)completion;
+
+// Version which allows override for which keys are used to uniquely identify data/model objects
+- (void)importData:(id)data
+        objectType:(NSString *)type
+     dataIdKeyPath:(NSString *)dataIdKeyPath
+    modelIdKeyPath:(NSString *)modelIdKeyPath
+   forRelationship:(NSString*)relationshipKey
+          onObject:(id)otherObject
+        completion:(RZDataManagerImportCompletionBlock)completion;
+
+
+// Version which allows override for which keys are used to uniquely identify data/model objects
+- (void)updateObjects:(NSArray*)objects
+               ofType:(NSString*)type
+             withData:(NSArray*)data
+        dataIdKeyPath:(NSString*)dataIdKeyPath
+       modelIdKeyPath:(NSString*)modelIdKeyPath
+           completion:(RZDataManagerImportCompletionBlock)completion;
+
+// -------------------------------------------------------------
 
 // Save method. Not all subclasses may need to be explicitly saved/persisted, so this is optional.
 - (void)saveData:(BOOL)synchronous;

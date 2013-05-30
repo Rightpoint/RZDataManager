@@ -12,6 +12,7 @@
 #import "NSObject+PropertyTypes.h"
 
 static NSString* const kRZDataImporterDateFormat = @"Date Format";
+static NSString* const kRZDataImporterDefaultIDKey = @"Default ID Key";
 static NSString* const kRZDataImporterDataKeys = @"Data Keys";
 static NSString* const kRZDataImporterIgnoreKeys = @"Ignore Keys";
 static NSString* const kRZDataImporterObjectKey = @"Object Key";
@@ -36,11 +37,12 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
 @interface RZDataImporter ()
 
 @property (nonatomic, strong) NSMutableDictionary *modelMappings;
+@property (nonatomic, strong) NSMutableDictionary *defaultDataIdKeys;
+@property (nonatomic, strong) NSMutableDictionary *defaultModelIdKeys;
+
 @property (nonatomic, strong) NSDateFormatter *dateFormatter;
 @property (nonatomic, strong) NSNumberFormatter *numberFormatter;
 @property (nonatomic, strong) NSString *objectDateFormat;
-
-- (NSDictionary*)mappingForObjectType:(NSString*)objectTypeName;
 
 - (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object withMapping:(NSDictionary*)mapping;
 
@@ -60,8 +62,13 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
 {
     self = [super init];
     if (self){
+        
         self.shouldDecodeHTML = NO;
-        self.modelMappings = [[NSMutableDictionary alloc] init];
+        
+        self.modelMappings = [NSMutableDictionary dictionaryWithCapacity:16];
+        self.defaultDataIdKeys = [NSMutableDictionary dictionaryWithCapacity:16];
+        self.defaultModelIdKeys = [NSMutableDictionary dictionaryWithCapacity:16];
+        
         self.dateFormatter = [[NSDateFormatter alloc] init];
         self.numberFormatter = [[NSNumberFormatter alloc] init];
         self.numberFormatter.numberStyle = NSNumberFormatterDecimalStyle;
@@ -71,10 +78,80 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
 
 #pragma mark - Public
 
-- (void)setMapping:(NSDictionary *)mapping forClassNamed:(NSString *)className
+- (NSDictionary*)mappingForObjectType:(NSString *)objectTypeName
 {
-    if (mapping && className){
-        [self.modelMappings setObject:mapping forKey:className];
+    // First, check cache
+    NSDictionary *mapping = [self.modelMappings objectForKey:objectTypeName];
+    
+    // Second, check bundle
+    if (mapping == nil){
+        
+        NSString *plistName = [objectTypeName stringByAppendingString:@"Mapping"];
+        NSURL *plistUrl = [[NSBundle mainBundle] URLForResource:plistName withExtension:@"plist"];
+        
+        if (plistUrl != nil){
+            mapping = [[NSDictionary alloc] initWithContentsOfURL:plistUrl];
+        }
+    }
+    
+    // TODO: Third, fallback to an inferred mapping.
+        
+    if (mapping != nil){
+        [self.modelMappings setObject:mapping forKey:objectTypeName];
+    }
+    
+    return mapping;
+}
+
+- (void)setMapping:(NSDictionary *)mapping forObjectType:(NSString *)objectTypeName
+{
+    if (mapping && objectTypeName){
+        [self.modelMappings setObject:mapping forKey:objectTypeName];
+    }
+}
+
+- (void)getDefaultIdKeysForObjectType:(NSString*)objectTypeName
+                            dataIdKey:(NSString*__autoreleasing *)dataIdKey
+                           modelIdKey:(NSString*__autoreleasing *)modelIdKey;
+{
+
+    NSString *defaultDataIdKey = [self.defaultDataIdKeys objectForKey:objectTypeName];
+    NSString *defaultModelIdKey = [self.defaultModelIdKeys objectForKey:objectTypeName];
+    
+    if (defaultDataIdKey && defaultModelIdKey){
+        
+        
+    }
+    else{
+    
+        NSDictionary *mapping = [self mappingForObjectType:objectTypeName];
+        if (mapping){
+            
+            defaultDataIdKey = [mapping objectForKey:kRZDataImporterDefaultIDKey];
+            if (defaultDataIdKey){
+                
+                NSDictionary *dataKeys = [mapping objectForKey:kRZDataImporterDataKeys];
+                if ([[dataKeys allKeys] containsObject:defaultDataIdKey]){
+                    
+                    NSDictionary *defaultKeyMapping = [dataKeys objectForKey:defaultDataIdKey];
+                    defaultModelIdKey = [defaultKeyMapping objectForKey:kRZDataImporterObjectKey];
+                    if (defaultModelIdKey == nil) defaultModelIdKey = defaultDataIdKey;
+                    
+                    // cache 'em
+                    [self.defaultDataIdKeys setObject:defaultDataIdKey forKey:objectTypeName];
+                    [self.defaultModelIdKeys setObject:defaultModelIdKey forKey:objectTypeName];
+                
+                }            
+            }
+        }
+    }
+    
+    if (dataIdKey){
+        *dataIdKey = defaultDataIdKey;
+    }
+    
+    if (modelIdKey){
+        *modelIdKey = defaultModelIdKey;
     }
 }
 
@@ -179,33 +256,6 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
 
 
 #pragma mark - Private
-
-- (NSDictionary*)mappingForObjectType:(NSString *)objectTypeName
-{    
-    // First check cache
-    NSDictionary *mapping = [self.modelMappings objectForKey:objectTypeName];
-    
-    // Second check bundle
-    if (mapping == nil){
-        
-        NSString *plistName = [objectTypeName stringByAppendingString:@"Mapping"];
-        NSURL *plistUrl = [[NSBundle mainBundle] URLForResource:plistName withExtension:@"plist"];
-        
-        if (plistUrl != nil){
-            mapping = [[NSDictionary alloc] initWithContentsOfURL:plistUrl];
-        }
-    }
-    
-    // TODO: Third, check a private, non-temporary disk location for automatically created maps
-    
-    // TODO: Fourth, fall back to automatically creating mapping as best as possible, save to private disk location
-    
-    if (mapping != nil){
-        [self.modelMappings setObject:mapping forKey:objectTypeName];
-    }
-    
-    return mapping;
-}
 
 - (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object withMapping:(NSDictionary *)mapping
 {

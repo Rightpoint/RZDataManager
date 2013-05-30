@@ -34,8 +34,16 @@
 //! Set to override on importer-level whether should decode HTML entities from strings (defaults to NO)
 @property (nonatomic, assign) BOOL shouldDecodeHTML;
 
-//! Externally set a mapping dictionary for a particular class
-- (void)setMapping:(NSDictionary*)mapping forClassNamed:(NSString*)className;
+//! Externally get the mapping dictionary for a particular class or entity
+- (NSDictionary*)mappingForObjectType:(NSString*)objectTypeName;
+
+//! Externally set a mapping dictionary for a particular class or entity
+- (void)setMapping:(NSDictionary*)mapping forObjectType:(NSString*)objectTypeName;
+
+//! Get the default keys that represent unique identifiers for a given object type, in both the incoming raw data and the model itself
+- (void)getDefaultIdKeysForObjectType:(NSString*)objectTypeName
+                            dataIdKey:(NSString*__autoreleasing *)dataIdKey
+                           modelIdKey:(NSString*__autoreleasing *)modelIdKey;
 
 //! Import data from a dictionary to an object based on a provided (or TBD: assumed) mapping. Can provide a type name (maybe useful for
 //  managed objects with entity name different from class) or infer name from class.
@@ -45,7 +53,7 @@
 //! Return array of indices for objects that have been inserted, deleted, or moved, based on passed-in object array and data array. Basically calculates diff-update info of model object collection with incoming data set.
 /*!
     objects - array of objects to update. Should be of type objClass.
- data - either an array of dictionaries or a dictionary containing data with which to update objects
+    data - either an array of dictionaries or a dictionary containing data with which to update objects
     dataIdKeyPath - key path to value uniquely identifying object in raw dictionary
     modelIdKeyPath - key path to value uniquely identifying model object. Value will be compared against value for dataIdKey in raw data
 */

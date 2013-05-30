@@ -36,12 +36,12 @@
     NSURL *mappingUrl = [bundle URLForResource:@"DMEntryMapping" withExtension:@"plist"];
     NSDictionary *mapping = [NSDictionary dictionaryWithContentsOfURL:mappingUrl];
     
-    [self.dataManager.dataImporter setMapping:mapping forClassNamed:@"DMEntry"];
+    [self.dataManager.dataImporter setMapping:mapping forObjectType:@"DMEntry"];
     
     mappingUrl = [bundle URLForResource:@"DMCollectionMapping" withExtension:@"plist"];
     mapping = [NSDictionary dictionaryWithContentsOfURL:mappingUrl];
     
-    [self.dataManager.dataImporter setMapping:mapping forClassNamed:@"DMCollection"];
+    [self.dataManager.dataImporter setMapping:mapping forObjectType:@"DMCollection"];
     
     // Insert a few dummy objects and collections
     NSManagedObjectContext *moc = [self.dataManager managedObjectContext];
@@ -120,7 +120,7 @@
                                 @"uid" : @"1000",
                                 @"date" : @"2013-07-01T12:00:00Z"};
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" dataIdKeyPath:@"uid" modelIdKeyPath:@"uid" completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData objectType:@"DMEntry" completion:^(id result, NSError *error)
     {
         STAssertNotNil(result, @"Result should not be nil");
         STAssertNil(error, @"Error during import: %@", error);
@@ -149,7 +149,7 @@
                                 @"collection" : @"Red"};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" dataIdKeyPath:@"uid" modelIdKeyPath:@"uid" completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData objectType:@"DMEntry" completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -209,8 +209,6 @@
     __block BOOL finished = NO;
     [self.dataManager importData:@[yellowCollection, greenCollection]
                       objectType:@"DMCollection"
-                   dataIdKeyPath:@"name"
-                  modelIdKeyPath:@"name"
                       completion:^(id result, NSError *error)
     {
         STAssertTrue(error == nil, @"Import error occured: %@", error);
