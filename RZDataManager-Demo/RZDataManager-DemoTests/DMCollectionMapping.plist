@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Default ID Key</key>
+	<string>name</string>
+	<key>Data Keys</key>
+	<dict>
+		<key>name</key>
+		<dict/>
+		<key>entries</key>
+		<dict>
+			<key>Relationship</key>
+			<string>DMEntry</string>
+			<key>Relationship ID Key</key>
+			<string>uid</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

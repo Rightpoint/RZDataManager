@@ -6,44 +6,50 @@
 //
 
 #import "RZDataImporter.h"
+#import "RZDataManager_Base.h"
 #import "NSDictionary+NonNSNull.h"
 #import "NSString+HTMLEntities.h"
+#import "NSObject+PropertyTypes.h"
 
 static NSString* const kRZDataImporterDateFormat = @"Date Format";
+static NSString* const kRZDataImporterDefaultIDKey = @"Default ID Key";
 static NSString* const kRZDataImporterDataKeys = @"Data Keys";
 static NSString* const kRZDataImporterIgnoreKeys = @"Ignore Keys";
 static NSString* const kRZDataImporterObjectKey = @"Object Key";
 static NSString* const kRZDataImporterConversion = @"Conversion";
+static NSString* const kRZDataImporterRelationship = @"Relationship";
+static NSString* const kRZDataImporterRelationshipIDKey = @"Relationship ID Key";
 static NSString* const kRZDataImporterFormat = @"Format";
 static NSString* const kRZDataImporterSelector = @"Selector";
 static NSString* const kRZDataImporterDecodeHTML = @"Decode HTML";
 
-
-static NSString* const kRZDataImporterConversionTypeString = @"NSString";
-static NSString* const kRZDataImporterConversionTypeDate = @"NSDate";
-static NSString* const kRZDataImporterConversionTypeNumber = @"NSNumber";
-static NSString* const kRZDataImporterConversionTypeInt = @"NSInteger";
-static NSString* const kRZDataImporterConversionTypeUnsignedInt = @"NSUInteger";
+static NSString* const kRZDataImporterConversionTypeNSString = @"NSString";
+static NSString* const kRZDataImporterConversionTypeNSDate = @"NSDate";
+static NSString* const kRZDataImporterConversionTypeNSNumber = @"NSNumber";
+static NSString* const kRZDataImporterConversionTypeChar = @"char";
+static NSString* const kRZDataImporterConversionTypeInt = @"int";
+static NSString* const kRZDataImporterConversionTypeUnsignedInt = @"unsigned int";
 static NSString* const kRZDataImporterConversionTypeFloat = @"float";
 static NSString* const kRZDataImporterConversionTypeDouble = @"double";
 static NSString* const kRZDataImporterConversionTypeBool = @"BOOL";
 
-static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'";
+static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
 
 @interface RZDataImporter ()
 
-@property (nonatomic, strong) NSCache *modelMappings;
+@property (nonatomic, strong) NSMutableDictionary *modelMappings;
+@property (nonatomic, strong) NSMutableDictionary *defaultDataIdKeys;
+@property (nonatomic, strong) NSMutableDictionary *defaultModelIdKeys;
+
 @property (nonatomic, strong) NSDateFormatter *dateFormatter;
 @property (nonatomic, strong) NSNumberFormatter *numberFormatter;
 @property (nonatomic, strong) NSString *objectDateFormat;
 
-- (id)initInternal;
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject>*)object withMapping:(NSDictionary*)mapping;
 
-- (NSDictionary*)mappingForClass:(Class)objClass;
+- (void)importValue:(id)value toObject:(NSObject<RZDataManagerModelObject>*)object fromKey:(NSString*)key withKeyMapping:(NSDictionary*)mappingInfo;
 
-- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object withMapping:(NSDictionary*)mapping;
-
-- (void)importValue:(id)value toObject:(NSObject<RZDataImporterModelObject>*)object fromKey:(NSString*)key withKeyMapping:(NSDictionary*)mappingInfo;
+- (void)setPropertyValue:(id)value onObject:(NSObject<RZDataManagerModelObject>*)object fromKey:(NSString*)key withKeyMapping:(NSDictionary*)mappingInfo;
 
 - (SEL)setterFromObjectKey:(NSString*)key;
 
@@ -53,27 +59,17 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 
 @implementation RZDataImporter
 
-+ (RZDataImporter*)sharedImporter
-{
-    static RZDataImporter *sharedImporter;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        sharedImporter = [[RZDataImporter alloc] initInternal];
-    });
-    return sharedImporter;
-}
-
-- (id)init{
-    [NSException raise:NSInternalInconsistencyException format:@"-init is not a valid initializer for singleton RZDataImporter. Use +sharedImporter"];
-    return nil;
-}
-
-- (id)initInternal
+- (id)init
 {
     self = [super init];
     if (self){
-        self.shouldDecodeHTML = YES;
-        self.modelMappings = [[NSCache alloc] init];
+        
+        self.shouldDecodeHTML = NO;
+        
+        self.modelMappings = [NSMutableDictionary dictionaryWithCapacity:16];
+        self.defaultDataIdKeys = [NSMutableDictionary dictionaryWithCapacity:16];
+        self.defaultModelIdKeys = [NSMutableDictionary dictionaryWithCapacity:16];
+        
         self.dateFormatter = [[NSDateFormatter alloc] init];
         self.numberFormatter = [[NSNumberFormatter alloc] init];
         self.numberFormatter.numberStyle = NSNumberFormatterDecimalStyle;
@@ -83,12 +79,94 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 
 #pragma mark - Public
 
-- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object
+- (NSDictionary*)mappingForObjectType:(NSString *)objectTypeName
+{
+    // First, check cache
+    NSDictionary *mapping = [self.modelMappings objectForKey:objectTypeName];
+    
+    // Second, check bundle
+    if (mapping == nil){
+        
+        NSString *plistName = [objectTypeName stringByAppendingString:@"Mapping"];
+        NSURL *plistUrl = [[NSBundle mainBundle] URLForResource:plistName withExtension:@"plist"];
+        
+        if (plistUrl != nil){
+            mapping = [[NSDictionary alloc] initWithContentsOfURL:plistUrl];
+        }
+    }
+    
+    // TODO: Third, fallback to an inferred mapping.
+        
+    if (mapping != nil){
+        [self.modelMappings setObject:mapping forKey:objectTypeName];
+    }
+    
+    return mapping;
+}
+
+- (void)setMapping:(NSDictionary *)mapping forObjectType:(NSString *)objectTypeName
+{
+    if (mapping && objectTypeName){
+        [self.modelMappings setObject:mapping forKey:objectTypeName];
+    }
+}
+
+- (void)getDefaultIdKeysForObjectType:(NSString*)objectTypeName
+                            dataIdKey:(NSString*__autoreleasing *)dataIdKey
+                           modelIdKey:(NSString*__autoreleasing *)modelIdKey;
+{
+
+    NSString *defaultDataIdKey = [self.defaultDataIdKeys objectForKey:objectTypeName];
+    NSString *defaultModelIdKey = [self.defaultModelIdKeys objectForKey:objectTypeName];
+    
+    if (defaultDataIdKey && defaultModelIdKey){
+        
+        
+    }
+    else{
+    
+        NSDictionary *mapping = [self mappingForObjectType:objectTypeName];
+        if (mapping){
+            
+            defaultDataIdKey = [mapping objectForKey:kRZDataImporterDefaultIDKey];
+            if (defaultDataIdKey){
+                
+                NSDictionary *dataKeys = [mapping objectForKey:kRZDataImporterDataKeys];
+                if ([[dataKeys allKeys] containsObject:defaultDataIdKey]){
+                    
+                    NSDictionary *defaultKeyMapping = [dataKeys objectForKey:defaultDataIdKey];
+                    defaultModelIdKey = [defaultKeyMapping objectForKey:kRZDataImporterObjectKey];
+                    if (defaultModelIdKey == nil) defaultModelIdKey = defaultDataIdKey;
+                    
+                    // cache 'em
+                    [self.defaultDataIdKeys setObject:defaultDataIdKey forKey:objectTypeName];
+                    [self.defaultModelIdKeys setObject:defaultModelIdKey forKey:objectTypeName];
+                
+                }            
+            }
+        }
+    }
+    
+    if (dataIdKey){
+        *dataIdKey = defaultDataIdKey;
+    }
+    
+    if (modelIdKey){
+        *modelIdKey = defaultModelIdKey;
+    }
+}
+
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject> *)object
+{
+    [self importData:data toObject:object ofType:NSStringFromClass([object class])];
+}
+
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject>*)object ofType:(NSString *)objTypeName
 {
     // TODO: Maybe raise exception here
     if (object && data){
         
-        NSDictionary *mapping = [self mappingForClass:[object class]];
+        NSDictionary *mapping = [self mappingForObjectType:objTypeName];
         if (mapping != nil){
             
             if ([object respondsToSelector:@selector(prepareForImportFromData:)]){
@@ -109,11 +187,10 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 }
 
 
-- (RZDataImporterDiffInfo*)updateObjects:(NSArray*)objects
-                                 ofClass:(Class)objClass
-                                withData:(id)data
-                           dataIdKeyPath:(NSString*)dataIdKeyPath
-                          modelIdKeyPath:(NSString*)modelIdKeyPath
+- (RZDataImporterDiffInfo*)diffInfoForObjects:(NSArray*)objects
+                                     withData:(id)data
+                                dataIdKeyPath:(NSString*)dataIdKeyPath
+                               modelIdKeyPath:(NSString*)modelIdKeyPath
 {
     
     RZDataImporterDiffInfo *diffInfo = [[RZDataImporterDiffInfo alloc] init];
@@ -135,9 +212,10 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
                 if ([obj isKindOfClass:[NSDictionary class]]){
                     
                     NSDictionary* dataDict = obj;
-                    __block id item = nil;
                     id uniqueValue = nil;
                     NSArray* matchingItems = nil;
+                    
+                    BOOL itemExists = NO;
                     
                     // try to find matching object
                     if (dataIdKeyPath != nil && modelIdKeyPath != nil){
@@ -148,39 +226,17 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
                             // find existing item
                             NSPredicate *matchPred = [NSPredicate predicateWithFormat:@"%K == %@", modelIdKeyPath, uniqueValue];
                             matchingItems = [objects filteredArrayUsingPredicate:matchPred];
-                            if (matchingItems.count > 0){
-                                item = [matchingItems objectAtIndex:0];
-                            }
+                            itemExists = (matchingItems.count > 0);
                         }
                     }
                     
                     // create new object if necessary
-                    if (item == nil){
-                        
-                        // see if it implements RZDataImporterModelObject, and try to get cached instance
-                        if (uniqueValue != nil && [objClass instancesRespondToSelector:@selector(cachedObjectWithUniqueValue:forKey:)]){
-                            item = [objClass cachedObjectWithUniqueValue:uniqueValue forKeyPath:modelIdKeyPath];
-                        }
-                        
-                        // if still nil, allocate new one
-                        if (item == nil){
-                            item = [[objClass alloc] init];
-                        }
-                        
-                        [diffInfo.addedObjects addObject:item];
-                        [diffInfo.insertionIndices addObject:[NSNumber numberWithInteger:idx]];
+                    if (!itemExists){
+                        [diffInfo.insertedObjectIndices addObject:@(idx)];
                     }
                     else if (matchingItems.count == 1){
-                        
-                        [diffInfo.movedObjects addObject:item];
-                        [diffInfo.moveIndices addObject:[NSNumber numberWithInteger:idx]];
+                        [diffInfo.movedObjectIndices addObject:@(idx)];
                     }
-                    
-                    // set item data
-                    if (item != nil){
-                        [self importData:dataDict toObject:item];
-                    }                
-
                 }
             }];
 
@@ -189,11 +245,9 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
         // Enumerate items that aren't in array
         NSArray *currentUniqueVals = [dataDicts valueForKeyPath:dataIdKeyPath];
         [objects enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            if ([obj isKindOfClass:objClass]){
-                id objValue = [obj valueForKeyPath:modelIdKeyPath];
-                if (![currentUniqueVals containsObject:objValue]){
-                    [diffInfo.removedObjects addObject:obj];
-                }
+            id objValue = [obj valueForKeyPath:modelIdKeyPath];
+            if (![currentUniqueVals containsObject:objValue]){
+                [diffInfo.removedObjectIndices addObject:@(idx)];
             }
         }];
     }
@@ -204,36 +258,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 
 #pragma mark - Private
 
-- (NSDictionary*)mappingForClass:(Class)objClass
-{
-    NSString *className = NSStringFromClass(objClass);
-    
-    // First check cache
-    NSDictionary *mapping = [self.modelMappings objectForKey:className];
-    
-    // Second check bundle
-    if (mapping == nil){
-        
-        NSString *plistName = [className stringByAppendingString:@"Mapping"];
-        NSURL *plistUrl = [[NSBundle mainBundle] URLForResource:plistName withExtension:@"plist"];
-        
-        if (plistUrl != nil){
-            mapping = [[NSDictionary alloc] initWithContentsOfURL:plistUrl];
-        }
-    }
-    
-    // TODO: Third, check a private, non-temporary disk location for automatically created maps
-    
-    // TODO: Fourth, fall back to automatically creating mapping as best as possible, save to private disk location
-    
-    if (mapping != nil){
-        [self.modelMappings setObject:mapping forKey:className];
-    }
-    
-    return mapping;
-}
-
-- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataImporterModelObject>*)object withMapping:(NSDictionary *)mapping
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject>*)object withMapping:(NSDictionary *)mapping
 {
     NSDictionary *keyMappings = [mapping objectForKey:kRZDataImporterDataKeys];
     
@@ -281,7 +306,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
     
 }
 
-- (void)importValue:(id)value toObject:(NSObject<RZDataImporterModelObject>*)object fromKey:key withKeyMapping:(NSDictionary *)mappingInfo
+- (void)importValue:(id)value toObject:(NSObject<RZDataManagerModelObject>*)object fromKey:key withKeyMapping:(NSDictionary *)mappingInfo
 {
     
     // If value is string and we decode HTML, do it now
@@ -299,11 +324,87 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
         }
     }
     
-    // Check for custom selector to handle import
+    // Check for custom selector or relationship to handle import
+    NSString *relationshipObjType = [mappingInfo objectForKey:kRZDataImporterRelationship];
     NSString *selectorName = [mappingInfo objectForKey:kRZDataImporterSelector];
     
-    if (selectorName != nil){
+    if (relationshipObjType != nil){
+        
+        NSDictionary *relMapping = [self mappingForObjectType:relationshipObjType];
+        
+        if (relMapping != nil){
+            
+            NSString *relationshipModelIDKey = nil;
+            NSString *relationshipIDKey = [mappingInfo objectForKey:kRZDataImporterRelationshipIDKey];
+            
+            if (relationshipIDKey){
+                
+                // find the model key mapping for the identifier key
+                NSDictionary *relDataKeys = [relMapping objectForKey:kRZDataImporterDataKeys];
+                NSDictionary *relKeyMapping = [relDataKeys objectForKey:relationshipIDKey];
+                if (relKeyMapping){
+                    relationshipModelIDKey = [relKeyMapping objectForKey:kRZDataImporterObjectKey];
+                    if (relationshipModelIDKey == nil){
+                        relationshipModelIDKey = relationshipIDKey;
+                    }
+                }
+            }
+            
+            if (relationshipIDKey && relationshipModelIDKey){
+                
+                if ([value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSArray class]])
+                {
+                    id importData = value;
+                    
+                    if ([value isKindOfClass:[NSArray class]]){
+                        
+                        // if array does not contain dictionaries, assume each value is a unique id value, wrap in dictionary
+                        if (![[(NSArray*)value objectAtIndex:0] isKindOfClass:[NSDictionary class]])
+                        {
+                            NSMutableArray *dataKeyPairs = [NSMutableArray arrayWithCapacity:[(NSArray*)value count]];
+                            
+                            [(NSArray*)value enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                                [dataKeyPairs addObject:@{relationshipIDKey : obj}];
+                            }];
+                            
+                            importData = dataKeyPairs;
+                        }
+                        
+                    }
+                    [self.dataManager importData:importData
+                                      objectType:relationshipObjType
+                                   dataIdKeyPath:relationshipIDKey
+                                  modelIdKeyPath:relationshipModelIDKey
+                                 forRelationship:key
+                                        onObject:object
+                                      completion:nil];
+                }
+                else{
+                    // wrap in a dictionary - we will assume it's the unique identifier
+                    // this is for cases when the relationship is specified by one key-value pair instead of fully-qualified
+                    // data for the other object
+                    NSDictionary *importData = @{relationshipIDKey : value};
+                    [self.dataManager importData:importData
+                                      objectType:relationshipObjType
+                                   dataIdKeyPath:relationshipIDKey
+                                  modelIdKeyPath:relationshipModelIDKey
+                                 forRelationship:key
+                                        onObject:object
+                                      completion:nil];
+                }
+            }
+            else{
+                NSLog(@"Missing relationship id key and/or model id key for relationship object type %@", relationshipObjType);
+            }
+        }
+        else{
+            NSLog(@"RZDataImporter: could not find mapping for relationship object type %@ from object type %@", relationshipObjType, NSStringFromClass([object class]));
+        }
+    }
+    else if (selectorName != nil){
+        
         SEL importSelector = NSSelectorFromString(selectorName);
+        
         if ([object respondsToSelector:importSelector]){
             
             NSMethodSignature *selectorSig = [object methodSignatureForSelector:importSelector];
@@ -336,94 +437,117 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
         
     }
     else{
+        // import as a property
+        [self setPropertyValue:value onObject:object fromKey:key withKeyMapping:mappingInfo];
+    }
+}
+
+- (void)setPropertyValue:(id)value onObject:(NSObject<RZDataManagerModelObject> *)object fromKey:(NSString *)key withKeyMapping:(NSDictionary *)mappingInfo
+{
+    // otherwise, at bare minimum we need an object key
+    // if it's not overridden, just use the data key
+    NSString *objectKey = [mappingInfo objectForKey:kRZDataImporterObjectKey];
+    if (objectKey == nil){
+        objectKey = key;
+    }
+    
+    SEL setter = [self setterFromObjectKey:objectKey];
+    if ([object respondsToSelector:setter]){
         
-        // otherwise, at bare minimum we need an object key
-        // if it's not overridden, just use the data key
-        NSString *objectKey = [mappingInfo objectForKey:kRZDataImporterObjectKey];
-        if (objectKey == nil){
-            objectKey = key;
+        // NSInvocation allows passing scalars to setter
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:setter]];
+        [invocation setSelector:setter];
+        [invocation setTarget:object];
+        
+        // Check for explicit conversion
+        NSString *conversion = [mappingInfo objectForKey:kRZDataImporterConversion];
+        
+        // if no explicit conversion, infer from property type
+        if (conversion == nil){
+            conversion = [object typeNameForProperty:objectKey];
         }
         
-        SEL setter = [self setterFromObjectKey:objectKey];
-        if ([object respondsToSelector:setter]){
-            // NSInvocation allows passing scalars to setter
-            NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:setter]];
-            [invocation setSelector:setter];
-            [invocation setTarget:object];
+        // Perform scalar conversions - need to set invocation argument separately since
+        // we can't assign a scalar value to id
+        
+        BOOL isNSValue = [value isKindOfClass:[NSValue class]];
+        
+        if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeBool]){
+            BOOL boolValue = [value boolValue];
+            [invocation setArgument:&boolValue atIndex:2];
+        }
+        else if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeChar]){
+            char charValue = [value charValue];
+            [invocation setArgument:&charValue atIndex:2];
+        }
+        else if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeInt]){
+            NSInteger intValue = [value integerValue];
+            [invocation setArgument:&intValue atIndex:2];
+        }
+        else if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeUnsignedInt]){
+            NSUInteger uIntValue = [value unsignedIntegerValue];
+            [invocation setArgument:&uIntValue atIndex:2];
+        }
+        else if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeFloat]){
+            float floatValue = [value floatValue];
+            [invocation setArgument:&floatValue atIndex:2];
+        }
+        else if (isNSValue && [conversion isEqualToString:kRZDataImporterConversionTypeDouble]){
+            double doubleValue = [value doubleValue];
+            [invocation setArgument:&doubleValue atIndex:2];
+        }
+        else {
             
-            // Check for conversion
-            NSString *conversion = [mappingInfo objectForKey:kRZDataImporterConversion];
-            
-            // Perform scalar conversions - need to set invocation argument separately since
-            // we can't assign a scalar value to id
-            if ([conversion isEqualToString:kRZDataImporterConversionTypeBool] && [value isKindOfClass:[NSValue class]]){
-                BOOL boolValue = [value boolValue];
-                [invocation setArgument:&boolValue atIndex:2];
-            }
-            else if ([conversion isEqualToString:kRZDataImporterConversionTypeInt] && [value isKindOfClass:[NSValue class]]){
-                NSInteger intValue = [value integerValue];
-                [invocation setArgument:&intValue atIndex:2];
-            }
-            else if ([conversion isEqualToString:kRZDataImporterConversionTypeUnsignedInt] && [value isKindOfClass:[NSValue class]]){
-                NSUInteger uIntValue = [value unsignedIntegerValue];
-                [invocation setArgument:&uIntValue atIndex:2];
-            }
-            else if ([conversion isEqualToString:kRZDataImporterConversionTypeFloat] && [value isKindOfClass:[NSValue class]]){
-                float floatValue = [value floatValue];
-                [invocation setArgument:&floatValue atIndex:2];
-            }
-            else if ([conversion isEqualToString:kRZDataImporterConversionTypeDouble] && [value isKindOfClass:[NSValue class]]){
-                double doubleValue = [value doubleValue];
-                [invocation setArgument:&doubleValue atIndex:2];
-            }
-            else {
+            // perform NSObject type conversion
+            if (conversion != nil && value != nil){
                 
-                // perform NSObject type conversion
-                if (conversion != nil && value != nil){
-                    
-                    NSString *format = [mappingInfo objectForKey:kRZDataImporterFormat];
-                    if (format == nil){
-                        // fall back to default for this mapping
-                        format = self.objectDateFormat;
-                    }
-                    value = [self convertValue:value toType:conversion withFormat:format];
+                NSString *format = [mappingInfo objectForKey:kRZDataImporterFormat];
+                if (format == nil){
+                    // fall back to default for this mapping
+                    format = self.objectDateFormat;
                 }
-                
-                // set invocation argument from value
-                [invocation setArgument:&value atIndex:2];
+                value = [self convertValue:value toType:conversion withFormat:format];
             }
             
-            @try {
-                [invocation invoke];
-            }
-            @catch (NSException *exception) {
-                NSLog(@"RZDataImporter: Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(setter), NSStringFromClass([object class]), exception);
-            }
-            
+            // set invocation argument from value
+            [invocation setArgument:&value atIndex:2];
         }
-        else{
-            NSLog(@"RZDataImporter: Object does not repsond to setter %@", NSStringFromSelector(setter));
+        
+        @try {
+            [invocation invoke];
+        }
+        @catch (NSException *exception) {
+            NSLog(@"RZDataImporter: Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(setter), NSStringFromClass([object class]), exception);
         }
         
     }
+    else{
+        NSLog(@"RZDataImporter: Object does not repsond to setter %@", NSStringFromSelector(setter));
+    }
+
 }
 
 - (id)convertValue:(id)value toType:(NSString *)conversionType withFormat:(NSString *)format
 {
     id newValue = value;
     
-    if ([conversionType isEqualToString:kRZDataImporterConversionTypeDate])
+    if ([conversionType isEqualToString:kRZDataImporterConversionTypeNSDate])
     {
         if ([value isKindOfClass:[NSString class]]){
             
-            if (format){
-                [self.dateFormatter setDateFormat:format];
+            @synchronized(self.dateFormatter){
+                if (format){
+                    [self.dateFormatter setLocale:[NSLocale currentLocale]];
+                    [self.dateFormatter setDateFormat:format];
+                }
+                else{
+                    [self.dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+                    [self.dateFormatter setDateFormat:kRZDataImporterISODateFormat];
+                    [self.dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+                }
+                
+                newValue = [self.dateFormatter dateFromString:(NSString*)value];
             }
-            else{
-                [self.dateFormatter setDateFormat:kRZDataImporterISODateFormat];
-            }
-            
-            newValue = [self.dateFormatter dateFromString:(NSString*)value];
         }
         else if ([value isKindOfClass:[NSNumber class]]){
             
@@ -436,23 +560,24 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
         
         
     }
-    else if ([conversionType isEqualToString:kRZDataImporterConversionTypeNumber])
+    else if ([conversionType isEqualToString:kRZDataImporterConversionTypeNSNumber])
     {
         if ([value isKindOfClass:[NSString class]]){
-            
-            newValue = [self.numberFormatter numberFromString:(NSString*)value];
+            @synchronized(self.numberFormatter){
+                newValue = [self.numberFormatter numberFromString:(NSString*)value];
+            }
         }
         else if (![value isKindOfClass:[NSNumber class]]){
             NSLog(@"RZDataImporter: Object of class %@ cannot be converted to NSNumber", NSStringFromClass([value class]));
         }
     }
-    else if ([conversionType isEqualToString:kRZDataImporterConversionTypeString])
+    else if ([conversionType isEqualToString:kRZDataImporterConversionTypeNSString])
     {
         if ([value respondsToSelector:@selector(stringValue)])
         {
             newValue = [value stringValue];
         }
-        else
+        else if (![value isKindOfClass:[NSString class]])
         {
             newValue = [NSString stringWithFormat:@"%@", value];
         }
@@ -479,12 +604,9 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
 - (id)init{
     self = [super init];
     if (self){
-        
-        self.addedObjects = [NSMutableArray arrayWithCapacity:16];
-        self.insertionIndices = [NSMutableArray arrayWithCapacity:16];
-        self.removedObjects = [NSMutableArray arrayWithCapacity:16];
-        self.movedObjects = [NSMutableArray arrayWithCapacity:16];
-        self.moveIndices = [NSMutableArray arrayWithCapacity:16];
+        self.insertedObjectIndices = [NSMutableArray arrayWithCapacity:16];
+        self.removedObjectIndices = [NSMutableArray arrayWithCapacity:16];
+        self.movedObjectIndices = [NSMutableArray arrayWithCapacity:16];
     }
     return self;
 }
