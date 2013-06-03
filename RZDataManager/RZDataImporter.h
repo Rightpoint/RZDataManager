@@ -19,6 +19,9 @@
 //! Set to override on importer-level whether should decode HTML entities from strings (defaults to NO)
 @property (nonatomic, assign) BOOL shouldDecodeHTML;
 
+//! Set to override ISO standard date format for all NSDate conversions
+@property (nonatomic, strong) NSString *defaultDateFormat;
+
 //! Externally get the mapping dictionary for a particular class or entity
 - (NSDictionary*)mappingForObjectType:(NSString*)objectTypeName;
 
