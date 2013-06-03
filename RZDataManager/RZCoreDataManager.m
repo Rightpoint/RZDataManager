@@ -134,14 +134,8 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 // need to be able to handle many-to-many
                 if (relationshipDesc.isToMany){
                     
-                    // find object within other object's relationship set
-                    NSSet * existingObjs = [otherObject valueForKey:relationshipKey];
-                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath inSet:existingObjs createNew:NO];
-                    
-                    if (!obj)
-                    {
-                        obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath createNew:YES];
-                    }
+                    // find/create related object
+                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath createNew:YES];
                     
                     [self.dataImporter importData:dict toObject:obj ofType:type];
                     
