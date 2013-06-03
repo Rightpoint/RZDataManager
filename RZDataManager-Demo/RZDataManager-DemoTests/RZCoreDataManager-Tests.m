@@ -90,18 +90,18 @@
 
 - (void)test101FetchSingleObject
 {
-    DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
+    DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO options:nil];
     STAssertNotNil(entry, @"Result should not be nil");
     STAssertEqualObjects(entry.name, @"Alpha", @"Returned entry has incorrect name");
 }
 
 - (void)test102FetchObjectFromSet
 {
-    DMCollection *collection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO];
+    DMCollection *collection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO options:nil];
     STAssertNotNil(collection, @"Resulting collection should not be nil");
     
     if (collection){
-        DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" inSet:collection.entries createNew:NO];
+        DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" inSet:collection.entries createNew:NO options:nil];
         STAssertNotNil(entry, @"Result should not be nil");
         STAssertEqualObjects(entry.name, @"Alpha", @"Returned entry has incorrect name");
     }
@@ -110,7 +110,7 @@
 - (void)test103FetchArrayWithPredicate
 {
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"collection.name == %@", @"Red"];
-    NSArray *entries = [self.dataManager objectsOfType:@"DMEntry" matchingPredicate:pred];
+    NSArray *entries = [self.dataManager objectsOfType:@"DMEntry" matchingPredicate:pred options:nil];
     STAssertTrue(entries.count == 5, @"Wrong number of entries returned");
 }
 
@@ -129,7 +129,7 @@
                                 @"date" : @"2013-07-01T12:00:00Z"};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
     {
         STAssertNotNil(result, @"Result should not be nil");
         STAssertNil(error, @"Error during import: %@", error);
@@ -137,7 +137,7 @@
         STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
         
         // attempt clean fetch of new object
-        DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
+        DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO options:nil];
 
         STAssertNotNil(entry, @"Newly created entry not found");
         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
@@ -165,7 +165,7 @@
                                 @"collection" : @"Red"};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -173,11 +173,11 @@
          STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
          
          // attempt clean fetch of collection containing new object
-         DMCollection *redcollection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO];
+         DMCollection *redcollection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO options:nil];
          STAssertNotNil(redcollection, @"Collection not found");
          STAssertTrue(redcollection.entries.count == 6, @"New entry not correctly added");
          
-         DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inSet:redcollection.entries createNew:NO];
+         DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inSet:redcollection.entries createNew:NO options:nil];
          STAssertNotNil(newEntry, @"New entry not found in collection");
          
          finished = YES;
@@ -225,6 +225,7 @@
     __block BOOL finished = NO;
     [self.dataManager importData:@[yellowCollection, greenCollection]
                       objectType:@"DMCollection"
+                         options:nil
                       completion:^(id result, NSError *error)
     {
         STAssertTrue(error == nil, @"Import error occured: %@", error);

@@ -8,6 +8,10 @@
 
 #import "RZDataManager_Base.h"
 
+NSString * const RZDataManagerDataIdKey = @"RZDataManagerDataIdKey";
+NSString * const RZDataManagerModelIdKey = @"RZDataManagerModelIdKey";
+NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBreakRelationships";
+
 @interface RZDataManager ()
 
 - (NSException*)abstractMethodException:(SEL)selector;
@@ -62,52 +66,30 @@
 
 #pragma mark - Data Manager public methods
 
-- (id)objectOfType:(NSString*)type withValue:(id)value forKeyPath:(NSString*)keyPath createNew:(BOOL)createNew
+- (id)objectOfType:(NSString*)type withValue:(id)value forKeyPath:(NSString*)keyPath createNew:(BOOL)createNew options:(NSDictionary *)options
 {
     @throw [self abstractMethodException:_cmd];
 }
 
-- (id)objectOfType:(NSString*)type withValue:(id)value forKeyPath:(NSString*)keyPath inSet:(NSSet*)objects createNew:(BOOL)createNew
+- (id)objectOfType:(NSString*)type withValue:(id)value forKeyPath:(NSString*)keyPath inSet:(NSSet*)objects createNew:(BOOL)createNew options:(NSDictionary *)options
 {
     @throw [self abstractMethodException:_cmd];
 }
 
-- (NSArray*)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate
+- (NSArray*)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate options:(NSDictionary *)options
 {
     @throw [self abstractMethodException:_cmd];
 }
 
-- (void)importData:(id)data objectType:(NSString*)type completion:(RZDataManagerImportCompletionBlock)completion
-{
-    // get mapping
-    NSString *dataIdKey = nil;
-    NSString *modelIdKey = nil;
-    [self.dataImporter getDefaultIdKeysForObjectType:type dataIdKey:&dataIdKey modelIdKey:&modelIdKey];
-    if (dataIdKey && modelIdKey){
-        [self importData:data objectType:type dataIdKeyPath:dataIdKey modelIdKeyPath:modelIdKey completion:completion];
-    }
-    else{
-        @throw [self missingUniqueKeysExceptionWithObjectType:type];
-    }
-}
-
-- (void)importData:(id)data objectType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(id)data objectType:(NSString*)type options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
     @throw [self abstractMethodException:_cmd];
 }
 
-- (void)importData:(id)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject completion:(RZDataManagerImportCompletionBlock)completion
+
+- (void)importData:(id)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    // get mapping
-    NSString *dataIdKey = nil;
-    NSString *modelIdKey = nil;
-    [self.dataImporter getDefaultIdKeysForObjectType:type dataIdKey:&dataIdKey modelIdKey:&modelIdKey];
-    if (dataIdKey && modelIdKey){
-        [self importData:data objectType:type dataIdKeyPath:dataIdKey modelIdKeyPath:modelIdKey forRelationship:relationshipKey onObject:otherObject completion:completion];
-    }
-    else{
-        @throw [self missingUniqueKeysExceptionWithObjectType:type];
-    }
+    @throw [self abstractMethodException:_cmd];
 }
 
 - (void)importData:(id)data objectType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath forRelationship:(NSString *)relationshipKey onObject:(id)otherObject completion:(RZDataManagerImportCompletionBlock)completion
@@ -115,21 +97,7 @@
     @throw [self abstractMethodException:_cmd];
 }
 
-- (void)updateObjects:(NSArray *)objects ofType:(NSString *)type withData:(NSArray *)data completion:(RZDataManagerImportCompletionBlock)completion
-{
-    // get mapping
-    NSString *dataIdKey = nil;
-    NSString *modelIdKey = nil;
-    [self.dataImporter getDefaultIdKeysForObjectType:type dataIdKey:&dataIdKey modelIdKey:&modelIdKey];
-    if (dataIdKey && modelIdKey){
-        [self updateObjects:objects ofType:type withData:data dataIdKeyPath:dataIdKey modelIdKeyPath:modelIdKey completion:completion];
-    }
-    else{
-        @throw [self missingUniqueKeysExceptionWithObjectType:type];
-    }
-}
-
-- (void)updateObjects:(NSArray*)objects ofType:(NSString*)type withData:(NSArray*)data dataIdKeyPath:(NSString*)dataIdKeyPath modelIdKeyPath:(NSString*)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion
+- (void)updateObjects:(NSArray*)objects ofType:(NSString*)type withData:(NSArray*)data options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
     @throw [self abstractMethodException:_cmd];
 }
@@ -137,4 +105,23 @@
 // optional, default does nothing
 - (void)saveData:(BOOL)synchronous { }
 
+#pragma mark - Utilities
+
+- (NSString*)dataIdKeyForObjectType:(NSString *)type withOptions:(NSDictionary *)options
+{
+    NSString *dataIdKey = [options objectForKey:RZDataManagerDataIdKey];
+    if (dataIdKey == nil){
+        dataIdKey = [self.dataImporter defaultDataIdKeyForObjectType:type];
+    }
+    return dataIdKey;
+}
+
+- (NSString*)modelIdKeyForObjectType:(NSString*)type withOptions:(NSDictionary*)options
+{
+    NSString *modelIdKey = [options objectForKey:RZDataManagerModelIdKey];
+    if (modelIdKey == nil){
+        modelIdKey = [self.dataImporter defaultModelIdKeyForObjectType:type];
+    }
+    return modelIdKey;
+}
 @end

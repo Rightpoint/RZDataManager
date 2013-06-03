@@ -8,7 +8,6 @@
 #import "RZCoreDataManager.h"
 #import "NSDictionary+NonNSNull.h"
 
-
 typedef void (^RZDataManagerImportBlock)();
 
 // For storing moc reference in thread dictionary
@@ -34,36 +33,43 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 #pragma mark - RZDataManager Subclass
 
-- (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath createNew:(BOOL)createNew
+- (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath createNew:(BOOL)createNew options:(NSDictionary *)options
 {
     // interpret type as entity name
     return [self objectForEntity:type withValue:value forKeyPath:keyPath usingMOC:self.currentMoc create:createNew];
 }
 
-- (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath inSet:(NSSet *)objects createNew:(BOOL)createNew
+- (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath inSet:(NSSet *)objects createNew:(BOOL)createNew options:(NSDictionary *)options
 {
     // interpret type as entity name
     return [self objectForEntity:type withValue:value forKeyPath:keyPath inSet:objects usingMOC:self.currentMoc create:createNew];
 }
 
-- (NSArray*)objectsOfType:(NSString *)type matchingPredicate:(NSPredicate *)predicate
+- (NSArray*)objectsOfType:(NSString *)type matchingPredicate:(NSPredicate *)predicate options:(NSDictionary *)options
 {
     return [self objectsForEntity:type matchingPredicate:predicate usingMOC:self.currentMoc];
 }
 
-- (void)importData:(NSDictionary *)data objectType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(NSDictionary *)data objectType:(NSString *)type options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
+    NSString *dataIdKey = [self dataIdKeyForObjectType:type withOptions:options];
+    NSString *modelIdKey = [self modelIdKeyForObjectType:type withOptions:options];
+    
+    if (!dataIdKey || !modelIdKey){
+        NSLog(@"RZCoreDataManager: [ERROR] missing data and/or model ID keys for object of type %@", type);
+        return;
+    }
     
     void (^InternalImportBlock)(NSDictionary *dict) = ^(NSDictionary* dict){
         id obj = nil;
-        id uid = [dict validObjectForKey:dataIdKeyPath decodeHTML:NO];
+        id uid = [dict validObjectForKey:dataIdKey decodeHTML:NO];
         
         if (uid){
-            obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath createNew:YES];
+            obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES options:nil];
             [self.dataImporter importData:dict toObject:obj];
         }
         else{
-            NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKeyPath, type);
+            NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKey, type);
         }
     };
     
@@ -91,16 +97,16 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             if (!error){
                 
                 if ([data isKindOfClass:[NSDictionary class]]){
-                    id uid = [data validObjectForKey:dataIdKeyPath decodeHTML:NO];
-                    result = [self objectOfType:type withValue:uid forKeyPath:dataIdKeyPath createNew:NO];
+                    id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
+                    result = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO options:nil];
                 }
                 else if ([data isKindOfClass:[NSArray class]]){
                     
                     NSMutableArray *resultArray = [NSMutableArray arrayWithCapacity:[(NSArray*)data count]];
                     [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
                     {
-                        id uid = [obj validObjectForKey:dataIdKeyPath decodeHTML:NO];
-                        id resultEntry = [self objectOfType:type withValue:uid forKeyPath:dataIdKeyPath createNew:NO];
+                        id uid = [obj validObjectForKey:dataIdKey decodeHTML:NO];
+                        id resultEntry = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO options:nil];
                         if (resultEntry){
                             [resultArray addObject:resultEntry];
                         }
@@ -118,13 +124,20 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     }];
 }
 
-- (void)importData:(NSDictionary *)data objectType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath forRelationship:(NSString*)relationshipKey onObject:(id)otherObject completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(NSDictionary *)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
+    NSString *dataIdKey = [self dataIdKeyForObjectType:type withOptions:options];
+    NSString *modelIdKey = [self modelIdKeyForObjectType:type withOptions:options];
+    
+    if (!dataIdKey || !modelIdKey){
+        NSLog(@"RZCoreDataManager: [ERROR] missing data and/or model ID keys for object of type %@", type);
+        return;
+    }
     
     void (^InternalImportBlock)(NSDictionary *dict) = ^(NSDictionary* dict){
         
         id obj = nil;
-        id uid = [dict validObjectForKey:dataIdKeyPath decodeHTML:NO];
+        id uid = [dict validObjectForKey:dataIdKey decodeHTML:NO];
         if (uid){
             
             NSEntityDescription *entityDesc = [(NSManagedObject*)otherObject entity];
@@ -135,7 +148,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 if (relationshipDesc.isToMany){
                     
                     // find/create related object
-                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath createNew:YES];
+                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES options:nil];
                     
                     [self.dataImporter importData:dict toObject:obj ofType:type];
                     
@@ -153,7 +166,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 else{
                     
                     // create or update object
-                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKeyPath createNew:YES];
+                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES options:nil];
                     [self.dataImporter importData:dict toObject:obj ofType:type];
                     
                     // set relationship on other object
@@ -165,7 +178,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             }
         }
         else{
-            NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKeyPath, type);
+            NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKey, type);
         }
     };
     
@@ -192,16 +205,16 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             if (!error){
                 
                 if ([data isKindOfClass:[NSDictionary class]]){
-                    id uid = [data validObjectForKey:dataIdKeyPath decodeHTML:NO];
-                    result = [self objectOfType:type withValue:uid forKeyPath:dataIdKeyPath createNew:NO];
+                    id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
+                    result = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO options:nil];
                 }
                 else if ([data isKindOfClass:[NSArray class]]){
                     
                     NSMutableArray *resultArray = [NSMutableArray arrayWithCapacity:[(NSArray*)data count]];
                     [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
                      {
-                         id uid = [obj validObjectForKey:dataIdKeyPath decodeHTML:NO];
-                         id resultEntry = [self objectOfType:type withValue:uid forKeyPath:dataIdKeyPath createNew:NO];
+                         id uid = [obj validObjectForKey:dataIdKey decodeHTML:NO];
+                         id resultEntry = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO options:nil];
                          if (resultEntry){
                              [resultArray addObject:resultEntry];
                          }

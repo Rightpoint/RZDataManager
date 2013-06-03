@@ -112,24 +112,27 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
     }
 }
 
-- (void)getDefaultIdKeysForObjectType:(NSString*)objectTypeName
-                            dataIdKey:(NSString*__autoreleasing *)dataIdKey
-                           modelIdKey:(NSString*__autoreleasing *)modelIdKey;
+- (NSString*)defaultDataIdKeyForObjectType:(NSString *)objectTypeName
 {
-
     NSString *defaultDataIdKey = [self.defaultDataIdKeys objectForKey:objectTypeName];
-    NSString *defaultModelIdKey = [self.defaultModelIdKeys objectForKey:objectTypeName];
-    
-    if (defaultDataIdKey && defaultModelIdKey){
-        
-        
+    if (defaultDataIdKey == nil){
+        defaultDataIdKey = [[self mappingForObjectType:objectTypeName] objectForKey:kRZDataImporterDefaultIDKey];
+        if (defaultDataIdKey){
+            [self.defaultDataIdKeys setObject:defaultDataIdKey forKey:objectTypeName];
+        }
     }
-    else{
-    
+    return defaultDataIdKey;
+}
+
+- (NSString*)defaultModelIdKeyForObjectType:(NSString *)objectTypeName
+{
+    NSString *defaultModelIdKey = [self.defaultModelIdKeys objectForKey:objectTypeName];
+    if (defaultModelIdKey == nil){
+        
         NSDictionary *mapping = [self mappingForObjectType:objectTypeName];
         if (mapping){
             
-            defaultDataIdKey = [mapping objectForKey:kRZDataImporterDefaultIDKey];
+            NSString * defaultDataIdKey = [mapping objectForKey:kRZDataImporterDefaultIDKey];
             if (defaultDataIdKey){
                 
                 NSDictionary *dataKeys = [mapping objectForKey:kRZDataImporterDataKeys];
@@ -139,22 +142,14 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
                     defaultModelIdKey = [defaultKeyMapping objectForKey:kRZDataImporterObjectKey];
                     if (defaultModelIdKey == nil) defaultModelIdKey = defaultDataIdKey;
                     
-                    // cache 'em
-                    [self.defaultDataIdKeys setObject:defaultDataIdKey forKey:objectTypeName];
+                    // cache it
                     [self.defaultModelIdKeys setObject:defaultModelIdKey forKey:objectTypeName];
-                
-                }            
+                    
+                }
             }
         }
     }
-    
-    if (dataIdKey){
-        *dataIdKey = defaultDataIdKey;
-    }
-    
-    if (modelIdKey){
-        *modelIdKey = defaultModelIdKey;
-    }
+    return defaultModelIdKey;
 }
 
 - (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject> *)object
@@ -372,25 +367,32 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm
                         }
                         
                     }
+                    
+                    NSDictionary *opts = @{RZDataManagerDataIdKey : relationshipIDKey,
+                                           RZDataManagerModelIdKey : relationshipModelIDKey};
+                    
                     [self.dataManager importData:importData
                                       objectType:relationshipObjType
-                                   dataIdKeyPath:relationshipIDKey
-                                  modelIdKeyPath:relationshipModelIDKey
                                  forRelationship:key
                                         onObject:object
+                                         options:opts
                                       completion:nil];
                 }
                 else{
                     // wrap in a dictionary - we will assume it's the unique identifier
                     // this is for cases when the relationship is specified by one key-value pair instead of fully-qualified
                     // data for the other object
+                    
                     NSDictionary *importData = @{relationshipIDKey : value};
+                    
+                    NSDictionary *opts = @{RZDataManagerDataIdKey : relationshipIDKey,
+                                           RZDataManagerModelIdKey : relationshipModelIDKey};
+                    
                     [self.dataManager importData:importData
                                       objectType:relationshipObjType
-                                   dataIdKeyPath:relationshipIDKey
-                                  modelIdKeyPath:relationshipModelIDKey
                                  forRelationship:key
                                         onObject:object
+                                         options:opts
                                       completion:nil];
                 }
             }

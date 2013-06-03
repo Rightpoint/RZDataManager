@@ -29,9 +29,8 @@
 - (void)setMapping:(NSDictionary*)mapping forObjectType:(NSString*)objectTypeName;
 
 //! Get the default keys that represent unique identifiers for a given object type, in both the incoming raw data and the model itself
-- (void)getDefaultIdKeysForObjectType:(NSString*)objectTypeName
-                            dataIdKey:(NSString*__autoreleasing *)dataIdKey
-                           modelIdKey:(NSString*__autoreleasing *)modelIdKey;
+- (NSString*)defaultDataIdKeyForObjectType:(NSString*)objectTypeName;
+- (NSString*)defaultModelIdKeyForObjectType:(NSString*)objectTypeName;
 
 //! Import data from a dictionary to an object based on a provided (or TBD: assumed) mapping. Can provide a type name (maybe useful for
 //  managed objects with entity name different from class) or infer name from class.
