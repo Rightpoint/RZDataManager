@@ -6,49 +6,46 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RZDataManagerModelObject.h"
 
-@protocol RZDataImporterModelObject <NSObject>
-
-@optional
-
-//! Implement this method to return a cached object matching the passed-in unique key-value pair
-+ (id)cachedObjectWithUniqueValue:(id)uniqueValue forKeyPath:(id)key;
-
-//! Implement this method to prepare the object to be updated with new data
-- (void)prepareForImportFromData:(NSDictionary*)data;
-
-//! Implement this method to finalize the import and send "updated" notifications
-- (void)finalizeImportFromData:(NSDictionary*)data;
-
-@end
-
+@class RZDataManager;
 @class RZDataImporterDiffInfo;
 
 @interface RZDataImporter : NSObject
 
-+ (RZDataImporter*)sharedImporter;
+//! Weak reference to parent Data Manager
+@property (nonatomic, weak) RZDataManager *dataManager;
 
-//! Set to override on importer-level whether should decode HTML entities from strings (defaults to YES)
+//! Set to override on importer-level whether should decode HTML entities from strings (defaults to NO)
 @property (nonatomic, assign) BOOL shouldDecodeHTML;
 
-//! Import data from a dictionary to an object based on a provided (or TBD: assumed) mapping
-- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataImporterModelObject>*)object;
+//! Externally get the mapping dictionary for a particular class or entity
+- (NSDictionary*)mappingForObjectType:(NSString*)objectTypeName;
 
-//! Update objects passed in with data passed in, and optionally return array of objects that will be added and removed from array passed in. Basically does a diff-update of model object collection with incoming data set.
+//! Externally set a mapping dictionary for a particular class or entity
+- (void)setMapping:(NSDictionary*)mapping forObjectType:(NSString*)objectTypeName;
+
+//! Get the default keys that represent unique identifiers for a given object type, in both the incoming raw data and the model itself
+- (void)getDefaultIdKeysForObjectType:(NSString*)objectTypeName
+                            dataIdKey:(NSString*__autoreleasing *)dataIdKey
+                           modelIdKey:(NSString*__autoreleasing *)modelIdKey;
+
+//! Import data from a dictionary to an object based on a provided (or TBD: assumed) mapping. Can provide a type name (maybe useful for
+//  managed objects with entity name different from class) or infer name from class.
+- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataManagerModelObject>*)object;
+- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataManagerModelObject>*)object ofType:(NSString*)objTypeName;
+
+//! Return array of indices for objects that have been inserted, deleted, or moved, based on passed-in object array and data array. Basically calculates diff-update info of model object collection with incoming data set.
 /*!
     objects - array of objects to update. Should be of type objClass.
-    objClass - type of objects in objects array.
+    data - either an array of dictionaries or a dictionary containing data with which to update objects
     dataIdKeyPath - key path to value uniquely identifying object in raw dictionary
     modelIdKeyPath - key path to value uniquely identifying model object. Value will be compared against value for dataIdKey in raw data
-    data - either an array of dictionaries or a dictionary containing data with which to update objects
-    diffInfo - object containing arrays of added, moved, and removed objects 
 */
-
-- (RZDataImporterDiffInfo*)updateObjects:(NSArray*)objects
-                                 ofClass:(Class)objClass
-                                withData:(id)data
-                           dataIdKeyPath:(NSString*)dataIdKeyPath
-                          modelIdKeyPath:(NSString*)modelIdKeyPath;
+- (RZDataImporterDiffInfo*)diffInfoForObjects:(NSArray*)objects
+                                     withData:(id)data
+                                dataIdKeyPath:(NSString*)dataIdKeyPath
+                               modelIdKeyPath:(NSString*)modelIdKeyPath;
 
 
 @end
@@ -56,15 +53,13 @@
 
 @interface RZDataImporterDiffInfo : NSObject
 
-// Objects which were added and the indices at which they were added
-@property (strong, nonatomic) NSMutableArray* addedObjects;
-@property (strong, nonatomic) NSMutableArray* insertionIndices;
+// Indices at which new objects are present in data array
+@property (strong, nonatomic) NSMutableArray* insertedObjectIndices;
 
-// Objects which were removed
-@property (strong, nonatomic) NSMutableArray* removedObjects;
+// Indices in the object array of objects that should be removed (not present in data array)
+@property (strong, nonatomic) NSMutableArray* removedObjectIndices;
 
-// Objects which were moved and to which indices they were moved (in the final array)
-@property (strong, nonatomic) NSMutableArray* movedObjects;
-@property (strong, nonatomic) NSMutableArray* moveIndices;
+// Indices for objects that have moved (the indices in the data array, which represent the final index of the object after the update)
+@property (strong, nonatomic) NSMutableArray* movedObjectIndices;
 
 @end
