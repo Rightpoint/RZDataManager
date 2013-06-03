@@ -78,6 +78,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
         self.dateFormatter = [[NSDateFormatter alloc] init];
         self.numberFormatter = [[NSNumberFormatter alloc] init];
         self.numberFormatter.numberStyle = NSNumberFormatterDecimalStyle;
+        self.defaultDateFormat = kRZDataImporterISODateFormat;
     }
     return self;
 }
@@ -421,7 +422,7 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
                 [self.dateFormatter setDateFormat:format];
             }
             else{
-                [self.dateFormatter setDateFormat:kRZDataImporterISODateFormat];
+                [self.dateFormatter setDateFormat:self.defaultDateFormat];
             }
             
             newValue = [self.dateFormatter dateFromString:(NSString*)value];
@@ -434,8 +435,6 @@ static NSString* const kRZDataImporterISODateFormat = @"yyyy-MM-dd`T`hh:mm:ss'Z'
         else if (![value isKindOfClass:[NSDate class]]){
             NSLog(@"RZDataImporter: Object of class %@ cannot be converted to NSDate", NSStringFromClass([value class]));
         }
-        
-        
     }
     else if ([conversionType isEqualToString:kRZDataImporterConversionTypeNumber])
     {
