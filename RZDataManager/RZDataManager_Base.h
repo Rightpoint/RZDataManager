@@ -6,6 +6,14 @@
 //  Copyright (c) 2013 Raizlabs. All rights reserved.
 //
 
+// =========================================================
+//
+// This is an ABSTRACT BASE CLASS and should not be used directly.
+// Use one of the provided concrete subclasses or create your own.
+//
+// =========================================================
+
+
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
 
@@ -16,8 +24,6 @@ OBJC_EXTERN NSString * const RZDataManagerModelIdKey;
 OBJC_EXTERN NSString * const RZDataManagerShouldBreakRelationships; // needs a better name - if true, will break any cached relationships not present in imported data
 
 typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, array, or nil
-
-// This is an ABSTRACT BASE CLASS and should not be used directly. Use one of the provided concrete subclasses or create your own.
 
 @interface RZDataManager : NSObject
 
@@ -33,18 +39,12 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 
 #pragma mark - Fetching
 
-// Catch-all method for retrieving an individual object
+// Fetching objects from the data store by key/value pair.
 // "type" represents either class name as string or entity name for managed objects
-- (id)objectOfType:(NSString*)type
-         withValue:(id)value
-        forKeyPath:(NSString*)keyPath
-         createNew:(BOOL)createNew
-           options:(NSDictionary*)options;
 
 - (id)objectOfType:(NSString*)type
          withValue:(id)value
         forKeyPath:(NSString*)keyPath
-             inSet:(NSSet*)objects
          createNew:(BOOL)createNew
            options:(NSDictionary*)options;
 
@@ -69,20 +69,10 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
            options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
-// Update an array of objects with a new array of dictionaries, representing objects of the same type.
-// Will update, insert, remove, and re-order objects as necessary.
-- (void)updateObjects:(NSArray*)objects
-               ofType:(NSString*)type
-             withData:(NSArray*)data
-              options:(NSDictionary*)options
-           completion:(RZDataManagerImportCompletionBlock)completion;
-
-
 // -------------------------------------------------------------
 
 // Save method. Not all subclasses may need to be explicitly saved/persisted, so this is optional.
 - (void)saveData:(BOOL)synchronous;
-
 
 
 #pragma mark - Utilities

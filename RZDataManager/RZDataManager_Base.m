@@ -71,11 +71,6 @@ NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBr
     @throw [self abstractMethodException:_cmd];
 }
 
-- (id)objectOfType:(NSString*)type withValue:(id)value forKeyPath:(NSString*)keyPath inSet:(NSSet*)objects createNew:(BOOL)createNew options:(NSDictionary *)options
-{
-    @throw [self abstractMethodException:_cmd];
-}
-
 - (NSArray*)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate options:(NSDictionary *)options
 {
     @throw [self abstractMethodException:_cmd];

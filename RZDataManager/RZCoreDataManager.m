@@ -21,7 +21,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 - (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(void(^)(NSError *error))completionBlock;
 
 - (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create;
-- (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath inSet:(NSSet*)objects usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create;
 - (NSArray*)objectsForEntity:(NSString*)entity matchingPredicate:(NSPredicate*)predicate usingMOC:(NSManagedObjectContext*)moc;
 
 - (void)saveContext:(BOOL)wait;
@@ -37,12 +36,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 {
     // interpret type as entity name
     return [self objectForEntity:type withValue:value forKeyPath:keyPath usingMOC:self.currentMoc create:createNew];
-}
-
-- (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath inSet:(NSSet *)objects createNew:(BOOL)createNew options:(NSDictionary *)options
-{
-    // interpret type as entity name
-    return [self objectForEntity:type withValue:value forKeyPath:keyPath inSet:objects usingMOC:self.currentMoc create:createNew];
 }
 
 - (NSArray*)objectsOfType:(NSString *)type matchingPredicate:(NSPredicate *)predicate options:(NSDictionary *)options
@@ -233,11 +226,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     }];
 }
 
-- (void)updateObjects:(NSArray *)objects ofType:(NSString *)type withData:(NSArray *)data dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath completion:(RZDataManagerImportCompletionBlock)completion
-{
-    // TODO: implement
-}
-
 - (void)saveData:(BOOL)synchronous
 {
     [self saveContext:synchronous];
@@ -314,7 +302,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 #pragma mark - Retrieval Methods
 
-
 - (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create
 {
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entity];
@@ -334,22 +321,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     return fetchedObject;
 }
 
-
-- (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath inSet:(NSSet*)objects usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create
-{
-    NSSet *filteredObjects = [objects filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"%K == %@", keyPath, value]];
-    
-    id fetchedObject = [filteredObjects anyObject];
-    
-    
-    if (nil == fetchedObject && create)
-    {
-        fetchedObject = [NSEntityDescription insertNewObjectForEntityForName:entity inManagedObjectContext:moc];
-        [fetchedObject setValue:value forKeyPath:keyPath];
-    }
-    
-    return fetchedObject;
-}
 
 - (NSArray*)objectsForEntity:(NSString*)entity matchingPredicate:(NSPredicate*)predicate usingMOC:(NSManagedObjectContext*)moc
 {
