@@ -8,8 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NSObject (PropertyTypes)
+@interface NSObject (RZPropertyUtils)
 
-- (NSString*)typeNameForProperty:(NSString*)propertyName;
++ (BOOL)hasPropertyNamed:(NSString*)propertyName;
+
++ (NSArray*)getPropertyNames;
+
++ (NSString*)dataTypeForPropertyNamed:(NSString*)propertyName;
 
 @end

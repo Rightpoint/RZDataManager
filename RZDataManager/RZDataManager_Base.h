@@ -17,30 +17,26 @@
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
 
-// ---- Option keys for RZDataManager option dicts -----
-
-OBJC_EXTERN NSString * const RZDataManagerDataIdKey;
-OBJC_EXTERN NSString * const RZDataManagerModelIdKey;
-OBJC_EXTERN NSString * const RZDataManagerShouldBreakRelationships; // needs a better name - if true, will break any cached relationships not present in imported data
-
-typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, array, or nil
+typedef void (^RZDataManagerImportBlock)();
+typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, collection, or nil
 
 @interface RZDataManager : NSObject
 
-// Singleton accessor that will work for subclasses.
+// Singleton accessor will correctly cast return type for subclasses.
 + (instancetype)defaultManager;
 
 @property (nonatomic, readonly, strong) RZDataImporter *dataImporter;
 
-// Directory helpers
 - (NSURL*)applicationDocumentsDirectory;
 
-// -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
 
 #pragma mark - Fetching
 
 // Fetching objects from the data store by key/value pair.
 // "type" represents either class name as string or entity name for managed objects
+
+// -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
+
 
 - (id)objectOfType:(NSString*)type
          withValue:(id)value
@@ -48,11 +44,13 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
          createNew:(BOOL)createNew
            options:(NSDictionary*)options;
 
-- (NSArray*)objectsOfType:(NSString*)type
-        matchingPredicate:(NSPredicate*)predicate
-                  options:(NSDictionary*)options;
+- (id)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate options:(NSDictionary*)options;
+
+// -------------------------------------------------------------
 
 #pragma mark - Persisting
+
+// -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
 
 // Either updates existing object(s), if any, or creates and inserts new object.
 // "data" expected to be either NSDictionary or NSArray
@@ -69,11 +67,15 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
            options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
+- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(void(^)(NSError *error))completionBlock;
+
 // -------------------------------------------------------------
 
 // Save method. Not all subclasses may need to be explicitly saved/persisted, so this is optional.
 - (void)saveData:(BOOL)synchronous;
 
+// Discard changes. Not all subclasses may need to do this, so this is optional.
+- (void)discardChanges;
 
 #pragma mark - Utilities
 
@@ -81,3 +83,10 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 - (NSString*)modelIdKeyForObjectType:(NSString*)type withOptions:(NSDictionary*)options;
 
 @end
+
+#pragma mark - RZDataManager option keys
+
+OBJC_EXTERN NSString * const RZDataManagerDataIdKey;
+OBJC_EXTERN NSString * const RZDataManagerModelIdKey;
+OBJC_EXTERN NSString * const RZDataManagerShouldBreakRelationships; // needs a better name - if true, will break any cached relationships not present in imported data
+

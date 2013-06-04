@@ -71,7 +71,7 @@ NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBr
     @throw [self abstractMethodException:_cmd];
 }
 
-- (NSArray*)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate options:(NSDictionary *)options
+- (id)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate options:(NSDictionary *)options
 {
     @throw [self abstractMethodException:_cmd];
 }
@@ -92,13 +92,14 @@ NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBr
     @throw [self abstractMethodException:_cmd];
 }
 
-- (void)updateObjects:(NSArray*)objects ofType:(NSString*)type withData:(NSArray*)data options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(void (^)(NSError *))completionBlock
 {
     @throw [self abstractMethodException:_cmd];
 }
 
 // optional, default does nothing
-- (void)saveData:(BOOL)synchronous { }
+- (void)saveData:(BOOL)synchronous {}
+- (void)discardChanges {}
 
 #pragma mark - Utilities
 
@@ -106,7 +107,7 @@ NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBr
 {
     NSString *dataIdKey = [options objectForKey:RZDataManagerDataIdKey];
     if (dataIdKey == nil){
-        dataIdKey = [self.dataImporter defaultDataIdKeyForObjectType:type];
+        dataIdKey = [[self.dataImporter mappingForClassNamed:type] dataIdKey];
     }
     return dataIdKey;
 }
@@ -115,8 +116,9 @@ NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBr
 {
     NSString *modelIdKey = [options objectForKey:RZDataManagerModelIdKey];
     if (modelIdKey == nil){
-        modelIdKey = [self.dataImporter defaultModelIdKeyForObjectType:type];
+        modelIdKey = [[self.dataImporter mappingForClassNamed:type] modelIdPropertyName];
     }
     return modelIdKey;
 }
+
 @end

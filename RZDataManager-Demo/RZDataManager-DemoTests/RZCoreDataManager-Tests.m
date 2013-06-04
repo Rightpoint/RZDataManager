@@ -32,17 +32,6 @@
     self.dataManager.managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:url];
     self.dataManager.persistentStoreType = NSInMemoryStoreType;
     
-    // load plist mapping from test bundle
-    NSURL *mappingUrl = [bundle URLForResource:@"DMEntryMapping" withExtension:@"plist"];
-    NSDictionary *mapping = [NSDictionary dictionaryWithContentsOfURL:mappingUrl];
-    
-    [self.dataManager.dataImporter setMapping:mapping forObjectType:@"DMEntry"];
-    
-    mappingUrl = [bundle URLForResource:@"DMCollectionMapping" withExtension:@"plist"];
-    mapping = [NSDictionary dictionaryWithContentsOfURL:mappingUrl];
-    
-    [self.dataManager.dataImporter setMapping:mapping forObjectType:@"DMCollection"];
-    
     // Insert a few dummy objects and collections
     NSManagedObjectContext *moc = [self.dataManager managedObjectContext];
     {
@@ -88,26 +77,15 @@
 
 #pragma mark - Fetch tests
 
-- (void)test101FetchSingleObject
+- (void)test100FetchSingleObject
 {
     DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO options:nil];
     STAssertNotNil(entry, @"Result should not be nil");
     STAssertEqualObjects(entry.name, @"Alpha", @"Returned entry has incorrect name");
 }
 
-- (void)test102FetchObjectFromSet
-{
-    DMCollection *collection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO options:nil];
-    STAssertNotNil(collection, @"Resulting collection should not be nil");
-    
-    if (collection){
-        DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" inSet:collection.entries createNew:NO options:nil];
-        STAssertNotNil(entry, @"Result should not be nil");
-        STAssertEqualObjects(entry.name, @"Alpha", @"Returned entry has incorrect name");
-    }
-}
 
-- (void)test103FetchArrayWithPredicate
+- (void)test101FetchArrayWithPredicate
 {
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"collection.name == %@", @"Red"];
     NSArray *entries = [self.dataManager objectsOfType:@"DMEntry" matchingPredicate:pred options:nil];
@@ -177,8 +155,8 @@
          STAssertNotNil(redcollection, @"Collection not found");
          STAssertTrue(redcollection.entries.count == 6, @"New entry not correctly added");
          
-         DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inSet:redcollection.entries createNew:NO options:nil];
-         STAssertNotNil(newEntry, @"New entry not found in collection");
+//         DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inSet:redcollection.entries createNew:NO options:nil];
+//         STAssertNotNil(newEntry, @"New entry not found in collection");
          
          finished = YES;
      }];

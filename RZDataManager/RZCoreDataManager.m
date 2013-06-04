@@ -8,8 +8,6 @@
 #import "RZCoreDataManager.h"
 #import "NSDictionary+NonNSNull.h"
 
-typedef void (^RZDataManagerImportBlock)();
-
 // For storing moc reference in thread dictionary
 static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
 
@@ -17,8 +15,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 @property (nonatomic, readonly) NSManagedObjectContext *currentMoc;
 @property (nonatomic, strong) NSManagedObjectContext *backgroundMoc;
-
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(void(^)(NSError *error))completionBlock;
 
 - (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create;
 - (NSArray*)objectsForEntity:(NSString*)entity matchingPredicate:(NSPredicate*)predicate usingMOC:(NSManagedObjectContext*)moc;
@@ -38,7 +34,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     return [self objectForEntity:type withValue:value forKeyPath:keyPath usingMOC:self.currentMoc create:createNew];
 }
 
-- (NSArray*)objectsOfType:(NSString *)type matchingPredicate:(NSPredicate *)predicate options:(NSDictionary *)options
+- (id)objectsOfType:(NSString *)type matchingPredicate:(NSPredicate *)predicate options:(NSDictionary *)options
 {
     return [self objectsForEntity:type matchingPredicate:predicate usingMOC:self.currentMoc];
 }
@@ -143,7 +139,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     // find/create related object
                     obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES options:nil];
                     
-                    [self.dataImporter importData:dict toObject:obj ofType:type];
+                    [self.dataImporter importData:dict toObject:obj];
                     
                     // create selector string for making relationship
                     NSString *selectorString = [NSString stringWithFormat:@"add%@Object:", relationshipKey.capitalizedString];
@@ -160,7 +156,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     
                     // create or update object
                     obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES options:nil];
-                    [self.dataImporter importData:dict toObject:obj ofType:type];
+                    [self.dataImporter importData:dict toObject:obj];
                     
                     // set relationship on other object
                     [otherObject setValue:obj forKey:relationshipKey];
@@ -226,29 +222,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     }];
 }
 
-- (void)saveData:(BOOL)synchronous
-{
-    [self saveContext:synchronous];
-}
-
-#pragma mark - Properties
-
-- (NSManagedObjectContext*)currentMoc
-{
-    NSManagedObjectContext *moc = nil;
-    
-    // If on main thread, use main moc. If not, use moc from thread dictionary.
-    if ([NSThread isMainThread]){
-        moc = self.managedObjectContext;
-    }
-    else{
-        moc = [[[NSThread currentThread] threadDictionary] objectForKey:kRZCoreDataManagerConfinedMocKey];
-    }
-    
-    return moc;
-}
-
-#pragma mark - Import Methods
 
 - (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(void(^)(NSError *error))completionBlock;
 {
@@ -265,9 +238,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         }
         
         dispatch_sync(dispatch_get_main_queue(), ^{
-            
-            [self saveContext:NO];
-            
+                        
             if (completionBlock)
             {
                 completionBlock(error);
@@ -279,7 +250,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         
         NSManagedObjectContext *privateMoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
         privateMoc.parentContext = self.managedObjectContext;
-
+        
         [privateMoc performBlock:^{
             
             if (![NSThread isMainThread]){
@@ -298,6 +269,34 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"RZDataManager attempting to import on a thread with no MOC" userInfo:nil];
         }
     }
+}
+
+
+- (void)saveData:(BOOL)synchronous
+{
+    [self saveContext:synchronous];
+}
+
+- (void)discardChanges
+{
+    [self.managedObjectContext rollback];
+}
+
+#pragma mark - Properties
+
+- (NSManagedObjectContext*)currentMoc
+{
+    NSManagedObjectContext *moc = nil;
+    
+    // If on main thread, use main moc. If not, use moc from thread dictionary.
+    if ([NSThread isMainThread]){
+        moc = self.managedObjectContext;
+    }
+    else{
+        moc = [[[NSThread currentThread] threadDictionary] objectForKey:kRZCoreDataManagerConfinedMocKey];
+    }
+    
+    return moc;
 }
 
 #pragma mark - Retrieval Methods
@@ -361,6 +360,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         if (backgroundMoc != nil) {
             _managedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
             _managedObjectContext.parentContext = backgroundMoc;
+            _managedObjectContext.undoManager = [[NSUndoManager alloc] init];
         }
     }
     
