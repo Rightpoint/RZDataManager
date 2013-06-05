@@ -41,21 +41,24 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 - (void)importData:(NSDictionary *)data objectType:(NSString *)type options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    NSString *dataIdKey = [self dataIdKeyForObjectType:type withOptions:options];
-    NSString *modelIdKey = [self modelIdKeyForObjectType:type withOptions:options];
+    RZDataManagerModelObjectMapping *mapping = [self mappingForObjectType:type options:options];
+    
+    NSString *dataIdKey = mapping.dataIdKey;
+    NSString *modelIdKey = mapping.modelIdPropertyName;
     
     if (!dataIdKey || !modelIdKey){
         NSLog(@"RZCoreDataManager: [ERROR] missing data and/or model ID keys for object of type %@", type);
         return;
     }
-    
+        
     void (^InternalImportBlock)(NSDictionary *dict) = ^(NSDictionary* dict){
+        
         id obj = nil;
         id uid = [dict validObjectForKey:dataIdKey decodeHTML:NO];
         
         if (uid){
             obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES options:nil];
-            [self.dataImporter importData:dict toObject:obj];
+            [self.dataImporter importData:dict toObject:obj usingMapping:mapping];
         }
         else{
             NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKey, type);
@@ -115,8 +118,10 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 - (void)importData:(NSDictionary *)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    NSString *dataIdKey = [self dataIdKeyForObjectType:type withOptions:options];
-    NSString *modelIdKey = [self modelIdKeyForObjectType:type withOptions:options];
+    RZDataManagerModelObjectMapping *mapping = [self mappingForObjectType:type options:options];
+    
+    NSString *dataIdKey = mapping.dataIdKey;
+    NSString *modelIdKey = mapping.modelIdPropertyName;
     
     if (!dataIdKey || !modelIdKey){
         NSLog(@"RZCoreDataManager: [ERROR] missing data and/or model ID keys for object of type %@", type);

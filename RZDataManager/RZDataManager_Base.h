@@ -79,14 +79,12 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 
 #pragma mark - Utilities
 
-- (NSString*)dataIdKeyForObjectType:(NSString*)type withOptions:(NSDictionary*)options;
-- (NSString*)modelIdKeyForObjectType:(NSString*)type withOptions:(NSDictionary*)options;
+- (RZDataManagerModelObjectMapping*)mappingForObjectType:(NSString*)type options:(NSDictionary*)options;
 
 @end
 
 #pragma mark - RZDataManager option keys
 
-OBJC_EXTERN NSString * const RZDataManagerDataIdKey;
-OBJC_EXTERN NSString * const RZDataManagerModelIdKey;
+OBJC_EXTERN NSString * const RZDataManagerCustomMappingKey; // provide a custom mapping (RZDataManagerModelObjectMapping) in the options dict
 OBJC_EXTERN NSString * const RZDataManagerShouldBreakRelationships; // needs a better name - if true, will break any cached relationships not present in imported data
 

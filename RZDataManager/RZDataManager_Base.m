@@ -8,8 +8,7 @@
 
 #import "RZDataManager_Base.h"
 
-NSString * const RZDataManagerDataIdKey = @"RZDataManagerDataIdKey";
-NSString * const RZDataManagerModelIdKey = @"RZDataManagerModelIdKey";
+NSString * const RZDataManagerCustomMappingKey = @"RZDataManagerCustomMapping";
 NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBreakRelationships";
 
 @interface RZDataManager ()
@@ -103,22 +102,14 @@ NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBr
 
 #pragma mark - Utilities
 
-- (NSString*)dataIdKeyForObjectType:(NSString *)type withOptions:(NSDictionary *)options
+- (RZDataManagerModelObjectMapping*)mappingForObjectType:(NSString *)type options:(NSDictionary *)options
 {
-    NSString *dataIdKey = [options objectForKey:RZDataManagerDataIdKey];
-    if (dataIdKey == nil){
-        dataIdKey = [[self.dataImporter mappingForClassNamed:type] dataIdKey];
+    RZDataManagerModelObjectMapping *mapping = [options objectForKey:RZDataManagerCustomMappingKey];
+    if (nil == mapping)
+    {
+        mapping = [[self.dataImporter mappingForClassNamed:type] copy];
     }
-    return dataIdKey;
-}
-
-- (NSString*)modelIdKeyForObjectType:(NSString*)type withOptions:(NSDictionary*)options
-{
-    NSString *modelIdKey = [options objectForKey:RZDataManagerModelIdKey];
-    if (modelIdKey == nil){
-        modelIdKey = [[self.dataImporter mappingForClassNamed:type] modelIdPropertyName];
-    }
-    return modelIdKey;
+    return mapping;
 }
 
 @end

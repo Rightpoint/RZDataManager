@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "RZDataMangerConstants.h"
+#import "RZDataManagerModelObjectMapping.h"
 
 @protocol RZDataManagerModelObject <NSObject>
 
@@ -18,6 +19,9 @@
 + (NSString*)modelIdPropertyName;
 
 @optional
+
+//! Date format for string-date conversions
++ (NSString*)dataImportDateFormat;
 
 //! Return a dictionary of data keys mapped to property names, if keys/names differ for a particular mapping.
 /*!
@@ -32,28 +36,26 @@
 */
 + (NSDictionary*)dataImportKeyMappings;
 
-//! Return a dictionary of property names representing object relationships, mapped to the object type and inverse relationship property name.
+//! Return a dictionary of RZDataManagerModelObjectRelationshipMapping objects keyed by property name
 /*!
+ 
+    NOTE: This is handled automatically by RZCoreDataManager for NSManagedObject subclasses. If this method is implemented, it will be ignored.
  
     Example:
  
     Let current object have type "RZDepartment". 
-    This method would return the following dictionary (key names as constants)
+    This method would return the following dictionary
  
-    @{
-        "employees" : @{
-            kRZDataManagerRelationshipObjectType : "RZEmployee",
-            kRZDataManagerRelationshipInverse : "department"
-        }
-    }
+    @{ "employees" : [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:@"RZEmployee" inversePropertyName:@"department"] }
 */
-+ (NSDictionary*)relationshipImportKeyMappings;
+
++ (NSDictionary*)dataImportRelationshipKeyMappings;
 
 //! Return a dictionary of data keys mapped to the name of a selector (as string) to call for custom import logic
-+ (NSDictionary*)customSelectorImportKeyMappings;
++ (NSDictionary*)dataImportCustomSelectorKeyMappings;
 
 //! Keys to ignore when importing data
-+ (NSArray*)ignoreKeyPaths;
++ (NSArray*)dataImportIgnoreKeys;
 
 
 //! Implement this method to prepare the object to be updated with new data

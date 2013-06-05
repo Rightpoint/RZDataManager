@@ -10,17 +10,6 @@
 
 @interface RZDataMangerConstants : NSObject
 
-#pragma mark - Mapping Definition Keys
-
-OBJC_EXTERN NSString* const kRZDataManagerDefaultDataIDKey;
-OBJC_EXTERN NSString* const kRZDataManagerDataKeyMappings;
-OBJC_EXTERN NSString* const kRZDataManagerIgnoreKeys;
-OBJC_EXTERN NSString* const kRZDataManagerRelationshipObjectType;
-OBJC_EXTERN NSString* const kRZDataManagerRelationshipInverse;
-OBJC_EXTERN NSString* const kRZDataManagerFormatStrings;
-OBJC_EXTERN NSString* const kRZDataManagerSelectors;
-OBJC_EXTERN NSString* const kRZDataManagerDecodeHTML;
-
 #pragma mark - Data Type Strings
 
 OBJC_EXTERN NSString* const kRZDataManagerTypeNSArray;

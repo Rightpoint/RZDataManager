@@ -20,4 +20,9 @@
     return @"name";
 }
 
++ (NSDictionary*)dataImportRelationshipKeyMappings
+{
+    return @{ @"entries" : [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:@"DMEntry" inversePropertyName:@"collection"] };
+}
+
 @end
