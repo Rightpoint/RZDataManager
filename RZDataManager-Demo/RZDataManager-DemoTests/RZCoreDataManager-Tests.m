@@ -281,6 +281,10 @@
         STAssertEqualObjects([collection name], @"Yellow", @"Returned collection has incorrect name");
         STAssertTrue(collection.entries.count == 2, @"Returned collection has wrong number of entries");
         
+        [collection.entries enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+            STAssertTrue([[obj name] isEqualToString:@"Omicron"] || [[obj name] isEqualToString:@"Pi"], @"Imported entry for new collection has incorrect name");
+        }];
+        
         finished = YES;
     }];
     
