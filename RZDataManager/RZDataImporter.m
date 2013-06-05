@@ -25,8 +25,6 @@
 
 - (RZDataManagerModelObjectMapping*)createMappingForClassNamed:(NSString*)className;
 
-- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject>*)object withMapping:(RZDataManagerModelObjectMapping*)mapping;
-
 - (void)importValue:(id)value toObject:(NSObject<RZDataManagerModelObject>*)object fromKeyPath:(NSString*)keyPath withMapping:(RZDataManagerModelObjectMapping*)mapping;
 
 - (void)setPropertyValue:(id)value onObject:(NSObject<RZDataManagerModelObject>*)object fromKeyPath:(NSString*)keyPath withMapping:(RZDataManagerModelObjectMapping*)mapping;
@@ -86,17 +84,7 @@
         if ([object conformsToProtocol:@protocol(RZDataManagerModelObject)]){
             RZDataManagerModelObjectMapping *mapping = [self mappingForClassNamed:className];
             if (mapping != nil){
-                
-                if ([object respondsToSelector:@selector(prepareForImportFromData:)]){
-                    [object prepareForImportFromData:data];
-                }
-                
-                [self importData:data toObject:object withMapping:mapping];
-                
-                if ([object respondsToSelector:@selector(finalizeImportFromData:)]){
-                    [object finalizeImportFromData:data];
-                }
-                
+                [self importData:data toObject:object usingMapping:mapping];
             }
         }
         else{
@@ -185,10 +173,16 @@
     return [[RZDataManagerModelObjectMapping alloc] initWithModelClass:NSClassFromString(className)];
 }
 
-- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject>*)object withMapping:(RZDataManagerModelObjectMapping*)mapping
+- (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject>*)object usingMapping:(RZDataManagerModelObjectMapping *)mapping
 {
+    
+    
+    if ([object respondsToSelector:@selector(prepareForImportFromData:)]){
+        [object prepareForImportFromData:data];
+    }
+    
 //    self.objectDateFormat = [mapping objectForKey:kRZDataManagerDateFormat];
-        
+    
     for (NSString* key in [data allKeys]){
                         
         // If we have valid mapping, go ahead and import it
@@ -221,6 +215,9 @@
         
     }
     
+    if ([object respondsToSelector:@selector(finalizeImportFromData:)]){
+        [object finalizeImportFromData:data];
+    }
 }
 
 - (void)importValue:(id)value toObject:(NSObject<RZDataManagerModelObject>*)object fromKeyPath:(NSString *)keyPath withMapping:(RZDataManagerModelObjectMapping *)mapping

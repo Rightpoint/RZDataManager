@@ -28,6 +28,7 @@
 
 //! Import data from a dictionary to an object conforming to RZDataManagerModelObject protocol
 - (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataManagerModelObject>*)object;
+- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataManagerModelObject>*)object usingMapping:(RZDataManagerModelObjectMapping*)mapping;
 
 //! Return array of indices for objects that have been inserted, deleted, or moved, based on passed-in object array and data array. Basically calculates diff-update info of model object collection with incoming data set.
 /*!

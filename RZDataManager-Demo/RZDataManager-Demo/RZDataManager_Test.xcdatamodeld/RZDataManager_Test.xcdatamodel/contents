@@ -13,7 +13,11 @@
         <attribute name="testFloat" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <attribute name="testInt" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="testUInt" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
-        <attribute name="uid" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="uid" optional="YES" attributeType="String" syncable="YES">
+            <userInfo>
+                <entry key="isIdentifierProperty" value="yes"/>
+            </userInfo>
+        </attribute>
         <relationship name="collection" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DMCollection" inverseName="entries" inverseEntity="DMCollection" syncable="YES"/>
     </entity>
     <elements>

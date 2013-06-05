@@ -19,7 +19,7 @@
 
 @optional
 
-//! Return a dictionary of data keys mapped to property names, if keys/names differ for a particular mapping. Supports period-delimited keypaths.
+//! Return a dictionary of data keys mapped to property names, if keys/names differ for a particular mapping.
 /*!
     Example:
  
@@ -34,7 +34,7 @@
 
 //! Return a dictionary of property names representing object relationships, mapped to the object type and inverse relationship property name.
 /*!
-
+ 
     Example:
  
     Let current object have type "RZDepartment". 
