@@ -73,7 +73,8 @@
         }
     }
     
-    return mapping;
+    // copy on return so we can mutate it if we want
+    return [mapping copy];
 }
 
 

@@ -100,16 +100,4 @@ NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBr
 - (void)saveData:(BOOL)synchronous {}
 - (void)discardChanges {}
 
-#pragma mark - Utilities
-
-- (RZDataManagerModelObjectMapping*)mappingForObjectType:(NSString *)type options:(NSDictionary *)options
-{
-    RZDataManagerModelObjectMapping *mapping = [options objectForKey:RZDataManagerCustomMappingKey];
-    if (nil == mapping)
-    {
-        mapping = [[self.dataImporter mappingForClassNamed:type] copy];
-    }
-    return mapping;
-}
-
 @end

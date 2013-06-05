@@ -20,6 +20,11 @@
     return @"uid";
 }
 
++ (NSDictionary*)dataImportKeyMappings
+{
+    return @{ @"date" : @"createdDate" };
+}
+
 + (NSDictionary*)dataImportRelationshipKeyMappings
 {
     return @{ @"collection" : [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:@"DMCollection" inversePropertyName:@"entries"] };

@@ -77,10 +77,6 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 // Discard changes. Not all subclasses may need to do this, so this is optional.
 - (void)discardChanges;
 
-#pragma mark - Utilities
-
-- (RZDataManagerModelObjectMapping*)mappingForObjectType:(NSString*)type options:(NSDictionary*)options;
-
 @end
 
 #pragma mark - RZDataManager option keys

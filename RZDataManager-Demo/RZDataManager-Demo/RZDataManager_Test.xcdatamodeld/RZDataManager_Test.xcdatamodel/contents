@@ -5,7 +5,7 @@
         <relationship name="entries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DMEntry" inverseName="collection" inverseEntity="DMEntry" syncable="YES"/>
     </entity>
     <entity name="DMEntry" representedClassName="DMEntry" syncable="YES">
-        <attribute name="date" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="popularity" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <attribute name="testBool" optional="YES" attributeType="Boolean" syncable="YES"/>

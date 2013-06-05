@@ -13,10 +13,10 @@
 
 @interface DMEntry : NSManagedObject
 
-@property (nonatomic, retain) NSString * name;
-@property (nonatomic, retain) NSString * uid;
-@property (nonatomic, retain) NSNumber * popularity;
-@property (nonatomic, retain) NSDate * date;
+@property (nonatomic, retain) NSString  * name;
+@property (nonatomic, retain) NSString  * uid;
+@property (nonatomic, retain) NSNumber  * popularity;
+@property (nonatomic, retain) NSDate    * createdDate;
 @property (nonatomic, retain) DMCollection *collection;
 
 // extra datatypes for testing importer conversion

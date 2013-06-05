@@ -41,7 +41,10 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 - (void)importData:(NSDictionary *)data objectType:(NSString *)type options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    RZDataManagerModelObjectMapping *mapping = [self mappingForObjectType:type options:options];
+    RZDataManagerModelObjectMapping *mapping = [options objectForKey:RZDataManagerCustomMappingKey];
+    if (nil == mapping){
+        mapping = [self.dataImporter mappingForClassNamed:type];
+    }
     
     NSString *dataIdKey = mapping.dataIdKey;
     NSString *modelIdKey = mapping.modelIdPropertyName;
@@ -118,7 +121,10 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 - (void)importData:(NSDictionary *)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    RZDataManagerModelObjectMapping *mapping = [self mappingForObjectType:type options:options];
+    RZDataManagerModelObjectMapping *mapping = [options objectForKey:RZDataManagerCustomMappingKey];
+    if (nil == mapping){
+        mapping = [self.dataImporter mappingForClassNamed:type];
+    }
     
     NSString *dataIdKey = mapping.dataIdKey;
     NSString *modelIdKey = mapping.modelIdPropertyName;

@@ -15,7 +15,7 @@
 @dynamic name;
 @dynamic uid;
 @dynamic popularity;
-@dynamic date;
+@dynamic createdDate;
 @dynamic collection;
 
 @dynamic testFloat;
