@@ -102,7 +102,11 @@
                                 @"testFloat" : @(1.0f),
                                 @"testDouble" : @(1.0),
                                 @"testUInt" : @(-1), // should wrap back to 0xFFFFFFFF
-                                @"testInt" : @(-100),
+                                @"testInt" : @(-1),
+                                @"testShort" : @(-1),
+                                @"testUShort" : @(-1), // should wrap back to 0xFFFF
+                                @"testLongLong" : @(-1),
+                                @"testULongLong" : @(-1), // should wrap back to 0xFFFFFFFFFFFFFFFF
                                 @"testBool" : @(YES),
                                 @"date" : @"2013-07-01T12:00:00Z"};
     
@@ -124,7 +128,11 @@
         STAssertEquals(entry.testFloat, 1.0f, @"Float conversion failed");
         STAssertEquals(entry.testDouble, 1.0, @"Double conversion failed");
         STAssertEquals(entry.testUInt, (unsigned int)0xFFFFFFFF, @"Unsigned int conversion failed");
-        STAssertEquals(entry.testInt, (int)-100, @"Int conversion failed");
+        STAssertEquals(entry.testInt, (int)-1, @"Int conversion failed");
+        STAssertEquals(entry.testShort, (SInt16)-1, @"Short conversion failed");
+        STAssertEquals(entry.testUShort, (UInt16)0xFFFF, @"Unsigned short conversion failed");
+        STAssertEquals(entry.testLongLong, (SInt64)-1, @"Long long conversion failed");
+        STAssertEquals(entry.testULongLong, (UInt64)0xFFFFFFFFFFFFFFFF, @"Unsigned long long conversion failed");
         STAssertEquals(entry.testBool, (BOOL)YES, @"Bool conversion failed");
 
         finished = YES;

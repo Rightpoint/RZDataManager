@@ -375,6 +375,30 @@
             NSUInteger uIntValue = [value unsignedIntegerValue];
             [invocation setArgument:&uIntValue atIndex:2];
         }
+        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeShort]){
+            SInt16 shortValue = [value shortValue];
+            [invocation setArgument:&shortValue atIndex:2];
+        }
+        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeUnsignedShort]){
+            UInt16 uShortValue = [value unsignedShortValue];
+            [invocation setArgument:&uShortValue atIndex:2];
+        }
+        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeLong]){
+            SInt32 longValue = [value longValue];
+            [invocation setArgument:&longValue atIndex:2];
+        }
+        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeUnsignedLong]){
+            UInt32 uLongValue = [value unsignedLongValue];
+            [invocation setArgument:&uLongValue atIndex:2];
+        }
+        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeLongLong]){
+            SInt64 longLongValue = [value longLongValue];
+            [invocation setArgument:&longLongValue atIndex:2];
+        }
+        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeUnsignedLongLong]){
+            UInt64 uLongLongValue = [value unsignedLongLongValue];
+            [invocation setArgument:&uLongLongValue atIndex:2];
+        }
         else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeFloat]){
             float floatValue = [value floatValue];
             [invocation setArgument:&floatValue atIndex:2];

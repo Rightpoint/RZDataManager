@@ -28,8 +28,8 @@ static void initialize_rzTypeMappings() {
                             @"S" : kRZDataManagerTypeUnsignedShort,
                             @"l" : kRZDataManagerTypeLong,
                             @"L" : kRZDataManagerTypeUnsignedLong,
-                            @"ll": kRZDataManagerTypeLongLong,
-                            @"LL": kRZDataManagerTypeUnsignedLongLong,
+                            @"q" : kRZDataManagerTypeLongLong,
+                            @"Q" : kRZDataManagerTypeUnsignedLongLong,
                             @"c" : kRZDataManagerTypeChar,
                             @"C" : kRZDataManagerTypeUnsignedChar
                         };

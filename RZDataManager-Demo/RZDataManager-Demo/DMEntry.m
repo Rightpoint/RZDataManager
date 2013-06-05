@@ -22,6 +22,10 @@
 @dynamic testDouble;
 @dynamic testInt;
 @dynamic testUInt;
+@dynamic testShort;
+@dynamic testUShort;
+@dynamic testLongLong;
+@dynamic testULongLong;
 @dynamic testBool;
 
 @end

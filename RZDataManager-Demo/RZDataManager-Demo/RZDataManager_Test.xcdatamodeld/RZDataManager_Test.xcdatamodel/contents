@@ -12,7 +12,11 @@
         <attribute name="testDouble" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="testFloat" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <attribute name="testInt" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="testLongLong" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="testShort" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="testUInt" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="testULongLong" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="testUShort" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="uid" optional="YES" attributeType="String" syncable="YES">
             <userInfo>
                 <entry key="isIdentifierProperty" value="yes"/>
@@ -22,6 +26,6 @@
     </entity>
     <elements>
         <element name="DMCollection" positionX="160" positionY="192" width="128" height="75"/>
-        <element name="DMEntry" positionX="160" positionY="192" width="128" height="195"/>
+        <element name="DMEntry" positionX="160" positionY="192" width="128" height="255"/>
     </elements>
 </model>
