@@ -155,73 +155,73 @@
             NSNumber * numberValue = nil;
             
             NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:getter]];
-            [invocation setSelector:getter];
             [invocation setTarget:object];
+            [invocation setSelector:getter];
             
             if ([propType isEqualToString:kRZDataManagerTypeChar]){
                 char charValue;
-                [invocation setReturnValue:&charValue];
                 [invocation invoke];
+                [invocation getReturnValue:&charValue];
                 numberValue = @(charValue);
             }
             else if ([propType isEqualToString:kRZDataManagerTypeInt]){
                 NSInteger intValue;
-                [invocation setReturnValue:&intValue];
                 [invocation invoke];
+                [invocation getReturnValue:&intValue];
                 numberValue = @(intValue);
             }
             else if ([propType isEqualToString:kRZDataManagerTypeUnsignedInt]){
                 NSUInteger uIntValue;
-                [invocation setReturnValue:&uIntValue];
                 [invocation invoke];
+                [invocation getReturnValue:&uIntValue];
                 numberValue = @(uIntValue);
             }
             else if ([propType isEqualToString:kRZDataManagerTypeShort]){
                 SInt16 shortValue;
-                [invocation setReturnValue:&shortValue];
                 [invocation invoke];
+                [invocation getReturnValue:&shortValue];
                 numberValue = @(shortValue);
             }
             else if ([propType isEqualToString:kRZDataManagerTypeUnsignedShort]){
                 UInt16 uShortValue;
-                [invocation setReturnValue:&uShortValue];
                 [invocation invoke];
+                [invocation getReturnValue:&uShortValue];
                 numberValue = @(uShortValue);
             }
             else if ([propType isEqualToString:kRZDataManagerTypeLong]){
                 SInt32 longValue;
-                [invocation setReturnValue:&longValue];
                 [invocation invoke];
+                [invocation getReturnValue:&longValue];
                 numberValue = @(longValue);
             }
             else if ([propType isEqualToString:kRZDataManagerTypeUnsignedLong]){
                 UInt32 uLongValue;
-                [invocation setReturnValue:&uLongValue];
                 [invocation invoke];
+                [invocation getReturnValue:&uLongValue];
                 numberValue = @(uLongValue);
             }
             else if ([propType isEqualToString:kRZDataManagerTypeLongLong]){
                 SInt64 longLongValue;
-                [invocation setReturnValue:&longLongValue];
                 [invocation invoke];
+                [invocation getReturnValue:&longLongValue];
                 numberValue = @(longLongValue);
             }
             else if ([propType isEqualToString:kRZDataManagerTypeUnsignedLongLong]){
                 UInt64 uLongLongValue;
-                [invocation setReturnValue:&uLongLongValue];
                 [invocation invoke];
+                [invocation getReturnValue:&uLongLongValue];
                 numberValue = @(uLongLongValue);
             }
             else if ([propType isEqualToString:kRZDataManagerTypeFloat]){
                 float floatValue;
-                [invocation setReturnValue:&floatValue];
                 [invocation invoke];
+                [invocation getReturnValue:&floatValue];
                 numberValue = @(floatValue);
             }
             else if ([propType isEqualToString:kRZDataManagerTypeDouble]){
                 double doubleValue;
-                [invocation setReturnValue:&doubleValue];
                 [invocation invoke];
+                [invocation getReturnValue:&doubleValue];
                 numberValue = @(doubleValue);
             }
             

@@ -423,15 +423,45 @@
 
 - (void)test300ConvertToDictionary
 {
-    DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
-    STAssertNotNil(entry, @"Result should not be nil");
-    STAssertEqualObjects(entry.name, @"Alpha", @"Returned entry has incorrect name");
+    NSDictionary * mockData = @{
+                                @"name" : @"Omicron",
+                                @"uid" : @"1000",
+                                @"collection" : @"Red",
+                                @"popularity" : @(0.5),
+                                @"testFloat" : @(1.0f),
+                                @"testDouble" : @(1.0),
+                                @"testUInt" : @(-1), // should wrap back to 0xFFFFFFFF
+                                @"testInt" : @(-1),
+                                @"testShort" : @(-1),
+                                @"testUShort" : @(-1), // should wrap back to 0xFFFF
+                                @"testLongLong" : @(-1),
+                                @"testULongLong" : @(-1), // should wrap back to 0xFFFFFFFFFFFFFFFF
+                                @"testBool" : @(YES),
+                                @"date" : @"2013-07-01T12:00:00Z"
+                                };
     
-    if (entry){
-        
-        NSDictionary * entryDict = [self.dataManager dictionaryFromModelObject:entry];
-        NSLog(@"%@",entryDict);
+    __block BOOL finished = NO;
+    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+     {
+         STAssertNotNil(result, @"Result should not be nil");
+         STAssertNil(error, @"Error during import: %@", error);
+         
+         if (result){
+             
+             // Verify result in console
+             // TODO: Equality check
+             
+             NSDictionary * entryDict = [self.dataManager dictionaryFromModelObject:result];
+             NSLog(@"%@",entryDict);
+         }
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
     }
+
 }
 
 @end
