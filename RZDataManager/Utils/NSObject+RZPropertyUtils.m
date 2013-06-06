@@ -11,9 +11,6 @@
 #import "RZDataMangerConstants.h"
 #import <objc/runtime.h>
 
-// Start of typename in attribute string is 3 characters in
-#define PROP_TYPE_START_OFFS 3
-
 static NSDictionary * rz_TypeMappings = nil;
 
 // Statically allocate lookup dictionary for efficinent lookup of objc scalar type mappings to string constants

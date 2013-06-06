@@ -83,6 +83,11 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 // Discard changes. Not all subclasses may need to do this, so this is optional.
 - (void)discardChanges;
 
+
+#pragma mark - Miscellaneous
+
+- (NSDictionary*)dictionaryFromModelObject:(NSObject*)object;
+
 @end
 
 

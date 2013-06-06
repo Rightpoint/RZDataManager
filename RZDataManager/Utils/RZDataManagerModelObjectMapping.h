@@ -25,6 +25,7 @@
 - (void)setModelPropertyName:(NSString*)propertyName forDataKey:(NSString*)key;
 
 - (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForDataKey:(NSString*)key;
+- (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForModelPropertyName:(NSString*)propName;
 - (void)setRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping*)mapping forDataKey:(NSString*)key;
 
 - (NSString*)importSelectorNameForDataKey:(NSString*)key;
@@ -34,9 +35,10 @@
 
 @interface RZDataManagerModelObjectRelationshipMapping : NSObject <NSCopying>
 
-+ (RZDataManagerModelObjectRelationshipMapping*)mappingWithObjectType:(NSString*)type inversePropertyName:(NSString*)inverse;
++ (RZDataManagerModelObjectRelationshipMapping*)mappingWithObjectType:(NSString*)type propertyName:(NSString*)propertyName inversePropertyName:(NSString*)inverse;
 
 @property (nonatomic, copy) NSString * relationshipObjectType;
+@property (nonatomic, copy) NSString * relationshipPropertyName;
 @property (nonatomic, copy) NSString * relationshipInversePropertyName;
 
 @end

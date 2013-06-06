@@ -419,4 +419,19 @@
     }
 }
 
+#pragma mark - Dictionary conversion test
+
+- (void)test300ConvertToDictionary
+{
+    DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
+    STAssertNotNil(entry, @"Result should not be nil");
+    STAssertEqualObjects(entry.name, @"Alpha", @"Returned entry has incorrect name");
+    
+    if (entry){
+        
+        NSDictionary * entryDict = [self.dataManager dictionaryFromModelObject:entry];
+        NSLog(@"%@",entryDict);
+    }
+}
+
 @end

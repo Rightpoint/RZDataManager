@@ -8,8 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-@interface RZDataMangerConstants : NSObject
-
 #pragma mark - RZDataManager options dictionary keys
 
 // overrides for mapping
@@ -46,5 +44,4 @@ OBJC_EXTERN NSString* const kRZDataManagerTypeDouble;
 
 OBJC_EXTERN NSString* const kRZDataManagerUTCDateFormat;
 
-
-@end
+OBJC_EXTERN BOOL rz_isScalarDataType(NSString * rzTypeName);

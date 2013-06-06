@@ -100,6 +100,21 @@
     return [self.relationshipKeyMappings objectForKey:key];
 }
 
+- (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForModelPropertyName:(NSString *)propName
+{
+    // for smaller collections enumeration is typically faster than predicate search
+    __block RZDataManagerModelObjectRelationshipMapping *returnMapping = nil;
+    
+    [[self.relationshipKeyMappings allValues] enumerateObjectsUsingBlock:^(RZDataManagerModelObjectRelationshipMapping * mapping, NSUInteger idx, BOOL *stop) {
+        if ([mapping.relationshipPropertyName isEqualToString:propName]){
+            returnMapping = mapping;
+            *stop = YES;
+        }
+    }];
+
+    return returnMapping;
+}
+
 - (void)setRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)mapping forDataKey:(NSString *)key
 {
     if (nil == self.relationshipKeyMappings){
@@ -182,17 +197,18 @@
 
 @implementation RZDataManagerModelObjectRelationshipMapping
 
-+ (RZDataManagerModelObjectRelationshipMapping*)mappingWithObjectType:(NSString *)type inversePropertyName:(NSString *)inverse
++ (RZDataManagerModelObjectRelationshipMapping*)mappingWithObjectType:(NSString *)type propertyName:(NSString *)propertyName inversePropertyName:(NSString *)inverse
 {
     RZDataManagerModelObjectRelationshipMapping *mapping = [[RZDataManagerModelObjectRelationshipMapping alloc] init];
     mapping.relationshipObjectType = type;
+    mapping.relationshipPropertyName = propertyName;
     mapping.relationshipInversePropertyName = inverse;
     return mapping;
 }
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:self.relationshipObjectType inversePropertyName:self.relationshipInversePropertyName];
+    return [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:self.relationshipObjectType propertyName:self.relationshipPropertyName inversePropertyName:self.relationshipInversePropertyName];
 }
 
 @end
