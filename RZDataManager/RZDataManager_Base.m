@@ -65,28 +65,48 @@ NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBr
 
 #pragma mark - Data Manager public methods
 
-- (id)objectOfType:(NSString*)type withValue:(id)value forKeyPath:(NSString*)keyPath createNew:(BOOL)createNew options:(NSDictionary *)options
+- (id)objectOfType:(NSString*)type withValue:(id)value forKeyPath:(NSString*)keyPath createNew:(BOOL)createNew
 {
     @throw [self abstractMethodException:_cmd];
 }
 
-- (id)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate options:(NSDictionary *)options
+- (id)objectOfType:(NSString*)type
+         withValue:(id)value
+        forKeyPath:(NSString*)keyPath
+      inCollection:(id)collection
+         createNew:(BOOL)createNew
 {
     @throw [self abstractMethodException:_cmd];
 }
 
-- (void)importData:(id)data objectType:(NSString*)type options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (id)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate
+{
+    @throw [self abstractMethodException:_cmd];
+}
+
+- (void)importData:(id)data objectType:(NSString*)type
+           options:(NSDictionary *)options
+        completion:(RZDataManagerImportCompletionBlock)completion
 {
     @throw [self abstractMethodException:_cmd];
 }
 
 
-- (void)importData:(id)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(id)data objectType:(NSString *)type
+   forRelationship:(NSString *)relationshipKey
+          onObject:(id)otherObject
+           options:(NSDictionary *)options
+        completion:(RZDataManagerImportCompletionBlock)completion
 {
     @throw [self abstractMethodException:_cmd];
 }
 
-- (void)importData:(id)data objectType:(NSString *)type dataIdKeyPath:(NSString *)dataIdKeyPath modelIdKeyPath:(NSString *)modelIdKeyPath forRelationship:(NSString *)relationshipKey onObject:(id)otherObject completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(id)data objectType:(NSString *)type
+     dataIdKeyPath:(NSString *)dataIdKeyPath
+    modelIdKeyPath:(NSString *)modelIdKeyPath
+   forRelationship:(NSString *)relationshipKey
+          onObject:(id)otherObject
+        completion:(RZDataManagerImportCompletionBlock)completion
 {
     @throw [self abstractMethodException:_cmd];
 }
@@ -97,7 +117,14 @@ NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBr
 }
 
 // optional, default does nothing
-- (void)saveData:(BOOL)synchronous {}
-- (void)discardChanges {}
+- (void)saveData:(BOOL)synchronous
+{
+    NSLog(@"RZDataManager: saveData: is not implemented.");
+}
+
+- (void)discardChanges
+{
+    NSLog(@"RZDataManager: discardChanges is not implemented.");
+}
 
 @end

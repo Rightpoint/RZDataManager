@@ -186,33 +186,40 @@
     for (NSString* key in [data allKeys]){
                         
         // If we have valid mapping, go ahead and import it
-        id value = [data validObjectForKeyPath:key decodeHTML:NO];
-        [self importValue:value toObject:object fromKeyPath:key withMapping:mapping];
-        
-//        // If value is a dictionary and there's no key mapping, attempt to flatten and look for keypath mappings
-//        else if (mappingInfo == nil && ![keysToIgnore containsObject:key] && [[data objectForKey:key] isKindOfClass:[NSDictionary class]]){
-//            
-//            NSDictionary *subDict = [data objectForKey:key];
-//            for (NSString *subKey in [subDict allKeys]){
-//                
-//                NSString *keyPath = [NSString stringWithFormat:@"%@.%@",key,subKey];
-//                mappingInfo = [keyMappings objectForKey:keyPath];
-//                
-//                if (mappingInfo != nil){
-//                    id value = [data validObjectForKeyPath:keyPath decodeHTML:NO];
-//                    [self importValue:value toObject:object fromKey:keyPath withKeyMapping:mappingInfo];
-//                }
-//                else if (![keysToIgnore containsObject:keyPath]){
-//                    NSLog(@"RZDataImporter: Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class]));
-//                }
-//                
-//            }
-//            
-//        }
-//        else if (![keysToIgnore containsObject:key]){
-//            NSLog(@"RZDataImporter: Could not find mapping for key %@ in object of class %@", key, NSStringFromClass([object class]));
-//        }
-        
+        if ([mapping modelPropertyNameForDataKey:key] != nil)
+        {
+            id value = [data validObjectForKeyPath:key decodeHTML:NO];
+            [self importValue:value toObject:object fromKeyPath:key withMapping:mapping];
+        }
+        // If value is a dictionary and there's no key mapping, attempt to flatten and look for keypath mappings
+        else if (![mapping.ignoreKeys containsObject:key])
+        {
+            
+            if ([[data objectForKey:key] isKindOfClass:[NSDictionary class]])
+            {
+            
+                NSDictionary *subDict = [data objectForKey:key];
+                for (NSString *subKey in [subDict allKeys]){
+                    
+                    NSString *keyPath = [NSString stringWithFormat:@"%@.%@",key,subKey];
+                    
+                    if ([mapping modelPropertyNameForDataKey:keyPath] != nil){
+                        id value = [data validObjectForKeyPath:keyPath decodeHTML:NO];
+                        [self importValue:value toObject:object fromKeyPath:keyPath withMapping:mapping];
+                    }
+                    else if (![mapping.ignoreKeys containsObject:keyPath]){
+                        NSLog(@"RZDataImporter: Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class]));
+                    }
+                    
+                }
+            }
+            else
+            {
+                NSLog(@"RZDataImporter: Could not find mapping for key %@ in object of class %@", key, NSStringFromClass([object class]));
+            }
+
+        }
+       
     }
     
     if ([object respondsToSelector:@selector(finalizeImportFromData:)]){
@@ -278,6 +285,7 @@
                                       completion:nil];
                 }
                 else{
+                    
                     // wrap in a dictionary - we will assume it's the unique identifier
                     // this is for cases when the relationship is specified by one key-value pair instead of fully-qualified
                     // data for the other object

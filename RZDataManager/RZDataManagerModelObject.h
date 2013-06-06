@@ -54,7 +54,7 @@
 //! Return a dictionary of data keys mapped to the name of a selector (as string) to call for custom import logic
 + (NSDictionary*)dataImportCustomSelectorKeyMappings;
 
-//! Keys to ignore when importing data
+//! Keys (and/or keypaths) to ignore when importing data
 + (NSArray*)dataImportIgnoreKeys;
 
 

@@ -15,26 +15,43 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 @property (nonatomic, readonly) NSManagedObjectContext *currentMoc;
 @property (nonatomic, strong) NSManagedObjectContext *backgroundMoc;
+@property (nonatomic, strong) NSMutableDictionary *classToEntityMapping;
 
 - (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create;
+- (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath inCollection:(id)objects usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create;
 - (NSArray*)objectsForEntity:(NSString*)entity matchingPredicate:(NSPredicate*)predicate usingMOC:(NSManagedObjectContext*)moc;
 
 - (void)saveContext:(BOOL)wait;
 - (NSURL*)applicationDocumentsDirectory;
 
+- (NSString*)entityNameForObjectType:(NSString*)type;
+
 @end
 
 @implementation RZCoreDataManager
 
+- (id)init
+{
+    self = [super init];
+    if (self){
+        _classToEntityMapping = [NSMutableDictionary dictionary];
+    }
+    return self;
+}
+
 #pragma mark - RZDataManager Subclass
 
-- (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath createNew:(BOOL)createNew options:(NSDictionary *)options
+- (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath createNew:(BOOL)createNew
 {
-    // interpret type as entity name
     return [self objectForEntity:type withValue:value forKeyPath:keyPath usingMOC:self.currentMoc create:createNew];
 }
 
-- (id)objectsOfType:(NSString *)type matchingPredicate:(NSPredicate *)predicate options:(NSDictionary *)options
+- (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath inCollection:(id)collection createNew:(BOOL)createNew
+{
+    return [self objectForEntity:type withValue:value forKeyPath:keyPath inCollection:collection usingMOC:self.currentMoc create:createNew];
+}
+
+- (id)objectsOfType:(NSString *)type matchingPredicate:(NSPredicate *)predicate
 {
     return [self objectsForEntity:type matchingPredicate:predicate usingMOC:self.currentMoc];
 }
@@ -60,7 +77,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         id uid = [dict validObjectForKey:dataIdKey decodeHTML:NO];
         
         if (uid){
-            obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES options:nil];
+            obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES];
             [self.dataImporter importData:dict toObject:obj usingMapping:mapping];
         }
         else{
@@ -93,7 +110,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 
                 if ([data isKindOfClass:[NSDictionary class]]){
                     id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
-                    result = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO options:nil];
+                    result = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO];
                 }
                 else if ([data isKindOfClass:[NSArray class]]){
                     
@@ -101,7 +118,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
                     {
                         id uid = [obj validObjectForKey:dataIdKey decodeHTML:NO];
-                        id resultEntry = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO options:nil];
+                        id resultEntry = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO];
                         if (resultEntry){
                             [resultArray addObject:resultEntry];
                         }
@@ -147,8 +164,15 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 // need to be able to handle many-to-many
                 if (relationshipDesc.isToMany){
                     
-                    // find/create related object
-                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES options:nil];
+                    // find object within other object's relationship set
+                    NSSet * existingObjs = [otherObject valueForKey:relationshipKey];
+                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey inCollection:existingObjs createNew:NO];
+
+                    // if not found in set, find globally
+                    if (nil == obj)
+                    {
+                        obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES];
+                    }
                     
                     [self.dataImporter importData:dict toObject:obj];
                     
@@ -166,7 +190,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 else{
                     
                     // create or update object
-                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES options:nil];
+                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES];
                     [self.dataImporter importData:dict toObject:obj];
                     
                     // set relationship on other object
@@ -206,7 +230,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 
                 if ([data isKindOfClass:[NSDictionary class]]){
                     id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
-                    result = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO options:nil];
+                    result = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO];
                 }
                 else if ([data isKindOfClass:[NSArray class]]){
                     
@@ -214,7 +238,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
                      {
                          id uid = [obj validObjectForKey:dataIdKey decodeHTML:NO];
-                         id resultEntry = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO options:nil];
+                         id resultEntry = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO];
                          if (resultEntry){
                              [resultArray addObject:resultEntry];
                          }
@@ -310,10 +334,53 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     return moc;
 }
 
+#pragma mark - Utilities
+
+- (NSString*)entityNameForObjectType:(NSString *)type
+{
+    __block NSString *entityName = [self.classToEntityMapping objectForKey:type];
+    if (nil == entityName){
+        
+        NSDictionary *entities = [self.managedObjectModel entitiesByName];
+
+        if ([[entities allKeys] containsObject:type]){
+            entityName = type;
+            [self.classToEntityMapping setObject:entityName forKey:type];
+        }
+        else{
+            
+            [entities enumerateKeysAndObjectsUsingBlock:^(NSString * eName, NSEntityDescription * eDesc, BOOL *stop) {
+                
+                if ([eDesc.managedObjectClassName isEqualToString:type]){
+                    entityName = eName;
+                    *stop = YES;
+                }
+                
+            }];
+            
+            if (nil != entityName){
+                [self.classToEntityMapping setObject:entityName forKey:type];
+            }
+            
+        }
+    }
+    
+    if (nil == entityName){
+        @throw [NSException exceptionWithName:NSInvalidArgumentException
+                                       reason:[NSString stringWithFormat:@"CoreData model does not contain entity or managed object class named %@", type]
+                                     userInfo:nil];
+    }
+    
+    return entityName;
+}
+
 #pragma mark - Retrieval Methods
 
 - (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create
 {
+    // ensure this is an entity type, not the class name
+    entity = [self entityNameForObjectType:entity];
+    
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entity];
     request.predicate = [NSPredicate predicateWithFormat:@"%K == %@", keyPath, value];
     
@@ -331,9 +398,40 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     return fetchedObject;
 }
 
+- (id)objectForEntity:(NSString *)entity withValue:(id)value forKeyPath:(NSString *)keyPath inCollection:(id)objects usingMOC:(NSManagedObjectContext *)moc create:(BOOL)create
+{
+    // ensure this is an entity type, not the class name
+    entity = [self entityNameForObjectType:entity];
+    
+    id fetchedObject = nil;
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%K == %@", keyPath, value];
+    
+    if ([objects isKindOfClass:[NSSet class]]){
+        NSSet *filteredObjects = [objects filteredSetUsingPredicate:predicate];
+        fetchedObject = [filteredObjects anyObject];
+    }
+    else if ([objects isKindOfClass:[NSArray class]]){
+        NSArray *filteredObjects = [objects filteredArrayUsingPredicate:predicate];
+        if (filteredObjects.count > 0){
+            fetchedObject = [filteredObjects objectAtIndex:0];
+        }
+    }
+
+    if (nil == fetchedObject && create)
+    {
+        fetchedObject = [NSEntityDescription insertNewObjectForEntityForName:entity inManagedObjectContext:moc];
+        [fetchedObject setValue:value forKeyPath:keyPath];
+    }
+
+    return fetchedObject;
+}
+
 
 - (NSArray*)objectsForEntity:(NSString*)entity matchingPredicate:(NSPredicate*)predicate usingMOC:(NSManagedObjectContext*)moc
 {
+    // ensure this is an entity type, not the class name
+    entity = [self entityNameForObjectType:entity];
+    
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entity];
     request.predicate = predicate;
     

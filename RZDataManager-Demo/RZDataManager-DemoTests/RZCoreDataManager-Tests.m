@@ -79,7 +79,7 @@
 
 - (void)test100FetchSingleObject
 {
-    DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO options:nil];
+    DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
     STAssertNotNil(entry, @"Result should not be nil");
     STAssertEqualObjects(entry.name, @"Alpha", @"Returned entry has incorrect name");
 }
@@ -88,7 +88,7 @@
 - (void)test101FetchArrayWithPredicate
 {
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"collection.name == %@", @"Red"];
-    NSArray *entries = [self.dataManager objectsOfType:@"DMEntry" matchingPredicate:pred options:nil];
+    NSArray *entries = [self.dataManager objectsOfType:@"DMEntry" matchingPredicate:pred];
     STAssertTrue(entries.count == 5, @"Wrong number of entries returned");
 }
 
@@ -119,7 +119,7 @@
         STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
         
         // attempt clean fetch of new object
-        DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO options:nil];
+        DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
 
         STAssertNotNil(entry, @"Newly created entry not found");
         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
@@ -175,7 +175,7 @@
          STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
          
          // attempt clean fetch of new object
-         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO options:nil];
+         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
          
          STAssertNotNil(entry, @"Newly created entry not found");
          STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
@@ -215,7 +215,7 @@
          STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
          
          // attempt clean fetch of collection containing new object
-         DMCollection *redcollection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO options:nil];
+         DMCollection *redcollection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO];
          STAssertNotNil(redcollection, @"Collection not found");
          STAssertTrue(redcollection.entries.count == 6, @"New entry not correctly added");
          
@@ -265,6 +265,7 @@
                                        };
     
     __block BOOL finished = NO;
+    
     [self.dataManager importData:@[yellowCollection, greenCollection]
                       objectType:@"DMCollection"
                          options:nil

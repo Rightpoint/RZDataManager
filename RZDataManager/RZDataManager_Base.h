@@ -41,10 +41,15 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 - (id)objectOfType:(NSString*)type
          withValue:(id)value
         forKeyPath:(NSString*)keyPath
-         createNew:(BOOL)createNew
-           options:(NSDictionary*)options;
+         createNew:(BOOL)createNew;
 
-- (id)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate options:(NSDictionary*)options;
+- (id)objectOfType:(NSString*)type
+         withValue:(id)value
+        forKeyPath:(NSString*)keyPath
+      inCollection:(id)collection
+         createNew:(BOOL)createNew;
+
+- (id)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate;
 
 // -------------------------------------------------------------
 
