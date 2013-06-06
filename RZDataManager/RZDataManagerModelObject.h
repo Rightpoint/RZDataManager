@@ -20,11 +20,13 @@
 
 @optional
 
-//! Date format for string-date conversions
+//! Date format string for string-date conversions
 + (NSString*)dataImportDateFormat;
 
 //! Return a dictionary of data keys mapped to property names, if keys/names differ for a particular mapping.
 /*!
+    Will be inferred automatically if possible (if the data key names and property names match, case-insensitive)
+ 
     Example:
  
     Returning the dictionary below would map incoming data for key "image" to property "imagePath", etc
@@ -38,9 +40,7 @@
 
 //! Return a dictionary of RZDataManagerModelObjectRelationshipMapping objects keyed by property name
 /*!
- 
-    NOTE: This is handled automatically by RZCoreDataManager for NSManagedObject subclasses. If this method is implemented, it will be ignored.
- 
+  
     Example:
  
     Let current object have type "RZDepartment". 
@@ -52,9 +52,27 @@
 + (NSDictionary*)dataImportRelationshipKeyMappings;
 
 //! Return a dictionary of data keys mapped to the name of a selector (as string) to call for custom import logic
+/*!
+    
+    Example:
+ 
+    If the model object has a selector "importThisData:"
+ 
+    @{ "someDataKey" : @"importThisData:" }
+ 
+*/
 + (NSDictionary*)dataImportCustomSelectorKeyMappings;
 
 //! Keys (and/or keypaths) to ignore when importing data
+/*!
+ 
+    Example:
+ 
+    If we don't care about the key "extraneous" or the keypath "somedict.extraData" in the incoming dictionary
+ 
+    @[ @"extraneous", @"somedict.extradata" ]
+ 
+*/
 + (NSArray*)dataImportIgnoreKeys;
 
 
