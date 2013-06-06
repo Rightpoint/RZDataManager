@@ -284,10 +284,25 @@
         DMCollection *collection = [(NSArray*)result objectAtIndex:0];
         STAssertEqualObjects([collection name], @"Yellow", @"Returned collection has incorrect name");
         STAssertTrue(collection.entries.count == 2, @"Returned collection has wrong number of entries");
+        DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
+        STAssertNotNil(entry, @"Imported related entry not found");
+
         
         [collection.entries enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
             STAssertTrue([[obj name] isEqualToString:@"Omicron"] || [[obj name] isEqualToString:@"Pi"], @"Imported entry for new collection has incorrect name");
         }];
+        
+        // second object should be collection named "Green" with two entries
+        collection = [(NSArray*)result objectAtIndex:1];
+        STAssertEqualObjects([collection name], @"Green", @"Returned collection has incorrect name");
+        STAssertTrue(collection.entries.count == 2, @"Returned collection has wrong number of entries");
+        entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1002" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
+        STAssertNotNil(entry, @"Imported related entry not found");
+
+        [collection.entries enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
+            STAssertTrue([[obj name] isEqualToString:@"Mu"] || [[obj name] isEqualToString:@"Nu"], @"Imported entry for new collection has incorrect name");
+        }];
+        
         
         finished = YES;
     }];
