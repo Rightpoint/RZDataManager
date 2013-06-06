@@ -110,7 +110,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 
                 if ([data isKindOfClass:[NSDictionary class]]){
                     id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
-                    result = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO];
+                    result = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:NO];
                 }
                 else if ([data isKindOfClass:[NSArray class]]){
                     
@@ -118,7 +118,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
                     {
                         id uid = [obj validObjectForKey:dataIdKey decodeHTML:NO];
-                        id resultEntry = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO];
+                        id resultEntry = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:NO];
                         if (resultEntry){
                             [resultArray addObject:resultEntry];
                         }
@@ -230,7 +230,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 
                 if ([data isKindOfClass:[NSDictionary class]]){
                     id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
-                    result = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO];
+                    result = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:NO];
                 }
                 else if ([data isKindOfClass:[NSArray class]]){
                     
@@ -238,7 +238,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
                      {
                          id uid = [obj validObjectForKey:dataIdKey decodeHTML:NO];
-                         id resultEntry = [self objectOfType:type withValue:uid forKeyPath:dataIdKey createNew:NO];
+                         id resultEntry = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:NO];
                          if (resultEntry){
                              [resultArray addObject:resultEntry];
                          }
@@ -273,6 +273,8 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         }
         
         dispatch_sync(dispatch_get_main_queue(), ^{
+            
+            [self.managedObjectContext processPendingChanges];
                         
             if (completionBlock)
             {

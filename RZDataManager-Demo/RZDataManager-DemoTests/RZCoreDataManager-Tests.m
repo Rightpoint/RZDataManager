@@ -10,6 +10,7 @@
 #import "RZCoreDataManager.h"
 #import "DMCollection.h"
 #import "DMEntry.h"
+#import "DMThingClass.h"
 
 @interface RZCoreDataManager_Tests ()
 
@@ -73,6 +74,8 @@
 - (void)tearDown
 {
     [super tearDown];
+    
+    self.dataManager = nil;
 }
 
 #pragma mark - Fetch tests
@@ -219,8 +222,8 @@
          STAssertNotNil(redcollection, @"Collection not found");
          STAssertTrue(redcollection.entries.count == 6, @"New entry not correctly added");
          
-//         DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inSet:redcollection.entries createNew:NO options:nil];
-//         STAssertNotNil(newEntry, @"New entry not found in collection");
+         DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inCollection:redcollection.entries createNew:NO];
+         STAssertNotNil(newEntry, @"New entry not found in collection");
          
          finished = YES;
      }];
@@ -230,7 +233,7 @@
     }
 }
 
-- (void)test202ImportObjectsWithNewRelationships
+- (void)test203ImportObjectsWithNewRelationships
 {
     // import a few new collections, each with a few entries
     
@@ -289,11 +292,119 @@
         finished = YES;
     }];
     
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+    
+}
+
+- (void)test204ImportObjectWithDifferentEntityNameFromClass
+{
+    
+    // The class name is DMThingClass, but the entity is DMThing. This should be handled by RZCoreDataManager
+    
+    NSDictionary * thingData = @{ @"id" : @"12345",
+                                  @"attribute1" : @"whatup",
+                                  @"attribute2" : @"withdat" };
+    
+    __block BOOL finished = NO;
+    
+    [self.dataManager importData:thingData
+                      objectType:@"DMThingClass"
+                         options:nil
+                      completion:^(id result, NSError *error)
+     {
+         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         
+         // is it a DMThingClass?
+         STAssertTrue([result isKindOfClass:[DMThingClass class]], @"Returned object is wrong type");
+         STAssertTrue([[result myIdentifier] isEqualToString:@"12345"], @"Failed to import identifier attribute");
+         STAssertTrue([[result attribute1] isEqualToString:@"whatup"], @"Failed to import attribute1");
+         STAssertTrue([[result attribute1] isEqualToString:@"whatup"], @"Failed to import attribute1");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
+- (void)test205AbandonChanges
+{
+    
+    // Importing a new object will not persist the data to the persistent store. You must call saveData: to do that.
+    
+    NSDictionary * mockData = @{@"name" : @"Omicron",
+                                @"uid" : @"1000",
+                                @"date" : @"2013-07-01T12:00:00Z",
+                                @"collection" : @"Red"};
+    
+    __block BOOL finished = NO;
+    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+     {
+         STAssertNotNil(result, @"Result should not be nil");
+         STAssertNil(error, @"Error during import: %@", error);
+         
+         STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
+         
+         // attempt clean fetch of collection containing new object
+         DMCollection *redcollection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO];
+         STAssertNotNil(redcollection, @"Collection not found");
+         STAssertTrue(redcollection.entries.count == 6, @"New entry not correctly added");
+         
+         DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inCollection:redcollection.entries createNew:NO];
+         STAssertNotNil(newEntry, @"New entry not found in collection");
+         
+         STAssertNoThrow([self.dataManager saveData:YES], @"Failed to save context");
+         
+         // reset context and fetch again
+         [self.dataManager.managedObjectContext reset];
+         
+         newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
+         STAssertNotNil(newEntry, @"New entry not found in database after persist and reset");
+         
+         finished = YES;
+     }];
     
     while (!finished){
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
     }
     
+    
+    // This time, import an object, discard changes, it should not be present in main moc
+    mockData = @{@"name" : @"Pi",
+                 @"uid" : @"1001",
+                 @"date" : @"2013-07-01T12:00:00Z",
+                 @"collection" : @"Red"};
+    
+    finished = NO;
+    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+     {
+         STAssertNotNil(result, @"Result should not be nil");
+         STAssertNil(error, @"Error during import: %@", error);
+         
+         STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
+         
+         // attempt clean fetch of collection containing new object
+         DMCollection *redcollection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO];
+         STAssertNotNil(redcollection, @"Collection not found");
+         STAssertTrue(redcollection.entries.count == 7, @"New entry not correctly added");
+         
+         DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1001" forKeyPath:@"uid" inCollection:redcollection.entries createNew:NO];
+         STAssertNotNil(newEntry, @"New entry not found in collection");
+         
+         STAssertNoThrow([self.dataManager discardChanges], @"Failed to discard changes to context");
+         
+         newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1001" forKeyPath:@"uid" createNew:NO];
+         STAssertNil(newEntry, @"New entry should not exist after discarding changes");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
 }
 
 @end

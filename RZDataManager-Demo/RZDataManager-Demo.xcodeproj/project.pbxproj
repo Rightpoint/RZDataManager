@@ -24,6 +24,7 @@
 		9AC66E78175E92CE007C603C /* RZDataMangerConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC66E6F175E64A9007C603C /* RZDataMangerConstants.m */; };
 		9AC66E7B175E94A1007C603C /* RZDataManagerModelObjectMapping.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC66E74175E6DE6007C603C /* RZDataManagerModelObjectMapping.m */; };
 		9AC66E7E175E953F007C603C /* DMCollection+RZDataManagerModelObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC66E7D175E953E007C603C /* DMCollection+RZDataManagerModelObject.m */; };
+		9ACF8EE91760D58400974873 /* DMThingClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 9ACF8EE81760D58400974873 /* DMThingClass.m */; };
 		FEA82A781742AFFE00FA206C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A771742AFFE00FA206C /* UIKit.framework */; };
 		FEA82A7A1742AFFE00FA206C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A791742AFFE00FA206C /* Foundation.framework */; };
 		FEA82A7C1742AFFE00FA206C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A7B1742AFFE00FA206C /* CoreGraphics.framework */; };
@@ -75,6 +76,8 @@
 		9AC66E74175E6DE6007C603C /* RZDataManagerModelObjectMapping.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RZDataManagerModelObjectMapping.m; sourceTree = "<group>"; };
 		9AC66E7C175E953E007C603C /* DMCollection+RZDataManagerModelObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DMCollection+RZDataManagerModelObject.h"; sourceTree = "<group>"; };
 		9AC66E7D175E953E007C603C /* DMCollection+RZDataManagerModelObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DMCollection+RZDataManagerModelObject.m"; sourceTree = "<group>"; };
+		9ACF8EE71760D58400974873 /* DMThingClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMThingClass.h; path = "RZDataManager-Demo/DMThingClass.h"; sourceTree = SOURCE_ROOT; };
+		9ACF8EE81760D58400974873 /* DMThingClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMThingClass.m; path = "RZDataManager-Demo/DMThingClass.m"; sourceTree = SOURCE_ROOT; };
 		FEA82A741742AFFE00FA206C /* RZDataManager-Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "RZDataManager-Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEA82A771742AFFE00FA206C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FEA82A791742AFFE00FA206C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -202,6 +205,8 @@
 			children = (
 				FEA82AA21742AFFF00FA206C /* Supporting Files */,
 				FEA82A911742AFFE00FA206C /* RZDataManager_Test.xcdatamodeld */,
+				9ACF8EE71760D58400974873 /* DMThingClass.h */,
+				9ACF8EE81760D58400974873 /* DMThingClass.m */,
 				9A33666117553E0B00FCF766 /* DMEntry.h */,
 				9A33666217553E0B00FCF766 /* DMEntry.m */,
 				9A33665D17553E0A00FCF766 /* DMCollection.h */,
@@ -394,6 +399,7 @@
 				9AC66E70175E64A9007C603C /* RZDataMangerConstants.m in Sources */,
 				9AC66E75175E6DE6007C603C /* RZDataManagerModelObjectMapping.m in Sources */,
 				9AC66E7E175E953F007C603C /* DMCollection+RZDataManagerModelObject.m in Sources */,
+				9ACF8EE91760D58400974873 /* DMThingClass.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

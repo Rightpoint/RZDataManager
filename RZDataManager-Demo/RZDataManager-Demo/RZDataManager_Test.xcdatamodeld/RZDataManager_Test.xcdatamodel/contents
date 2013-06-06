@@ -24,8 +24,14 @@
         </attribute>
         <relationship name="collection" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DMCollection" inverseName="entries" inverseEntity="DMCollection" syncable="YES"/>
     </entity>
+    <entity name="DMThing" representedClassName="DMThingClass" syncable="YES">
+        <attribute name="attribute1" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="attribute2" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="myIdentifier" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
     <elements>
         <element name="DMCollection" positionX="160" positionY="192" width="128" height="75"/>
         <element name="DMEntry" positionX="160" positionY="192" width="128" height="255"/>
+        <element name="DMThing" positionX="160" positionY="192" width="128" height="90"/>
     </elements>
 </model>
