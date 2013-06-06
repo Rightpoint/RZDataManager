@@ -8,9 +8,6 @@
 
 #import "RZDataManager_Base.h"
 
-NSString * const RZDataManagerCustomMappingKey = @"RZDataManagerCustomMapping";
-NSString * const RZDataManagerShouldBreakRelationships = @"RZDataManagerShouldBreakRelationships";
-
 @interface RZDataManager ()
 
 - (NSException*)abstractMethodException:(SEL)selector;

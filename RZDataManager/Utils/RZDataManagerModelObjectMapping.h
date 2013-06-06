@@ -19,6 +19,8 @@
 
 - (id)initWithModelClass:(Class)modelClass;
 
+- (void)applyOptions:(NSDictionary*)options;
+
 - (NSString*)modelPropertyNameForDataKey:(NSString*)key;
 - (void)setModelPropertyName:(NSString*)propertyName forDataKey:(NSString*)key;
 

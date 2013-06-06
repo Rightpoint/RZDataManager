@@ -164,10 +164,7 @@
     
     
     // Use a custom mapping for the name property
-    RZDataManagerModelObjectMapping * mapping = [self.dataManager.dataImporter mappingForClassNamed:@"DMEntry"];
-    [mapping setModelPropertyName:@"name" forDataKey:@"mahNameIs"];
-    
-    NSDictionary *opts = @{ RZDataManagerCustomMappingKey : mapping };
+    NSDictionary *opts = @{ RZDataManagerImportKeyMappings : @{ @"mahNameIs" : @"name" } };
     
     __block BOOL finished = NO;
     [self.dataManager importData:mockData objectType:@"DMEntry" options:opts completion:^(id result, NSError *error)

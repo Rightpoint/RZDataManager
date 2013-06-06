@@ -10,6 +10,15 @@
 
 @implementation RZDataMangerConstants
 
+#pragma mark - RZDataManager option keys
+
+NSString * const RZDataManagerImportDataIdKey               = @"RZDataManagerImportDataIdKey";
+NSString * const RZDataManagerImportModelIdPropertyName     = @"RZDataManagerImportModelIdPropertyName";
+NSString * const RZDataManagerShouldBreakRelationships      = @"RZDataManagerShouldBreakRelationships";
+NSString * const RZDataManagerImportDateFormat              = @"RZDataManagerImportDateFormat";
+NSString * const RZDataManagerImportIgnoreKeys              = @"RZDataManagerImportIgnoreKeys";
+NSString * const RZDataManagerImportKeyMappings             = @"RZDataManagerImportKeyMappings";
+
 #pragma mark - Data Type Strings
 
 NSString* const kRZDataManagerTypeNSArray               = @"NSArray";

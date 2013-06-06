@@ -10,6 +10,20 @@
 
 @interface RZDataMangerConstants : NSObject
 
+#pragma mark - RZDataManager options dictionary keys
+
+// overrides for mapping
+
+OBJC_EXTERN NSString * const RZDataManagerImportDataIdKey;              // override default data key(path) for uniquely identifying object
+OBJC_EXTERN NSString * const RZDataManagerImportModelIdPropertyName;    // override default property name for uniquely identifying object
+OBJC_EXTERN NSString * const RZDataManagerImportDateFormat;             // override default date format for import
+OBJC_EXTERN NSString * const RZDataManagerImportIgnoreKeys;
+OBJC_EXTERN NSString * const RZDataManagerImportKeyMappings;            // override default mappings for keypaths->property names
+
+// other options
+
+OBJC_EXTERN NSString * const RZDataManagerShouldBreakRelationships;     // needs a better name - if true, will break any cached relationships not present in imported data
+
 #pragma mark - Data Type Strings
 
 OBJC_EXTERN NSString* const kRZDataManagerTypeNSArray;

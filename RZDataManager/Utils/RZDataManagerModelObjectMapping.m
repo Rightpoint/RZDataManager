@@ -8,6 +8,7 @@
 
 #import "RZDataManagerModelObjectMapping.h"
 #import "RZDataManagerModelObject.h"
+#import "RZDataMangerConstants.h"
 #import "NSObject+RZPropertyUtils.h"
 
 @interface RZDataManagerModelObjectMapping ()
@@ -32,6 +33,41 @@
         [self buildMappingCache];
     }
     return self;
+}
+
+- (void)applyOptions:(NSDictionary *)options
+{
+    [options enumerateKeysAndObjectsUsingBlock:^(NSString * key, id obj, BOOL *stop) {
+        
+        if ([key isEqualToString:RZDataManagerImportDataIdKey] && [obj isKindOfClass:[NSString class]]){
+            self.dataIdKey = obj;
+        }
+        else if ([key isEqualToString:RZDataManagerImportModelIdPropertyName] && [obj isKindOfClass:[NSString class]]){
+            self.modelIdPropertyName = obj;
+        }
+        else if ([key isEqualToString:RZDataManagerImportDateFormat] && [obj isKindOfClass:[NSString class]]){
+            self.dateFormat = obj;
+        }
+        else if ([key isEqualToString:RZDataManagerImportIgnoreKeys] && [obj isKindOfClass:[NSArray class]]){
+            if (self.ignoreKeys){
+                NSMutableArray * ignoreKeys = [self.ignoreKeys mutableCopy];
+                [ignoreKeys addObjectsFromArray:obj];
+                self.ignoreKeys = ignoreKeys;
+            }
+            else{
+                self.ignoreKeys = obj;
+            }
+        }
+        else if ([key isEqualToString:RZDataManagerImportKeyMappings] && [obj isKindOfClass:[NSDictionary class]]){
+            if (self.dataKeyMappings){
+                [self.dataKeyMappings addEntriesFromDictionary:obj];
+            }
+            else{
+                self.dataKeyMappings = [obj mutableCopy];
+            }
+        }
+        
+    }];
 }
 
 - (NSString*)modelPropertyNameForDataKey:(NSString *)key

@@ -16,6 +16,7 @@
 
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
+#import "RZDataMangerConstants.h"
 
 typedef void (^RZDataManagerImportBlock)();
 typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, collection, or nil
@@ -84,8 +85,4 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 
 @end
 
-#pragma mark - RZDataManager option keys
-
-OBJC_EXTERN NSString * const RZDataManagerCustomMappingKey; // provide a custom mapping (RZDataManagerModelObjectMapping) in the options dict
-OBJC_EXTERN NSString * const RZDataManagerShouldBreakRelationships; // needs a better name - if true, will break any cached relationships not present in imported data
 
