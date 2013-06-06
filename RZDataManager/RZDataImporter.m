@@ -112,74 +112,76 @@
     }
 }
 
+// TODO: Reimplement this for no-plist configuration
 
-- (RZDataImporterDiffInfo*)diffInfoForObjects:(NSArray*)objects
-                                     withData:(id)data
-                                dataIdKeyPath:(NSString*)dataIdKeyPath
-                               modelIdKeyPath:(NSString*)modelIdKeyPath
-{
-    
-    RZDataImporterDiffInfo *diffInfo = [[RZDataImporterDiffInfo alloc] init];
-    
-    NSArray *dataDicts = nil;
-    if ([data isKindOfClass:[NSArray class]]){
-        dataDicts = data;
-    }
-    else if ([data isKindOfClass:[NSDictionary class]]){
-        dataDicts = @[data];
-    }
-    
-    if (dataDicts != nil){
-        
-        // Update and insert new items
-        if (dataDicts.count > 0){
-            
-            [dataDicts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                if ([obj isKindOfClass:[NSDictionary class]]){
-                    
-                    NSDictionary* dataDict = obj;
-                    id uniqueValue = nil;
-                    NSArray* matchingItems = nil;
-                    
-                    BOOL itemExists = NO;
-                    
-                    // try to find matching object
-                    if (dataIdKeyPath != nil && modelIdKeyPath != nil){
-                        
-                        uniqueValue = [dataDict validObjectForKeyPath:dataIdKeyPath decodeHTML:self.shouldDecodeHTML];
-                        if (uniqueValue != nil){
-                            
-                            // find existing item
-                            NSPredicate *matchPred = [NSPredicate predicateWithFormat:@"%K == %@", modelIdKeyPath, uniqueValue];
-                            matchingItems = [objects filteredArrayUsingPredicate:matchPred];
-                            itemExists = (matchingItems.count > 0);
-                        }
-                    }
-                    
-                    // create new object if necessary
-                    if (!itemExists){
-                        [diffInfo.insertedObjectIndices addObject:@(idx)];
-                    }
-                    else if (matchingItems.count == 1){
-                        [diffInfo.movedObjectIndices addObject:@(idx)];
-                    }
-                }
-            }];
-
-        }
-        
-        // Enumerate items that aren't in array
-        NSArray *currentUniqueVals = [dataDicts valueForKeyPath:dataIdKeyPath];
-        [objects enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-            id objValue = [obj valueForKeyPath:modelIdKeyPath];
-            if (![currentUniqueVals containsObject:objValue]){
-                [diffInfo.removedObjectIndices addObject:@(idx)];
-            }
-        }];
-    }
-    
-    return diffInfo;
-}
+//
+//- (RZDataImporterDiffInfo*)diffInfoForObjects:(NSArray*)objects
+//                                     withData:(id)data
+//                                dataIdKeyPath:(NSString*)dataIdKeyPath
+//                               modelIdKeyPath:(NSString*)modelIdKeyPath
+//{
+//    
+//    RZDataImporterDiffInfo *diffInfo = [[RZDataImporterDiffInfo alloc] init];
+//    
+//    NSArray *dataDicts = nil;
+//    if ([data isKindOfClass:[NSArray class]]){
+//        dataDicts = data;
+//    }
+//    else if ([data isKindOfClass:[NSDictionary class]]){
+//        dataDicts = @[data];
+//    }
+//    
+//    if (dataDicts != nil){
+//        
+//        // Update and insert new items
+//        if (dataDicts.count > 0){
+//            
+//            [dataDicts enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//                if ([obj isKindOfClass:[NSDictionary class]]){
+//                    
+//                    NSDictionary* dataDict = obj;
+//                    id uniqueValue = nil;
+//                    NSArray* matchingItems = nil;
+//                    
+//                    BOOL itemExists = NO;
+//                    
+//                    // try to find matching object
+//                    if (dataIdKeyPath != nil && modelIdKeyPath != nil){
+//                        
+//                        uniqueValue = [dataDict validObjectForKeyPath:dataIdKeyPath decodeHTML:self.shouldDecodeHTML];
+//                        if (uniqueValue != nil){
+//                            
+//                            // find existing item
+//                            NSPredicate *matchPred = [NSPredicate predicateWithFormat:@"%K == %@", modelIdKeyPath, uniqueValue];
+//                            matchingItems = [objects filteredArrayUsingPredicate:matchPred];
+//                            itemExists = (matchingItems.count > 0);
+//                        }
+//                    }
+//                    
+//                    // create new object if necessary
+//                    if (!itemExists){
+//                        [diffInfo.insertedObjectIndices addObject:@(idx)];
+//                    }
+//                    else if (matchingItems.count == 1){
+//                        [diffInfo.movedObjectIndices addObject:@(idx)];
+//                    }
+//                }
+//            }];
+//
+//        }
+//        
+//        // Enumerate items that aren't in array
+//        NSArray *currentUniqueVals = [dataDicts valueForKeyPath:dataIdKeyPath];
+//        [objects enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+//            id objValue = [obj valueForKeyPath:modelIdKeyPath];
+//            if (![currentUniqueVals containsObject:objValue]){
+//                [diffInfo.removedObjectIndices addObject:@(idx)];
+//            }
+//        }];
+//    }
+//    
+//    return diffInfo;
+//}
 
 
 #pragma mark - Private
