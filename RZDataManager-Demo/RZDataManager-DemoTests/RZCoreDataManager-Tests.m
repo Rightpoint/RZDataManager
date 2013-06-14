@@ -332,7 +332,7 @@
          STAssertTrue([result isKindOfClass:[DMThingClass class]], @"Returned object is wrong type");
          STAssertTrue([[result myIdentifier] isEqualToString:@"12345"], @"Failed to import identifier attribute");
          STAssertTrue([[result attribute1] isEqualToString:@"whatup"], @"Failed to import attribute1");
-         STAssertTrue([[result attribute1] isEqualToString:@"whatup"], @"Failed to import attribute1");
+         STAssertTrue([[result attribute2] isEqualToString:@"withdat"], @"Failed to import attribute2");
          
          finished = YES;
      }];

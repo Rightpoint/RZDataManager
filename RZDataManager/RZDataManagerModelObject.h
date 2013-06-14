@@ -44,9 +44,9 @@
     Example:
  
     Let current object have type "RZDepartment". 
-    This method would return the following dictionary
+    This method might return the following dictionary
  
-    @{ "employees" : [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:@"RZEmployee" inversePropertyName:@"department"] }
+    @{ "employees" : [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:@"RZEmployee" propertyName:@"employees" inversePropertyName:@"department"] }
 */
 
 + (NSDictionary*)dataImportRelationshipKeyMappings;

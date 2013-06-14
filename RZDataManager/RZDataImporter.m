@@ -366,8 +366,7 @@
 
 - (void)setPropertyValue:(id)value onObject:(NSObject<RZDataManagerModelObject> *)object fromKeyPath:(NSString *)keyPath withMapping:(RZDataManagerModelObjectMapping *)mapping
 {
-    // otherwise, at bare minimum we need an object key
-    // if it's not overridden, just use the data key
+
     NSString *propertyName = [mapping modelPropertyNameForDataKey:keyPath];
     
     SEL setter = [self setterFromPropertyName:propertyName];
