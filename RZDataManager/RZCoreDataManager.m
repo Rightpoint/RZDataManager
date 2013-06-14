@@ -67,30 +67,50 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         NSLog(@"RZCoreDataManager: [ERROR] missing data and/or model ID keys for object of type %@", type);
         return;
     }
-        
-    void (^InternalImportBlock)(NSDictionary *dict) = ^(NSDictionary* dict){
-        
-        id obj = nil;
-        id uid = [dict validObjectForKey:dataIdKey decodeHTML:NO];
-        
-        if (uid){
-            obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES];
-            [self.dataImporter importData:dict toObject:obj usingMapping:mapping];
-        }
-        else{
-            NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKey, type);
-        }
-    };
+    
     
     [self importInBackgroundUsingBlock:^{
         
         if ([data isKindOfClass:[NSDictionary class]]){
-            InternalImportBlock(data);
+            id obj = nil;
+            id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
+            
+            if (uid){
+                obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES];
+                [self.dataImporter importData:data toObject:obj usingMapping:mapping];
+            }
+            else{
+                NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKey, type);
+            }
         }
         else if ([data isKindOfClass:[NSArray class]]){
-            [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                InternalImportBlock(obj);
-            }];
+            
+            // optimize lookup for existing objects
+            NSString *entityName = [self entityNameForObjectType:type];
+            NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
+            NSError *err =nil;
+            NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
+            if (!err){
+                NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
+                [(NSArray*)data enumerateObjectsUsingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
+                    
+                    id uid = [objData valueForKey:dataIdKey];
+                    if (uid){
+                        id importedObj = [existingObjsByUid objectForKey:uid];
+                        
+                        if (!importedObj){
+                            importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+                        }
+                        
+                        [self.dataImporter importData:objData toObject:importedObj];
+                    }
+                    
+                }];
+            }
+            else{
+                NSLog(@"RZCoreDataManager: Error fetching existing objects of type %@: %@", entityName, err);
+            }
+            
         }
         else{
             NSLog(@"RZCoreDataManager: Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class]));
@@ -144,6 +164,8 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         NSLog(@"RZCoreDataManager: [ERROR] missing data and/or model ID keys for object of type %@", type);
         return;
     }
+    
+    // TODO: OPTIMIZE THIS FOR ARRAY IMPORT
     
     void (^InternalImportBlock)(NSDictionary *dict) = ^(NSDictionary* dict){
         

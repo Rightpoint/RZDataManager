@@ -80,7 +80,7 @@
 
 #pragma mark - Fetch tests
 
-- (void)test100FetchSingleObject
+- (void)testFetchSingleObject
 {
     DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
     STAssertNotNil(entry, @"Result should not be nil");
@@ -88,7 +88,7 @@
 }
 
 
-- (void)test101FetchArrayWithPredicate
+- (void)testFetchArrayWithPredicate
 {
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"collection.name == %@", @"Red"];
     NSArray *entries = [self.dataManager objectsOfType:@"DMEntry" matchingPredicate:pred];
@@ -97,7 +97,7 @@
 
 #pragma mark - Import tests
 
-- (void)test200ImportObject
+- (void)testImportObject
 {
     NSDictionary * mockData = @{@"name" : @"Omicron",
                                 @"uid" : @"1000",
@@ -146,7 +146,67 @@
     }
 }
 
-- (void)test201ImportObjectWithOverriddenMapping
+- (void)testImportMultipleObjects
+{
+    NSArray * mockData = @[ @{@"name" : @"Omicron",
+                                @"uid" : @"1000",
+                                @"popularity" : @(0.5),
+                                @"testFloat" : @(1.0f),
+                                @"testDouble" : @(1.0),
+                                @"testUInt" : @(-1), // should wrap back to 0xFFFFFFFF
+                                @"testInt" : @(-1),
+                                @"testShort" : @(-1),
+                                @"testUShort" : @(-1), // should wrap back to 0xFFFF
+                                @"testLongLong" : @(-1),
+                                @"testULongLong" : @(-1), // should wrap back to 0xFFFFFFFFFFFFFFFF
+                                @"testBool" : @(YES),
+                                @"date" : @"2013-07-01T12:00:00Z"},
+                            
+                            @{@"name" : @"Pi",
+                              @"uid" : @"1001",
+                              @"popularity" : @(0.8),
+                              @"testFloat" : @(1.0f),
+                              @"testDouble" : @(1.0),
+                              @"testUInt" : @(-1), // should wrap back to 0xFFFFFFFF
+                              @"testInt" : @(-1),
+                              @"testShort" : @(-1),
+                              @"testUShort" : @(-1), // should wrap back to 0xFFFF
+                              @"testLongLong" : @(-1),
+                              @"testULongLong" : @(-1), // should wrap back to 0xFFFFFFFFFFFFFFFF
+                              @"testBool" : @(YES),
+                              @"date" : @"2013-07-02T08:00:22Z"},
+    
+                            ];
+    __block BOOL finished = NO;
+    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+     {
+         STAssertNotNil(result, @"Result should not be nil");
+         STAssertNil(error, @"Error during import: %@", error);
+         
+         STAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be array");
+         
+         // attempt clean fetch of new objects
+         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
+         
+         STAssertNotNil(entry, @"Newly created entry not found");
+         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
+         STAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+         
+         entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1001" forKeyPath:@"uid" createNew:NO];
+         
+         STAssertNotNil(entry, @"Newly created entry not found");
+         STAssertEqualObjects(entry.name, @"Pi", @"Newly created entry has wrong name");
+         STAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
+- (void)testImportObjectWithOverriddenMapping
 {
     NSDictionary * mockData = @{@"mahNameIs" : @"Omicron",
                                 @"uid" : @"1000",
@@ -199,7 +259,7 @@
     }
 }
 
-- (void)test202ImportObjectWithRelationship
+- (void)testImportObjectWithRelationship
 {
     NSDictionary * mockData = @{@"name" : @"Omicron",
                                 @"uid" : @"1000",
@@ -230,7 +290,7 @@
     }
 }
 
-- (void)test203ImportObjectsWithNewRelationships
+- (void)testImportObjectsWithNewRelationships
 {
     // import a few new collections, each with a few entries
     
@@ -310,7 +370,7 @@
     
 }
 
-- (void)test204ImportObjectWithDifferentEntityNameFromClass
+- (void)testImportObjectWithDifferentEntityNameFromClass
 {
     
     // The class name is DMThingClass, but the entity is DMThing. This should be handled by RZCoreDataManager
@@ -342,7 +402,7 @@
     }
 }
 
-- (void)test205AbandonChanges
+- (void)testAbandonChanges
 {
     
     // Importing a new object will not persist the data to the persistent store. You must call saveData: to do that.
@@ -421,7 +481,7 @@
 
 #pragma mark - Dictionary conversion test
 
-- (void)test300ConvertToDictionary
+- (void)testConvertToDictionary
 {
     NSDictionary * mockData = @{
                                 @"name" : @"Omicron",
