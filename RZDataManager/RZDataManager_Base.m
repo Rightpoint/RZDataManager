@@ -134,23 +134,14 @@
     NSArray * propertyNames = [[object class] getPropertyNames];
     NSMutableDictionary * dictionaryRepresentation = [NSMutableDictionary dictionaryWithCapacity:propertyNames.count];
     
-    // Introspected getters will not cause an ARC leak. Disable warning temporarily.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    
     [propertyNames enumerateObjectsUsingBlock:^(NSString * propName, NSUInteger idx, BOOL *stop) {
         
         NSString * propType = [[object class] dataTypeForPropertyNamed:propName];
 
-        // TODO: For now this will only work if the getter name is not overridden. Need to handle that case in the future (in property utils).
-        SEL getter = NSSelectorFromString(propName);
-        
-        if (![object respondsToSelector:getter]){
-            NSLog(@"RZDataManger: Object of type %@ does not repsond to selector %@", NSStringFromClass([object class]), propName);
-        }
-        // To return a scalar data type, we need NSInvocation. The value will have to be converted to NSNumber for use in dictionary.
-        else if (rz_isScalarDataType(propType))
+        if (rz_isScalarDataType(propType))
         {
+            // TODO: For now this will only work if the getter name is not overridden. Need to handle that case in the future (in property utils).
+            SEL getter = NSSelectorFromString(propName);
             
             NSNumber * numberValue = nil;
             
@@ -236,7 +227,13 @@
             RZDataManagerModelObjectRelationshipMapping * relMapping = [mapping relationshipMappingForModelPropertyName:propName];
             RZDataManagerModelObjectMapping * otherObjMapping = [self.dataImporter mappingForClassNamed:relMapping.relationshipObjectType];
             
-            id propValue = [object performSelector:getter];
+            id propValue = nil;
+            @try {
+                propValue = [object valueForKey:propName];
+            }
+            @catch (NSException *exception) {
+                NSLog(@"RZDataImporter: Object of type %@ does not respond to key %@", NSStringFromClass([object class]), propName);
+            }
             
             id (^IdSerializerBlock)(id obj) = ^id(id obj){
                 
@@ -283,7 +280,7 @@
                 [dictionaryRepresentation setObject:relSet forKey:propName];
 
             }
-            else
+            else if (propValue != nil)
             {
                 id otherObjUid = IdSerializerBlock(propValue);
                 
@@ -293,16 +290,20 @@
             }
         }
         else{
-            id propValue = [object performSelector:getter];
+            id propValue = nil;
+            @try {
+                propValue = [object valueForKey:propName];
+            }
+            @catch (NSException *exception) {
+                NSLog(@"RZDataImporter: Object of type %@ does not respond to key %@", NSStringFromClass([object class]), propName);
+            }
             if (propValue){
                 [dictionaryRepresentation setObject:propValue forKey:propName];
             }
         }
         
     }];
-    
-#pragma clang diagnostic pop
-    
+        
     return dictionaryRepresentation;
 }
 
