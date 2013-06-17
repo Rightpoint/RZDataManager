@@ -80,7 +80,7 @@
 
 #pragma mark - Fetch tests
 
-- (void)testFetchSingleObject
+- (void)test100FetchSingleObject
 {
     DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
     STAssertNotNil(entry, @"Result should not be nil");
@@ -88,7 +88,7 @@
 }
 
 
-- (void)testFetchArrayWithPredicate
+- (void)test101FetchArrayWithPredicate
 {
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"collection.name == %@", @"Red"];
     NSArray *entries = [self.dataManager objectsOfType:@"DMEntry" matchingPredicate:pred];
@@ -97,7 +97,7 @@
 
 #pragma mark - Import tests
 
-- (void)testImportObject
+- (void)test200ImportObject
 {
     NSDictionary * mockData = @{@"name" : @"Omicron",
                                 @"uid" : @"1000",
@@ -146,7 +146,7 @@
     }
 }
 
-- (void)testImportMultipleObjects
+- (void)test201ImportMultipleObjects
 {
     NSArray * mockData = @[ @{@"name" : @"Omicron",
                                 @"uid" : @"1000",
@@ -206,7 +206,7 @@
     }
 }
 
-- (void)testImportObjectWithOverriddenMapping
+- (void)test202ImportObjectWithOverriddenMapping
 {
     NSDictionary * mockData = @{@"mahNameIs" : @"Omicron",
                                 @"uid" : @"1000",
@@ -259,7 +259,7 @@
     }
 }
 
-- (void)testImportObjectWithRelationship
+- (void)test203ImportObjectWithRelationship
 {
     NSDictionary * mockData = @{@"name" : @"Omicron",
                                 @"uid" : @"1000",
@@ -290,7 +290,7 @@
     }
 }
 
-- (void)testImportObjectsWithNewRelationships
+- (void)test204ImportObjectsWithNewRelationships
 {
     // import a few new collections, each with a few entries
     
@@ -370,7 +370,51 @@
     
 }
 
-- (void)testImportObjectWithDifferentEntityNameFromClass
+- (void)test205ImportAndUpdateObjectsForRelationship
+{
+    NSDictionary *redCollection = @{
+                                       @"name" : @"Red",
+                                       @"entries" :
+                                           @[
+                                               @{
+                                                   @"uid" : @"0",
+                                                   @"popularity" : @(0.5) // update alpha popularity to 0.5
+                                                },
+                                               @{
+                                                   @"name" : @"Pi",
+                                                   @"uid" : @"1001"
+                                                }
+                                            ]
+                                       };
+    
+    
+    __block BOOL finished = NO;
+    
+    [self.dataManager importData:redCollection
+                      objectType:@"DMCollection"
+                         options:nil
+                      completion:^(id result, NSError *error)
+     {
+         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         
+         // result object should be collection named "Red"
+         DMCollection *collection = (DMCollection*)result;
+         STAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
+         STAssertTrue(collection.entries.count == 6, @"Returned collection has wrong number of entries");
+
+         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
+         STAssertNotNil(entry, @"Red entry not found");
+         STAssertTrue(entry.popularity.doubleValue == 0.5, @"Entry not updated correctly");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
+- (void)test206ImportObjectWithDifferentEntityNameFromClass
 {
     
     // The class name is DMThingClass, but the entity is DMThing. This should be handled by RZCoreDataManager
@@ -402,7 +446,7 @@
     }
 }
 
-- (void)testAbandonChanges
+- (void)test207AbandonChanges
 {
     
     // Importing a new object will not persist the data to the persistent store. You must call saveData: to do that.
@@ -481,7 +525,7 @@
 
 #pragma mark - Dictionary conversion test
 
-- (void)testConvertToDictionary
+- (void)test300ConvertToDictionary
 {
     NSDictionary * mockData = @{
                                 @"name" : @"Omicron",

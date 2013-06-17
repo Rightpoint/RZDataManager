@@ -165,72 +165,147 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         return;
     }
     
-    // TODO: OPTIMIZE THIS FOR ARRAY IMPORT
-    
-    void (^InternalImportBlock)(NSDictionary *dict) = ^(NSDictionary* dict){
+    [self importInBackgroundUsingBlock:^{
         
-        id obj = nil;
-        id uid = [dict validObjectForKey:dataIdKey decodeHTML:NO];
-        if (uid){
+        if ([data isKindOfClass:[NSDictionary class]]){
+            
+            id obj = nil;
+            id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
+            if (uid){
+                
+                NSEntityDescription *entityDesc = [(NSManagedObject*)otherObject entity];
+                NSRelationshipDescription *relationshipDesc = [[entityDesc relationshipsByName] objectForKey:relationshipKey];
+                if (relationshipDesc != nil){
+                    
+                    // need to be able to handle many-to-many
+                    if (relationshipDesc.isToMany){
+                        
+                        // find object within other object's relationship set
+                        NSSet * existingObjs = [otherObject valueForKey:relationshipKey];
+                        obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey inCollection:existingObjs createNew:NO];
+                        
+                        // if not found in set, find globally
+                        if (nil == obj)
+                        {
+                            obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES];
+                        }
+                        
+                        [self.dataImporter importData:data toObject:obj];
+                        
+                        // create selector string for making relationship
+                        NSString *selectorString = [NSString stringWithFormat:@"add%@Object:", relationshipKey.capitalizedString];
+                        SEL relationshipSel = NSSelectorFromString(selectorString);
+                        
+                        // Ignore selector leak warning - it won't leak
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+                        [otherObject performSelector:relationshipSel withObject:obj];
+#pragma clang diagnostic pop
+                        
+                    }
+                    else{
+                        
+                        // create or update object
+                        obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES];
+                        [self.dataImporter importData:data toObject:obj];
+                        
+                        // set relationship on other object
+                        [otherObject setValue:obj forKey:relationshipKey];
+                    }
+                }
+                else{
+                    NSLog(@"RZCoreDataManger: Could not find relationship %@ on entity named %@", relationshipKey, entityDesc.name);
+                }
+                
+            }
+            else{
+                NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKey, type);
+            }
+            
+
+        }
+        else if ([data isKindOfClass:[NSArray class]]){
             
             NSEntityDescription *entityDesc = [(NSManagedObject*)otherObject entity];
             NSRelationshipDescription *relationshipDesc = [[entityDesc relationshipsByName] objectForKey:relationshipKey];
-            if (relationshipDesc){
+            if (relationshipDesc != nil){
                 
                 // need to be able to handle many-to-many
                 if (relationshipDesc.isToMany){
-                    
-                    // find object within other object's relationship set
-                    NSSet * existingObjs = [otherObject valueForKey:relationshipKey];
-                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey inCollection:existingObjs createNew:NO];
-
-                    // if not found in set, find globally
-                    if (nil == obj)
-                    {
-                        obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES];
-                    }
-                    
-                    [self.dataImporter importData:dict toObject:obj];
                     
                     // create selector string for making relationship
                     NSString *selectorString = [NSString stringWithFormat:@"add%@Object:", relationshipKey.capitalizedString];
                     SEL relationshipSel = NSSelectorFromString(selectorString);
                     
-                    // Ignore selector leak warning - it won't leak
+                    // optimize lookup for existing objects
+                    NSString *entityName = [self entityNameForObjectType:type];
+                    NSArray * existingObjs = [(NSSet*)[otherObject valueForKey:relationshipKey] allObjects];
+                    if (existingObjs != nil){
+                        NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
+                        [(NSArray*)data enumerateObjectsUsingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
+                            
+                            id uid = [objData valueForKey:dataIdKey];
+                            if (uid){
+                                
+                                id importedObj = [existingObjsByUid objectForKey:uid];
+                                
+                                if (!importedObj){
+                                    importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+                                }
+                                
+                                [self.dataImporter importData:objData toObject:importedObj];
+                                
+                                // Ignore selector leak warning - it won't leak
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-                    [otherObject performSelector:relationshipSel withObject:obj];
+                                [otherObject performSelector:relationshipSel withObject:importedObj];
 #pragma clang diagnostic pop
+                                
+                            }
+                            
+                        }];
+                    }
+                    else{
+                        NSLog(@"RZCoreDataManager: Error fetching existing objects of type %@ - result is nil", [self entityNameForObjectType:type]);
+                    }
+                    
                     
                 }
                 else{
-                    
-                    // create or update object
-                    obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES];
-                    [self.dataImporter importData:dict toObject:obj];
-                    
-                    // set relationship on other object
-                    [otherObject setValue:obj forKey:relationshipKey];
+                    NSLog(@"RZCoreDataManager: Cannot import multiple objects for to-one relationship.");
                 }
+
             }
             else{
                 NSLog(@"RZCoreDataManger: Could not find relationship %@ on entity named %@", relationshipKey, entityDesc.name);
             }
-        }
-        else{
-            NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKey, type);
-        }
-    };
-    
-    [self importInBackgroundUsingBlock:^{
-        
-        if ([data isKindOfClass:[NSDictionary class]]){
-            InternalImportBlock(data);
-        }
-        else if ([data isKindOfClass:[NSArray class]]){
-            [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                InternalImportBlock(obj);
-            }];
+            
+//            // optimize lookup for existing objects
+//            NSString *entityName = [self entityNameForObjectType:type];
+//            NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
+//            NSError *err =nil;
+//            NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
+//            if (!err){
+//                NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
+//                [(NSArray*)data enumerateObjectsUsingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
+//                    
+//                    id uid = [objData valueForKey:dataIdKey];
+//                    if (uid){
+//                        id importedObj = [existingObjsByUid objectForKey:uid];
+//                        
+//                        if (!importedObj){
+//                            importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+//                        }
+//                        
+//                        [self.dataImporter importData:objData toObject:importedObj];
+//                    }
+//                    
+//                }];
+//            }
+//            else{
+//                NSLog(@"RZCoreDataManager: Error fetching existing objects of type %@: %@", entityName, err);
+//            }
+
         }
         else{
             NSLog(@"RZCoreDataManager: Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class]));

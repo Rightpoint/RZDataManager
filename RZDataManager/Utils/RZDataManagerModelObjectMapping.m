@@ -72,18 +72,29 @@
 
 - (NSString*)modelPropertyNameForDataKey:(NSString *)key
 {
-    NSString *propName = [self.dataKeyMappings objectForKey:key];
-    if (nil == propName){
-        
-        // look for property name similar to key/keypath, if found, cache it
-        NSPredicate *propnamePred = [NSPredicate predicateWithFormat:@"SELF LIKE[cd] %@", key];
-        NSArray *matches = [self.classPropertyNames filteredArrayUsingPredicate:propnamePred];
-        if (matches.count > 0){
-            propName = [matches objectAtIndex:0];
-            [self.dataKeyMappings setObject:propName forKey:key];
-        }
-        
+    NSString *propName = nil;
+    if ([key isEqualToString:self.dataIdKey])
+    {
+        propName = self.modelIdPropertyName;
     }
+    else
+    {
+        propName = [self.dataKeyMappings objectForKey:key];
+        
+        if (nil == propName){
+            
+            // look for property name similar to key/keypath, if found, cache it
+            NSPredicate *propnamePred = [NSPredicate predicateWithFormat:@"SELF LIKE[cd] %@", key];
+            NSArray *matches = [self.classPropertyNames filteredArrayUsingPredicate:propnamePred];
+            if (matches.count > 0){
+                propName = [matches objectAtIndex:0];
+                [self.dataKeyMappings setObject:propName forKey:key];
+            }
+            
+        }
+    }
+    
+
     return propName;
 }
 
