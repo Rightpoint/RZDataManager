@@ -280,32 +280,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 NSLog(@"RZCoreDataManger: Could not find relationship %@ on entity named %@", relationshipKey, entityDesc.name);
             }
             
-//            // optimize lookup for existing objects
-//            NSString *entityName = [self entityNameForObjectType:type];
-//            NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
-//            NSError *err =nil;
-//            NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
-//            if (!err){
-//                NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
-//                [(NSArray*)data enumerateObjectsUsingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
-//                    
-//                    id uid = [objData valueForKey:dataIdKey];
-//                    if (uid){
-//                        id importedObj = [existingObjsByUid objectForKey:uid];
-//                        
-//                        if (!importedObj){
-//                            importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
-//                        }
-//                        
-//                        [self.dataImporter importData:objData toObject:importedObj];
-//                    }
-//                    
-//                }];
-//            }
-//            else{
-//                NSLog(@"RZCoreDataManager: Error fetching existing objects of type %@: %@", entityName, err);
-//            }
-
         }
         else{
             NSLog(@"RZCoreDataManager: Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class]));
