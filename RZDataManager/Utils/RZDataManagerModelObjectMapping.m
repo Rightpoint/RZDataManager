@@ -152,8 +152,8 @@
 - (void)buildMappingCache
 {
     self.classPropertyNames = [[self.modelClass class] getPropertyNames];
-    self.dataIdKey = [[self.modelClass class] defaultDataIdKey];
-    self.modelIdPropertyName = [[self.modelClass class] modelIdPropertyName];
+    self.dataIdKey = [[self.modelClass class] dataImportDefaultDataIdKey];
+    self.modelIdPropertyName = [[self.modelClass class] dataImportModelIdPropertyName];
     
     if ([[self.modelClass class] respondsToSelector:@selector(dataImportDateFormat)])
     {

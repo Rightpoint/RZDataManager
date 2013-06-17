@@ -13,10 +13,10 @@
 @protocol RZDataManagerModelObject <NSObject>
 
 //! The default key by which incoming data is uniquely identified
-+ (NSString*)defaultDataIdKey;
++ (NSString*)dataImportDefaultDataIdKey;
 
 //! The property by which the model object is uniquely identified
-+ (NSString*)modelIdPropertyName;
++ (NSString*)dataImportModelIdPropertyName;
 
 @optional
 

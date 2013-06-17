@@ -10,12 +10,12 @@
 
 @implementation DMCollection (RZDataManagerModelObject)
 
-+ (NSString*)defaultDataIdKey
++ (NSString*)dataImportDefaultDataIdKey
 {
     return @"name";
 }
 
-+ (NSString*)modelIdPropertyName
++ (NSString*)dataImportModelIdPropertyName
 {
     return @"name";
 }

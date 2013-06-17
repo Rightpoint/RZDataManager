@@ -14,12 +14,12 @@
 @dynamic attribute2;
 @dynamic myIdentifier;
 
-+ (NSString*)defaultDataIdKey
++ (NSString*)dataImportDefaultDataIdKey
 {
     return @"id";
 }
 
-+ (NSString*)modelIdPropertyName
++ (NSString*)dataImportModelIdPropertyName
 {
     return @"myIdentifier";
 }

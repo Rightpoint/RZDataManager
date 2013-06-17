@@ -10,12 +10,12 @@
 
 @implementation DMEntry (RZDataManagerModelObject)
 
-+ (NSString*)defaultDataIdKey
++ (NSString*)dataImportDefaultDataIdKey
 {
     return @"uid";
 }
 
-+ (NSString*)modelIdPropertyName
++ (NSString*)dataImportModelIdPropertyName
 {
     return @"uid";
 }
