@@ -48,7 +48,6 @@
  
     @{ @"employees" : [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:@"RZEmployee" propertyName:@"employees" inversePropertyName:@"department"] }
 */
-
 + (NSDictionary*)dataImportRelationshipKeyMappings;
 
 //! Return a dictionary of data keys mapped to the name of a selector (as string) to call for custom import logic
@@ -70,7 +69,7 @@
  
     If we don't care about the key "extraneous" or the keypath "somedict.extraData" in the incoming dictionary
  
-    @[ @"extraneous", @"somedict.extradata" ]
+    @[ @"extraneous", @"somedict.extraData" ]
  
 */
 + (NSArray*)dataImportIgnoreKeys;
