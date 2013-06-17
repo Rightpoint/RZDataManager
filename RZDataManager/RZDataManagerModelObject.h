@@ -32,8 +32,8 @@
     Returning the dictionary below would map incoming data for key "image" to property "imagePath", etc
  
     @{
-        "image" : "imagePath",
-        "id"    : "uniqueId"
+        @"image" : @"imagePath",
+        @"id"    : @"uniqueId"
     }
 */
 + (NSDictionary*)dataImportKeyMappings;
@@ -46,7 +46,7 @@
     Let current object have type "RZDepartment". 
     This method might return the following dictionary
  
-    @{ "employees" : [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:@"RZEmployee" propertyName:@"employees" inversePropertyName:@"department"] }
+    @{ @"employees" : [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:@"RZEmployee" propertyName:@"employees" inversePropertyName:@"department"] }
 */
 
 + (NSDictionary*)dataImportRelationshipKeyMappings;
@@ -58,7 +58,7 @@
  
     If the model object has a selector "importThisData:"
  
-    @{ "someDataKey" : @"importThisData:" }
+    @{ @"someDataKey" : @"importThisData:" }
  
 */
 + (NSDictionary*)dataImportCustomSelectorKeyMappings;
