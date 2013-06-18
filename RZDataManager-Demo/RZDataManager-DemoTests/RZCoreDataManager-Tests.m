@@ -446,11 +446,11 @@
          // result object should be collection named "Red"
          DMCollection *collection = (DMCollection*)result;
          STAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
-         STAssertTrue(collection.entries.count == 6, @"Returned collection has wrong number of entries");
+         STAssertEquals(collection.entries.count, (NSUInteger)2, @"Returned collection has wrong number of entries");
          
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
          STAssertNotNil(entry, @"Red entry not found");
-         STAssertTrue(entry.popularity.doubleValue == 0.5, @"Entry not updated correctly");
+         STAssertEquals(entry.popularity.doubleValue, 0.5, @"Entry not updated correctly");
          
          finished = YES;
      }];

@@ -12,7 +12,6 @@
 @interface RZDataManager ()
 
 - (NSException*)abstractMethodException:(SEL)selector;
-- (NSException*)missingUniqueKeysExceptionWithObjectType:(NSString*)objectType;
 
 @end
 
@@ -52,14 +51,6 @@
                                    reason:[NSString stringWithFormat:@"You must override %@ in a subclass", NSStringFromSelector(selector)]
                                  userInfo:nil];
 }
-
-- (NSException*)missingUniqueKeysExceptionWithObjectType:(NSString *)objectType
-{
-    return [NSException exceptionWithName:NSInternalInconsistencyException
-                                   reason:[NSString stringWithFormat:@"Unable to find default ID key path in mapping for object type %@. Add \"Default ID Key\" to the mapping plist file", objectType]
-                                 userInfo:nil];
-}
-
 
 #pragma mark - Data Manager public methods
 
