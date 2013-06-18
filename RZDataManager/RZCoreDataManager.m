@@ -199,15 +199,12 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                             [otherObject setValue:importedRelObjs forKey:relationshipKey];
                         }
                         else{
-                            // create selector string for making relationship
-                            NSString *selectorString = [NSString stringWithFormat:@"add%@Object:", relationshipKey.capitalizedString];
-                            SEL relationshipSel = NSSelectorFromString(selectorString);
-                            
-                            // Ignore selector leak warning - it won't leak
-                            #pragma clang diagnostic push
-                            #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-                            [otherObject performSelector:relationshipSel withObject:obj];
-                            #pragma clang diagnostic pop
+                            NSMutableSet *relObjs = [[otherObject valueForKey:relationshipKey] mutableCopy];
+                            if (relObjs == nil){
+                                relObjs = [NSMutableSet set];
+                            }
+                            [relObjs addObject:obj];
+                            [otherObject setValue:relObjs forKey:relationshipKey];
                         }
 
                         
@@ -241,7 +238,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                         
                         NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
                         
-                        NSMutableSet *importedRelObjs = [NSMutableSet setWithCapacity:[(NSArray*)data count]];
+                        NSMutableArray *importedRelObjs = [NSMutableArray arrayWithCapacity:[(NSArray*)data count]];
                         
                         [(NSArray*)data enumerateObjectsUsingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
                             
@@ -263,19 +260,16 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                         
                         if (overwriteRelationships)
                         {
-                            [otherObject setValue:importedRelObjs forKey:relationshipKey];
+                            [otherObject setValue:[NSSet setWithArray:importedRelObjs] forKey:relationshipKey];
                         }
                         else
                         {
-                            // create selector string for making relationship
-                            NSString *selectorString = [NSString stringWithFormat:@"add%@:", relationshipKey.capitalizedString];
-                            SEL relationshipSel = NSSelectorFromString(selectorString);
-                            
-                            // Ignore selector leak warning - it won't leak
-                            #pragma clang diagnostic push
-                            #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-                            [otherObject performSelector:relationshipSel withObject:importedRelObjs];
-                            #pragma clang diagnostic pop
+                            NSMutableSet *relObjs = [[otherObject valueForKey:relationshipKey] mutableCopy];
+                            if (relObjs == nil){
+                                relObjs = [NSMutableSet set];
+                            }
+                            [relObjs addObjectsFromArray:importedRelObjs];
+                            [otherObject setValue:relObjs forKey:relationshipKey];
                         }
                         
                     }
