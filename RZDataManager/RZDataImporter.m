@@ -357,7 +357,7 @@
         }
         
     }
-    else
+    else if (value != nil)
     {
         // import as a property
         [self setPropertyValue:value onObject:object fromKeyPath:keyPath withMapping:mapping];
@@ -366,93 +366,31 @@
 
 - (void)setPropertyValue:(id)value onObject:(NSObject<RZDataManagerModelObject> *)object fromKeyPath:(NSString *)keyPath withMapping:(RZDataManagerModelObjectMapping *)mapping
 {
-
     NSString *propertyName = [mapping modelPropertyNameForDataKey:keyPath];
     
-    SEL setter = [self setterFromPropertyName:propertyName];
-    if ([object respondsToSelector:setter]){
+    // Attempt explicit conversion
+    NSString *conversion = [[object class] dataTypeForPropertyNamed:propertyName];
+    
+    // If it's a scalar type, KVC should implicitly handle the conversion
+    BOOL isNSValue = [value isKindOfClass:[NSValue class]];
+    if (!isNSValue || !rz_isScalarDataType(conversion))
+    {
         
-        // NSInvocation allows passing scalars to setter
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:setter]];
-        [invocation setSelector:setter];
-        [invocation setTarget:object];
-        
-        // Check for explicit conversion
-        NSString *conversion = [[object class] dataTypeForPropertyNamed:propertyName];
-        
-        // Perform scalar conversions - need to set invocation argument separately since
-        // we can't assign a scalar value to id
-        
-        BOOL isNSValue = [value isKindOfClass:[NSValue class]];
-        
-        if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeChar]){
-            char charValue = [value charValue];
-            [invocation setArgument:&charValue atIndex:2];
-        }
-        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeInt]){
-            NSInteger intValue = [value integerValue];
-            [invocation setArgument:&intValue atIndex:2];
-        }
-        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeUnsignedInt]){
-            NSUInteger uIntValue = [value unsignedIntegerValue];
-            [invocation setArgument:&uIntValue atIndex:2];
-        }
-        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeShort]){
-            SInt16 shortValue = [value shortValue];
-            [invocation setArgument:&shortValue atIndex:2];
-        }
-        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeUnsignedShort]){
-            UInt16 uShortValue = [value unsignedShortValue];
-            [invocation setArgument:&uShortValue atIndex:2];
-        }
-        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeLong]){
-            SInt32 longValue = [value longValue];
-            [invocation setArgument:&longValue atIndex:2];
-        }
-        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeUnsignedLong]){
-            UInt32 uLongValue = [value unsignedLongValue];
-            [invocation setArgument:&uLongValue atIndex:2];
-        }
-        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeLongLong]){
-            SInt64 longLongValue = [value longLongValue];
-            [invocation setArgument:&longLongValue atIndex:2];
-        }
-        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeUnsignedLongLong]){
-            UInt64 uLongLongValue = [value unsignedLongLongValue];
-            [invocation setArgument:&uLongLongValue atIndex:2];
-        }
-        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeFloat]){
-            float floatValue = [value floatValue];
-            [invocation setArgument:&floatValue atIndex:2];
-        }
-        else if (isNSValue && [conversion isEqualToString:kRZDataManagerTypeDouble]){
-            double doubleValue = [value doubleValue];
-            [invocation setArgument:&doubleValue atIndex:2];
-        }
-        else {
+        // perform NSObject type conversion
+        if (conversion != nil && value != nil){
             
-            // perform NSObject type conversion
-            if (conversion != nil && value != nil){
-                
-                // TODO: Format overrides
-                NSString *format = mapping.dateFormat;
-                value = [self convertValue:value toType:conversion withFormat:format];
-            }
-            
-            // set invocation argument from value
-            [invocation setArgument:&value atIndex:2];
+            // TODO: Format overrides
+            NSString *format = mapping.dateFormat;
+            value = [self convertValue:value toType:conversion withFormat:format];
         }
-        
-        @try {
-            [invocation invoke];
-        }
-        @catch (NSException *exception) {
-            NSLog(@"RZDataImporter: Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(setter), NSStringFromClass([object class]), exception);
-        }
-        
+
     }
-    else{
-        NSLog(@"RZDataImporter: Object does not repsond to setter %@", NSStringFromSelector(setter));
+    
+    @try {
+        [object setValue:value forKey:propertyName];
+    }
+    @catch (NSException *exception) {
+        NSLog(@"RZDataImporter: Error setting value for key %@ on object of class %@: %@", propertyName, NSStringFromClass([object class]), exception);
     }
 
 }
