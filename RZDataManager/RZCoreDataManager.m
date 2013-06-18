@@ -167,16 +167,18 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     
     [self importInBackgroundUsingBlock:^{
         
-        if ([data isKindOfClass:[NSDictionary class]]){
+        NSEntityDescription *entityDesc = [(NSManagedObject*)otherObject entity];
+        NSRelationshipDescription *relationshipDesc = [[entityDesc relationshipsByName] objectForKey:relationshipKey];
+        if (relationshipDesc != nil){
             
-            id obj = nil;
-            id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
-            if (uid){
+            BOOL overwriteRelationships = [[options valueForKey:RZDataManagerOverwriteRelationships] boolValue];
+            
+            if ([data isKindOfClass:[NSDictionary class]]){
                 
-                NSEntityDescription *entityDesc = [(NSManagedObject*)otherObject entity];
-                NSRelationshipDescription *relationshipDesc = [[entityDesc relationshipsByName] objectForKey:relationshipKey];
-                if (relationshipDesc != nil){
-                    
+                id obj = nil;
+                id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
+                if (uid){
+                        
                     // need to be able to handle many-to-many
                     if (relationshipDesc.isToMany){
                         
@@ -192,15 +194,22 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                         
                         [self.dataImporter importData:data toObject:obj];
                         
-                        // create selector string for making relationship
-                        NSString *selectorString = [NSString stringWithFormat:@"add%@Object:", relationshipKey.capitalizedString];
-                        SEL relationshipSel = NSSelectorFromString(selectorString);
-                        
-                        // Ignore selector leak warning - it won't leak
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-                        [otherObject performSelector:relationshipSel withObject:obj];
-#pragma clang diagnostic pop
+                        if (overwriteRelationships){
+                            NSSet *importedRelObjs = [NSSet setWithObject:obj];
+                            [otherObject setValue:importedRelObjs forKey:relationshipKey];
+                        }
+                        else{
+                            // create selector string for making relationship
+                            NSString *selectorString = [NSString stringWithFormat:@"add%@Object:", relationshipKey.capitalizedString];
+                            SEL relationshipSel = NSSelectorFromString(selectorString);
+                            
+                            // Ignore selector leak warning - it won't leak
+                            #pragma clang diagnostic push
+                            #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+                            [otherObject performSelector:relationshipSel withObject:obj];
+                            #pragma clang diagnostic pop
+                        }
+
                         
                     }
                     else{
@@ -212,36 +221,28 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                         // set relationship on other object
                         [otherObject setValue:obj forKey:relationshipKey];
                     }
+                    
                 }
                 else{
-                    NSLog(@"RZCoreDataManger: Could not find relationship %@ on entity named %@", relationshipKey, entityDesc.name);
+                    NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKey, type);
                 }
                 
-            }
-            else{
-                NSLog(@"RZCoreDataManger: Unique value for key %@ on entity named %@ is nil.", dataIdKey, type);
-            }
-            
 
-        }
-        else if ([data isKindOfClass:[NSArray class]]){
-            
-            NSEntityDescription *entityDesc = [(NSManagedObject*)otherObject entity];
-            NSRelationshipDescription *relationshipDesc = [[entityDesc relationshipsByName] objectForKey:relationshipKey];
-            if (relationshipDesc != nil){
-                
+            }
+            else if ([data isKindOfClass:[NSArray class]]){
+
                 // need to be able to handle many-to-many
                 if (relationshipDesc.isToMany){
-                    
-                    // create selector string for making relationship
-                    NSString *selectorString = [NSString stringWithFormat:@"add%@Object:", relationshipKey.capitalizedString];
-                    SEL relationshipSel = NSSelectorFromString(selectorString);
                     
                     // optimize lookup for existing objects
                     NSString *entityName = [self entityNameForObjectType:type];
                     NSArray * existingObjs = [(NSSet*)[otherObject valueForKey:relationshipKey] allObjects];
                     if (existingObjs != nil){
+                        
                         NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
+                        
+                        NSMutableSet *importedRelObjs = [NSMutableSet setWithCapacity:[(NSArray*)data count]];
+                        
                         [(NSArray*)data enumerateObjectsUsingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
                             
                             id uid = [objData valueForKey:dataIdKey];
@@ -255,15 +256,28 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                                 
                                 [self.dataImporter importData:objData toObject:importedObj];
                                 
-                                // Ignore selector leak warning - it won't leak
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-                                [otherObject performSelector:relationshipSel withObject:importedObj];
-#pragma clang diagnostic pop
-                                
+                                [importedRelObjs addObject:importedObj];
                             }
                             
                         }];
+                        
+                        if (overwriteRelationships)
+                        {
+                            [otherObject setValue:importedRelObjs forKey:relationshipKey];
+                        }
+                        else
+                        {
+                            // create selector string for making relationship
+                            NSString *selectorString = [NSString stringWithFormat:@"add%@:", relationshipKey.capitalizedString];
+                            SEL relationshipSel = NSSelectorFromString(selectorString);
+                            
+                            // Ignore selector leak warning - it won't leak
+                            #pragma clang diagnostic push
+                            #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+                            [otherObject performSelector:relationshipSel withObject:importedRelObjs];
+                            #pragma clang diagnostic pop
+                        }
+                        
                     }
                     else{
                         NSLog(@"RZCoreDataManager: Error fetching existing objects of type %@ - result is nil", [self entityNameForObjectType:type]);
@@ -274,15 +288,14 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 else{
                     NSLog(@"RZCoreDataManager: Cannot import multiple objects for to-one relationship.");
                 }
-
+            
             }
             else{
-                NSLog(@"RZCoreDataManger: Could not find relationship %@ on entity named %@", relationshipKey, entityDesc.name);
+                NSLog(@"RZCoreDataManager: Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class]));
             }
-            
         }
         else{
-            NSLog(@"RZCoreDataManager: Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class]));
+            NSLog(@"RZCoreDataManger: Could not find relationship %@ on entity named %@", relationshipKey, entityDesc.name);
         }
         
     } completion:^(NSError *error) {

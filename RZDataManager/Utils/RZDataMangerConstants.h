@@ -15,17 +15,19 @@
 OBJC_EXTERN NSString * const RZDataManagerImportDataIdKey;              // override default data key(path) for uniquely identifying object
 OBJC_EXTERN NSString * const RZDataManagerImportModelIdPropertyName;    // override default property name for uniquely identifying object
 OBJC_EXTERN NSString * const RZDataManagerImportDateFormat;             // override default date format for import
-OBJC_EXTERN NSString * const RZDataManagerImportIgnoreKeys;
+OBJC_EXTERN NSString * const RZDataManagerImportIgnoreKeys;             // override keys to ignore
 OBJC_EXTERN NSString * const RZDataManagerImportKeyMappings;            // override default mappings for keypaths->property names
 
 // other options
 
-OBJC_EXTERN NSString * const RZDataManagerShouldBreakRelationships;     // needs a better name - if true, will break any cached relationships not present in imported data
+OBJC_EXTERN NSString * const RZDataManagerOverwriteRelationships;     // if true, will remove any related objects not present in imported data
 
 #pragma mark - Data Type Strings
 
 OBJC_EXTERN NSString* const kRZDataManagerTypeNSArray;
 OBJC_EXTERN NSString* const kRZDataManagerTypeNSDictionary;
+OBJC_EXTERN NSString* const kRZDataManagerTypeNSSet;
+OBJC_EXTERN NSString* const kRZDataManagerTypeNSOrderedSet;
 OBJC_EXTERN NSString* const kRZDataManagerTypeNSString;
 OBJC_EXTERN NSString* const kRZDataManagerTypeNSDate;
 OBJC_EXTERN NSString* const kRZDataManagerTypeNSNumber;

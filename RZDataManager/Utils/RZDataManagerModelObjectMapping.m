@@ -219,7 +219,11 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:self.relationshipObjectType propertyName:self.relationshipPropertyName inversePropertyName:self.relationshipInversePropertyName];
+    RZDataManagerModelObjectRelationshipMapping *copy = [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:self.relationshipObjectType
+                                                                                                              propertyName:self.relationshipPropertyName
+                                                                                                       inversePropertyName:self.relationshipInversePropertyName];
+    copy.options = [self.options copy];
+    return copy;
 }
 
 @end

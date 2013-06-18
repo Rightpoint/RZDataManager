@@ -40,5 +40,6 @@
 @property (nonatomic, copy) NSString * relationshipObjectType;
 @property (nonatomic, copy) NSString * relationshipPropertyName;
 @property (nonatomic, copy) NSString * relationshipInversePropertyName;
+@property (nonatomic, copy) NSDictionary * options;
 
 @end

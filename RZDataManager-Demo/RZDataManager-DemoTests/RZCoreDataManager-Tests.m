@@ -414,6 +414,53 @@
     }
 }
 
+
+- (void)test2051OverwriteRelationships
+{
+    NSDictionary *redCollection = @{
+                                    @"name" : @"Red",
+                                    @"entries" :
+                                        @[
+                                            @{
+                                                @"uid" : @"0",
+                                                @"popularity" : @(0.5)
+                                            },
+                                            @{
+                                                @"name" : @"Pi",
+                                                @"uid" : @"1001"
+                                            }
+                                        ]
+                                    };
+    
+    
+    __block BOOL finished = NO;
+    
+    // This time all other entries should be removed from the "Red" collection
+    [self.dataManager importData:redCollection
+                      objectType:@"DMCollection"
+                         options:@{RZDataManagerOverwriteRelationships : @(YES)}
+                      completion:^(id result, NSError *error)
+     {
+         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         
+         // result object should be collection named "Red"
+         DMCollection *collection = (DMCollection*)result;
+         STAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
+         STAssertTrue(collection.entries.count == 6, @"Returned collection has wrong number of entries");
+         
+         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
+         STAssertNotNil(entry, @"Red entry not found");
+         STAssertTrue(entry.popularity.doubleValue == 0.5, @"Entry not updated correctly");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
+
 - (void)test206ImportObjectWithDifferentEntityNameFromClass
 {
     

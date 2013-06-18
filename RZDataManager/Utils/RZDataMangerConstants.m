@@ -13,7 +13,7 @@
 
 NSString * const RZDataManagerImportDataIdKey               = @"RZDataManagerImportDataIdKey";
 NSString * const RZDataManagerImportModelIdPropertyName     = @"RZDataManagerImportModelIdPropertyName";
-NSString * const RZDataManagerShouldBreakRelationships      = @"RZDataManagerShouldBreakRelationships";
+NSString * const RZDataManagerOverwriteRelationships        = @"RZDataManagerOverwriteRelationships";
 NSString * const RZDataManagerImportDateFormat              = @"RZDataManagerImportDateFormat";
 NSString * const RZDataManagerImportIgnoreKeys              = @"RZDataManagerImportIgnoreKeys";
 NSString * const RZDataManagerImportKeyMappings             = @"RZDataManagerImportKeyMappings";
@@ -23,6 +23,8 @@ NSString * const RZDataManagerImportKeyMappings             = @"RZDataManagerImp
 
 NSString* const kRZDataManagerTypeNSArray               = @"NSArray";
 NSString* const kRZDataManagerTypeNSDictionary          = @"NSDictionary";
+NSString* const kRZDataManagerTypeNSSet                 = @"NSSet";
+NSString* const kRZDataManagerTypeNSOrderedSet          = @"NSOrderedSet";
 NSString* const kRZDataManagerTypeNSString              = @"NSString";
 NSString* const kRZDataManagerTypeNSDate                = @"NSDate";
 NSString* const kRZDataManagerTypeNSNumber              = @"NSNumber";
