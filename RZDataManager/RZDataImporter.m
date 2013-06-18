@@ -369,7 +369,7 @@
     NSString *propertyName = [mapping modelPropertyNameForDataKey:keyPath];
     
     // Attempt explicit conversion
-    NSString *conversion = [[object class] dataTypeForPropertyNamed:propertyName];
+    NSString *conversion = [[object class] rz_dataTypeForPropertyNamed:propertyName];
     
     // If it's a scalar type, KVC should implicitly handle the conversion
     BOOL isNSValue = [value isKindOfClass:[NSValue class]];

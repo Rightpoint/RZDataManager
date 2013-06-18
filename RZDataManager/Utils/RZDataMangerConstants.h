@@ -22,28 +22,7 @@ OBJC_EXTERN NSString * const RZDataManagerImportKeyMappings;            // overr
 
 OBJC_EXTERN NSString * const RZDataManagerOverwriteRelationships;     // if true, will remove any related objects not present in imported data
 
-#pragma mark - Data Type Strings
-
-OBJC_EXTERN NSString* const kRZDataManagerTypeNSArray;
-OBJC_EXTERN NSString* const kRZDataManagerTypeNSDictionary;
-OBJC_EXTERN NSString* const kRZDataManagerTypeNSSet;
-OBJC_EXTERN NSString* const kRZDataManagerTypeNSOrderedSet;
-OBJC_EXTERN NSString* const kRZDataManagerTypeNSString;
-OBJC_EXTERN NSString* const kRZDataManagerTypeNSDate;
-OBJC_EXTERN NSString* const kRZDataManagerTypeNSNumber;
-OBJC_EXTERN NSString* const kRZDataManagerTypeUnsignedChar;
-OBJC_EXTERN NSString* const kRZDataManagerTypeChar;
-OBJC_EXTERN NSString* const kRZDataManagerTypeInt;
-OBJC_EXTERN NSString* const kRZDataManagerTypeUnsignedInt;
-OBJC_EXTERN NSString* const kRZDataManagerTypeShort;
-OBJC_EXTERN NSString* const kRZDataManagerTypeUnsignedShort;
-OBJC_EXTERN NSString* const kRZDataManagerTypeLong;
-OBJC_EXTERN NSString* const kRZDataManagerTypeUnsignedLong;
-OBJC_EXTERN NSString* const kRZDataManagerTypeLongLong;
-OBJC_EXTERN NSString* const kRZDataManagerTypeUnsignedLongLong;
-OBJC_EXTERN NSString* const kRZDataManagerTypeFloat;
-OBJC_EXTERN NSString* const kRZDataManagerTypeDouble;
+#pragma mark - Misc
 
 OBJC_EXTERN NSString* const kRZDataManagerUTCDateFormat;
 
-OBJC_EXTERN BOOL rz_isScalarDataType(NSString * rzTypeName);

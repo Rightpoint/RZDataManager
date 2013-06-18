@@ -122,12 +122,12 @@
 {
     RZDataManagerModelObjectMapping * mapping = [self.dataImporter mappingForClassNamed:NSStringFromClass([object class])];
     
-    NSArray * propertyNames = [[object class] getPropertyNames];
+    NSArray * propertyNames = [[object class] rz_getPropertyNames];
     NSMutableDictionary * dictionaryRepresentation = [NSMutableDictionary dictionaryWithCapacity:propertyNames.count];
     
     [propertyNames enumerateObjectsUsingBlock:^(NSString * propName, NSUInteger idx, BOOL *stop) {
         
-        NSString * propType = [[object class] dataTypeForPropertyNamed:propName];
+        NSString * propType = [[object class] rz_dataTypeForPropertyNamed:propName];
 
         if (rz_isScalarDataType(propType))
         {

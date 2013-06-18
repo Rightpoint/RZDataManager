@@ -151,7 +151,7 @@
 
 - (void)buildMappingCache
 {
-    self.classPropertyNames = [[self.modelClass class] getPropertyNames];
+    self.classPropertyNames = [[self.modelClass class] rz_getPropertyNames];
     self.dataIdKey = [[self.modelClass class] dataImportDefaultDataIdKey];
     self.modelIdPropertyName = [[self.modelClass class] dataImportModelIdPropertyName];
     
