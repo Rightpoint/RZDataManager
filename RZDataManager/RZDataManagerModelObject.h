@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "RZDataMangerConstants.h"
 #import "RZDataManagerModelObjectMapping.h"
 
 @protocol RZDataManagerModelObject <NSObject>

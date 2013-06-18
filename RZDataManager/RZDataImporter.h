@@ -25,7 +25,6 @@
 
 //! Externally get the mapping for a particular class or entity
 - (RZDataManagerModelObjectMapping*)mappingForClassNamed:(NSString*)className;
-- (RZDataManagerModelObjectMapping*)mappingForClassNamed:(NSString*)className options:(NSDictionary*)options;
 
 //! Import data from a dictionary to an object conforming to RZDataManagerModelObject protocol
 - (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataManagerModelObject>*)object;

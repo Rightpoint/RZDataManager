@@ -9,7 +9,6 @@
 #import "RZDataManager_Base.h"
 
 #import "RZDataManagerModelObjectMapping.h"
-#import "RZDataMangerConstants.h"
 
 #import "NSDictionary+NonNSNull.h"
 #import "NSString+HTMLEntities.h"
@@ -57,11 +56,6 @@
 
 - (RZDataManagerModelObjectMapping*)mappingForClassNamed:(NSString *)className
 {
-    return [self mappingForClassNamed:className options:nil];
-}
-
-- (RZDataManagerModelObjectMapping*)mappingForClassNamed:(NSString *)className options:(NSDictionary *)options
-{
     RZDataManagerModelObjectMapping *mapping = nil;
     
     if (nil != className){
@@ -80,11 +74,6 @@
     
     // copy on return so we can mutate it if we want
     mapping = [mapping copy];
-    
-    // apply override options
-    if (nil != options){
-        [mapping applyOptions:options];
-    }
     
     return mapping;
 }

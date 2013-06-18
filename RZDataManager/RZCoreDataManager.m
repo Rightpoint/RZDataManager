@@ -56,9 +56,11 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     return [self objectsForEntity:type matchingPredicate:predicate usingMOC:self.currentMoc];
 }
 
-- (void)importData:(NSDictionary *)data objectType:(NSString *)type options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(NSDictionary *)data objectType:(NSString *)type usingMapping:(RZDataManagerModelObjectMapping *)mapping options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    RZDataManagerModelObjectMapping *mapping = [self.dataImporter mappingForClassNamed:type options:options];
+    if (nil == mapping){
+        mapping = [self.dataImporter mappingForClassNamed:type];
+    }
     
     NSString *dataIdKey = mapping.dataIdKey;
     NSString *modelIdKey = mapping.modelIdPropertyName;
@@ -67,7 +69,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         NSLog(@"RZCoreDataManager: [ERROR] missing data and/or model ID keys for object of type %@", type);
         return;
     }
-    
     
     [self importInBackgroundUsingBlock:^{
         
@@ -153,9 +154,12 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     }];
 }
 
-- (void)importData:(NSDictionary *)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(NSDictionary *)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject usingMapping:(RZDataManagerModelObjectMapping *)mapping options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    RZDataManagerModelObjectMapping *mapping = [self.dataImporter mappingForClassNamed:type options:options];
+    if (nil == mapping)
+    {
+        mapping = [self.dataImporter mappingForClassNamed:type];
+    }
     
     NSString *dataIdKey = mapping.dataIdKey;
     NSString *modelIdKey = mapping.modelIdPropertyName;
@@ -171,7 +175,8 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         NSRelationshipDescription *relationshipDesc = [[entityDesc relationshipsByName] objectForKey:relationshipKey];
         if (relationshipDesc != nil){
             
-            BOOL overwriteRelationships = [[options valueForKey:RZDataManagerOverwriteRelationships] boolValue];
+            // TODO: Enable replace vs merge
+            BOOL overwriteRelationships = NO;
             
             if ([data isKindOfClass:[NSDictionary class]]){
                 
@@ -330,7 +335,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 }
 
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(void(^)(NSError *error))completionBlock;
+- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock
 {
     // only setup new moc if on main thread, otherwise assume we are on a background thread with associated moc
     

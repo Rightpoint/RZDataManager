@@ -19,10 +19,9 @@
 
 - (id)initWithModelClass:(Class)modelClass;
 
-- (void)applyOptions:(NSDictionary*)options;
-
 - (NSString*)modelPropertyNameForDataKey:(NSString*)key;
 - (void)setModelPropertyName:(NSString*)propertyName forDataKey:(NSString*)key;
+- (void)setModelPropertiesForKeyNames:(NSDictionary*)mappingDict; // set ovverides all at once
 
 - (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForDataKey:(NSString*)key;
 - (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForModelPropertyName:(NSString*)propName;
@@ -37,9 +36,12 @@
 
 + (RZDataManagerModelObjectRelationshipMapping*)mappingWithObjectType:(NSString*)type propertyName:(NSString*)propertyName inversePropertyName:(NSString*)inverse;
 
-@property (nonatomic, copy) NSString * relationshipObjectType;
-@property (nonatomic, copy) NSString * relationshipPropertyName;
-@property (nonatomic, copy) NSString * relationshipInversePropertyName;
-@property (nonatomic, copy) NSDictionary * options;
+@property (nonatomic, copy) NSString *relationshipObjectType;
+@property (nonatomic, copy) NSString *relationshipPropertyName;
+@property (nonatomic, copy) NSString *relationshipInversePropertyName;
+
+@property (nonatomic, copy) RZDataManagerModelObjectMapping *relatedObjectMapping;
+
+@property (nonatomic, assign) BOOL shouldReplaceExistingRelationships;
 
 @end

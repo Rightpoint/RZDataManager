@@ -9,6 +9,8 @@
 #import "RZDataManager_Base.h"
 #import "NSObject+RZPropertyUtils.h"
 
+NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
+
 @interface RZDataManager ()
 
 - (NSException*)abstractMethodException:(SEL)selector;
@@ -40,10 +42,17 @@
     return _dataImporter;
 }
 
-- (NSURL*)applicationDocumentsDirectory
++ (NSURL*)applicationDocumentsDirectory
 {
     return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 }
+
+- (RZDataManagerModelObjectMapping*)mappingForClassNamed:(NSString *)className
+{
+    return [self.dataImporter mappingForClassNamed:className];
+}
+
+#pragma mark - Private
 
 - (NSException*)abstractMethodException:(SEL)selector
 {
@@ -52,7 +61,33 @@
                                  userInfo:nil];
 }
 
-#pragma mark - Data Manager public methods
+#pragma mark - Public Methods
+
+- (void)importData:(id)data objectType:(NSString *)type options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+{
+    [self importData:data objectType:type usingMapping:nil options:options completion:completion];
+}
+
+- (void)importData:(id)data objectType:(NSString *)type keyMappings:(NSDictionary *)keyMappings options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+{
+    RZDataManagerModelObjectMapping *mapping = [self.dataImporter mappingForClassNamed:type];
+    [mapping setModelPropertiesForKeyNames:keyMappings];
+    [self importData:data objectType:type usingMapping:mapping options:options completion:completion];
+}
+
+- (void)importData:(id)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+{
+    [self importData:data objectType:type forRelationship:relationshipKey onObject:otherObject usingMapping:nil options:options completion:completion];
+}
+
+- (void)importData:(id)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject keyMappings:(NSDictionary *)keyMappings options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+{
+    RZDataManagerModelObjectMapping *mapping = [self.dataImporter mappingForClassNamed:type];
+    [mapping setModelPropertiesForKeyNames:keyMappings];
+    [self importData:data objectType:type forRelationship:relationshipKey onObject:otherObject usingMapping:mapping options:options completion:completion];
+}
+
+#pragma mark - Abstract Public Methods (MUST IMPLEMENT IN SUBCLASS)
 
 - (id)objectOfType:(NSString*)type withValue:(id)value forKeyPath:(NSString*)keyPath createNew:(BOOL)createNew
 {
@@ -73,7 +108,9 @@
     @throw [self abstractMethodException:_cmd];
 }
 
-- (void)importData:(id)data objectType:(NSString*)type
+- (void)importData:(id)data
+        objectType:(NSString*)type
+          usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion
 {
@@ -81,26 +118,19 @@
 }
 
 
-- (void)importData:(id)data objectType:(NSString *)type
+- (void)importData:(id)data
+        objectType:(NSString *)type
    forRelationship:(NSString *)relationshipKey
           onObject:(id)otherObject
+          usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion
 {
     @throw [self abstractMethodException:_cmd];
 }
 
-- (void)importData:(id)data objectType:(NSString *)type
-     dataIdKeyPath:(NSString *)dataIdKeyPath
-    modelIdKeyPath:(NSString *)modelIdKeyPath
-   forRelationship:(NSString *)relationshipKey
-          onObject:(id)otherObject
-        completion:(RZDataManagerImportCompletionBlock)completion
-{
-    @throw [self abstractMethodException:_cmd];
-}
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(void (^)(NSError *))completionBlock
+- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock
 {
     @throw [self abstractMethodException:_cmd];
 }
@@ -120,7 +150,11 @@
 
 - (NSDictionary*)dictionaryFromModelObject:(NSObject *)object
 {
-    RZDataManagerModelObjectMapping * mapping = [self.dataImporter mappingForClassNamed:NSStringFromClass([object class])];
+    return [self dictionaryFromModelObject:object usingMapping:[self.dataImporter mappingForClassNamed:NSStringFromClass([object class])]];
+}
+
+- (NSDictionary*)dictionaryFromModelObject:(NSObject *)object usingMapping:(RZDataManagerModelObjectMapping *)mapping
+{
     
     NSArray * propertyNames = [[object class] rz_getPropertyNames];
     NSMutableDictionary * dictionaryRepresentation = [NSMutableDictionary dictionaryWithCapacity:propertyNames.count];

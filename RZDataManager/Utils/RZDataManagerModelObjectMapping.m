@@ -8,7 +8,6 @@
 
 #import "RZDataManagerModelObjectMapping.h"
 #import "RZDataManagerModelObject.h"
-#import "RZDataMangerConstants.h"
 #import "NSObject+RZPropertyUtils.h"
 
 @interface RZDataManagerModelObjectMapping ()
@@ -35,40 +34,36 @@
     return self;
 }
 
-- (void)applyOptions:(NSDictionary *)options
+#pragma mark - Properties
+
+// lazy load these
+
+- (NSMutableDictionary*)dataKeyMappings
 {
-    [options enumerateKeysAndObjectsUsingBlock:^(NSString * key, id obj, BOOL *stop) {
-        
-        if ([key isEqualToString:RZDataManagerImportDataIdKey] && [obj isKindOfClass:[NSString class]]){
-            self.dataIdKey = obj;
-        }
-        else if ([key isEqualToString:RZDataManagerImportModelIdPropertyName] && [obj isKindOfClass:[NSString class]]){
-            self.modelIdPropertyName = obj;
-        }
-        else if ([key isEqualToString:RZDataManagerImportDateFormat] && [obj isKindOfClass:[NSString class]]){
-            self.dateFormat = obj;
-        }
-        else if ([key isEqualToString:RZDataManagerImportIgnoreKeys] && [obj isKindOfClass:[NSArray class]]){
-            if (self.ignoreKeys){
-                NSMutableArray * ignoreKeys = [self.ignoreKeys mutableCopy];
-                [ignoreKeys addObjectsFromArray:obj];
-                self.ignoreKeys = ignoreKeys;
-            }
-            else{
-                self.ignoreKeys = obj;
-            }
-        }
-        else if ([key isEqualToString:RZDataManagerImportKeyMappings] && [obj isKindOfClass:[NSDictionary class]]){
-            if (self.dataKeyMappings){
-                [self.dataKeyMappings addEntriesFromDictionary:obj];
-            }
-            else{
-                self.dataKeyMappings = [obj mutableCopy];
-            }
-        }
-        
-    }];
+    if (nil == _dataKeyMappings){
+        _dataKeyMappings = [NSMutableDictionary dictionary];
+    }
+    return _dataKeyMappings;
 }
+
+- (NSMutableDictionary*)relationshipKeyMappings
+{
+    if (nil == _relationshipKeyMappings){
+        _relationshipKeyMappings = [NSMutableDictionary dictionary];
+    }
+    return _relationshipKeyMappings;
+}
+
+- (NSMutableDictionary*)customSelectorKeyMappings
+{
+    if (nil == _customSelectorKeyMappings){
+        _customSelectorKeyMappings = [NSMutableDictionary dictionary];
+    }
+    return _customSelectorKeyMappings;
+}
+
+#pragma mark - Public
+
 
 - (NSString*)modelPropertyNameForDataKey:(NSString *)key
 {
@@ -100,10 +95,12 @@
 
 - (void)setModelPropertyName:(NSString *)propertyName forDataKey:(NSString *)key
 {
-    if (nil == self.dataKeyMappings){
-        self.dataKeyMappings = [NSMutableDictionary dictionary];
-    }
     [self.dataKeyMappings setObject:propertyName forKey:key];
+}
+
+- (void)setModelPropertiesForKeyNames:(NSDictionary *)mappingDict
+{
+    [self.dataKeyMappings addEntriesFromDictionary:mappingDict];
 }
 
 - (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForDataKey:(NSString *)key
@@ -128,9 +125,6 @@
 
 - (void)setRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)mapping forDataKey:(NSString *)key
 {
-    if (nil == self.relationshipKeyMappings){
-        self.relationshipKeyMappings = [NSMutableDictionary dictionary];
-    }
     [self.relationshipKeyMappings setObject:mapping forKey:key];
 }
 
@@ -141,9 +135,6 @@
 
 - (void)setImportSelectorName:(NSString*)selName forDataKey:(NSString*)key
 {
-    if (nil == self.customSelectorKeyMappings){
-        self.customSelectorKeyMappings = [NSMutableDictionary dictionary];
-    }
     [self.customSelectorKeyMappings setObject:selName forKey:key];
 }
 
@@ -222,7 +213,7 @@
     RZDataManagerModelObjectRelationshipMapping *copy = [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:self.relationshipObjectType
                                                                                                               propertyName:self.relationshipPropertyName
                                                                                                        inversePropertyName:self.relationshipInversePropertyName];
-    copy.options = [self.options copy];
+    copy.shouldReplaceExistingRelationships = self.shouldReplaceExistingRelationships;
     return copy;
 }
 

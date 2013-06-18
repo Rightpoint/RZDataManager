@@ -249,11 +249,9 @@
                                 @"date" : @"2013-07-01T12:00:00Z"};
     
     
-    // Use a custom mapping for the name property
-    NSDictionary *opts = @{ RZDataManagerImportKeyMappings : @{ @"mahNameIs" : @"name" } };
-    
+    // Use a custom mapping for the name property    
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" options:opts completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData objectType:@"DMEntry" keyMappings:@{ @"mahNameIs" : @"name" } options:nil completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -464,7 +462,7 @@
     // This time all other entries should be removed from the "Red" collection
     [self.dataManager importData:redCollection
                       objectType:@"DMCollection"
-                         options:@{RZDataManagerOverwriteRelationships : @(YES)}
+                         options:nil
                       completion:^(id result, NSError *error)
      {
          STAssertTrue(error == nil, @"Import error occured: %@", error);

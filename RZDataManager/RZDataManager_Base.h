@@ -16,19 +16,27 @@
 
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
-#import "RZDataMangerConstants.h"
+
+OBJC_EXTERN NSString* const kRZDataManagerUTCDateFormat;
 
 typedef void (^RZDataManagerImportBlock)();
 typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, collection, or nil
+typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
 
 @interface RZDataManager : NSObject
 
 // Singleton accessor will correctly cast return type for subclasses.
 + (instancetype)defaultManager;
 
+#pragma mark - Utilities
+
++ (NSURL*)applicationDocumentsDirectory;
+
+// pass through to data importer
+- (RZDataManagerModelObjectMapping*)mappingForClassNamed:(NSString*)className;
+
 @property (nonatomic, readonly, strong) RZDataImporter *dataImporter;
 
-- (NSURL*)applicationDocumentsDirectory;
 
 #pragma mark - Fetching
 
@@ -37,12 +45,13 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 
 // -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
 
-
+// Returns an object with value "value" for keypath "keyPath". If not found, will optionally create a new one.
 - (id)objectOfType:(NSString*)type
          withValue:(id)value
         forKeyPath:(NSString*)keyPath
          createNew:(BOOL)createNew;
 
+// Limit search to a specific collection (set or array)
 - (id)objectOfType:(NSString*)type
          withValue:(id)value
         forKeyPath:(NSString*)keyPath
@@ -55,16 +64,32 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 
 #pragma mark - Persisting
 
-// -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
+/*
+ *  Either updates existing object(s), if any, or creates and inserts new object.
+ *  "data" expected to be either NSDictionary or NSArray. Results of import
+ *  should be returned in completion block.
+ */
 
-// Either updates existing object(s), if any, or creates and inserts new object.
-// "data" expected to be either NSDictionary or NSArray
+// Default signature, no overrides
 - (void)importData:(id)data
         objectType:(NSString*)type
            options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
-// Updates existing object or creates new, then attempts to create relationship with "otherObject" specified by "relationshipKey"
+// Use key-value pairs in keyMappings to override key->property import mappings
+- (void)importData:(id)data
+        objectType:(NSString*)type
+       keyMappings:(NSDictionary*)keyMappings
+           options:(NSDictionary*)options
+        completion:(RZDataManagerImportCompletionBlock)completion;
+
+/*
+ *  Updates existing object or creates new, then attempts to create
+ *  relationship with "otherObject" specified by "relationshipKey".
+ *  Results of import should be returned in completion block.
+ */
+
+// Default signature, no overrides
 - (void)importData:(id)data
         objectType:(NSString *)type
    forRelationship:(NSString*)relationshipKey
@@ -72,7 +97,36 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
            options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(void(^)(NSError *error))completionBlock;
+// Use key-value pairs in keyMappings to override key->property import mappings
+- (void)importData:(id)data
+        objectType:(NSString *)type
+   forRelationship:(NSString*)relationshipKey
+          onObject:(id)otherObject
+       keyMappings:(NSDictionary*)keyMappings
+           options:(NSDictionary*)options
+        completion:(RZDataManagerImportCompletionBlock)completion;
+
+
+// -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
+
+// Mapping can be nil, in which case subclass should use default mapping for this object type
+
+- (void)importData:(id)data
+        objectType:(NSString*)type
+      usingMapping:(RZDataManagerModelObjectMapping*)mapping
+           options:(NSDictionary*)options
+        completion:(RZDataManagerImportCompletionBlock)completion;
+
+- (void)importData:(id)data
+        objectType:(NSString *)type
+   forRelationship:(NSString*)relationshipKey
+          onObject:(id)otherObject
+      usingMapping:(RZDataManagerModelObjectMapping*)mapping
+           options:(NSDictionary*)options
+        completion:(RZDataManagerImportCompletionBlock)completion;
+
+- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock
+                          completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
 
 // -------------------------------------------------------------
 
@@ -86,6 +140,7 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 #pragma mark - Miscellaneous
 
 - (NSDictionary*)dictionaryFromModelObject:(NSObject*)object;
+- (NSDictionary*)dictionaryFromModelObject:(NSObject*)object usingMapping:(RZDataManagerModelObjectMapping*)mapping;
 
 @end
 
