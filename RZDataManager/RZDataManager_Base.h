@@ -30,7 +30,6 @@ typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); 
 
 - (NSURL*)applicationDocumentsDirectory;
 
-
 #pragma mark - Fetching
 
 // Fetching objects from the data store by key/value pair.

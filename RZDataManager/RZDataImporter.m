@@ -357,7 +357,7 @@
         }
         
     }
-    else if (value != nil)
+    else
     {
         // import as a property
         [self setPropertyValue:value onObject:object fromKeyPath:keyPath withMapping:mapping];
@@ -387,7 +387,24 @@
     }
     
     @try {
-        [object setValue:value forKey:propertyName];
+        if (value != nil)
+        {
+            // this will handle type conversion from NSNumber to scalars
+            [object setValue:value forKey:propertyName];
+        }
+        else
+        {
+            // Need to use invocation to set value to nil
+            SEL setter = [[object class] rz_setterForPropertyNamed:propertyName];
+            if (setter)
+            {
+                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:setter]];
+                [invocation setSelector:setter];
+                [invocation setTarget:object];
+                [invocation setArgument:&value atIndex:2];
+                [invocation invoke];
+            }
+        }
     }
     @catch (NSException *exception) {
         NSLog(@"RZDataImporter: Error setting value for key %@ on object of class %@: %@", propertyName, NSStringFromClass([object class]), exception);

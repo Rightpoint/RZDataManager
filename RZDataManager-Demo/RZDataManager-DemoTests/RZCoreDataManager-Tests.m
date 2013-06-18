@@ -146,6 +146,32 @@
     }
 }
 
+- (void)test2001SetImportedPropertyToNil
+{
+    // Importing from JSON with null value should set property to nil
+    NSDictionary * mockData = @{@"uid" : @"0",
+                                @"createdDate" : [NSNull null]};
+    
+    __block BOOL finished = NO;
+    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+     {
+         STAssertNotNil(result, @"Result should not be nil");
+         STAssertNil(error, @"Error during import: %@", error);
+         
+         STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
+         
+         // attempt clean fetch of new object
+         DMEntry *entry = (DMEntry*)result;
+         STAssertNil(entry.createdDate, @"Date was not correctly set to nil");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
 - (void)test201ImportMultipleObjects
 {
     NSArray * mockData = @[ @{@"name" : @"Omicron",

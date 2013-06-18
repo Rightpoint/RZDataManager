@@ -142,11 +142,13 @@ static void destroy_rzTypeMappings() {
 
 + (SEL)rz_getterForPropertyNamed:(NSString *)propertyName
 {
-    __block NSString * getterString = propertyName;
+    __block NSString * getterString = nil;
     objc_property_t property = class_getProperty([self class], [propertyName UTF8String]);
     const char * propAttrString = property_getAttributes(property);
     
     if (propAttrString != NULL){
+        
+        getterString = propertyName;
         
         NSString * propString = [NSString stringWithUTF8String:propAttrString];
         NSArray *propComponents = [propString componentsSeparatedByString:@","];
@@ -159,16 +161,17 @@ static void destroy_rzTypeMappings() {
         }];
     }
     
-    return NSSelectorFromString(getterString);
+    return getterString ? NSSelectorFromString(getterString) : nil;
 }
 
 + (SEL)rz_setterForPropertyNamed:(NSString *)propertyName
 {
-    __block NSString * setterString = [NSString stringWithFormat:@"set%@", propertyName.capitalizedString];
+    __block NSString * setterString = nil; 
     objc_property_t property = class_getProperty([self class], [propertyName UTF8String]);
     const char * propAttrString = property_getAttributes(property);
     
     if (propAttrString != NULL){
+        
         
         NSString * propString = [NSString stringWithUTF8String:propAttrString];
         NSArray *propComponents = [propString componentsSeparatedByString:@","];
@@ -179,9 +182,13 @@ static void destroy_rzTypeMappings() {
                 *stop = YES;
             }
         }];
+        
+        if (setterString == nil){
+            setterString = [NSString stringWithFormat:@"set%@:", [propertyName stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:[[propertyName substringToIndex:1] capitalizedString]]];
+        }
     }
     
-    return NSSelectorFromString(setterString);
+    return setterString ? NSSelectorFromString(setterString) : nil;
 }
 
 @end
