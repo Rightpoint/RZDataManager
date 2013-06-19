@@ -75,16 +75,11 @@ NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'
     [self importData:data objectType:type usingMapping:mapping options:options completion:completion];
 }
 
-- (void)importData:(id)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(id)data forRelationshipPropertyName:(NSString *)relationshipProperty onObject:(NSObject *)object options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    [self importData:data objectType:type forRelationship:relationshipKey onObject:otherObject usingMapping:nil options:options completion:completion];
-}
-
-- (void)importData:(id)data objectType:(NSString *)type forRelationship:(NSString *)relationshipKey onObject:(id)otherObject keyMappings:(NSDictionary *)keyMappings options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
-{
-    RZDataManagerModelObjectMapping *mapping = [self.dataImporter mappingForClassNamed:type];
-    [mapping setModelPropertiesForKeyNames:keyMappings];
-    [self importData:data objectType:type forRelationship:relationshipKey onObject:otherObject usingMapping:mapping options:options completion:completion];
+    RZDataManagerModelObjectMapping *objMapping = [self.dataImporter mappingForClassNamed:NSStringFromClass([object class])];
+    RZDataManagerModelObjectRelationshipMapping *relMapping = [objMapping relationshipMappingForModelPropertyName:relationshipProperty];
+    [self importData:data forRelationshipWithMapping:relMapping onObject:object options:options completion:completion];
 }
 
 #pragma mark - Abstract Public Methods (MUST IMPLEMENT IN SUBCLASS)
@@ -118,13 +113,7 @@ NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'
 }
 
 
-- (void)importData:(id)data
-        objectType:(NSString *)type
-   forRelationship:(NSString *)relationshipKey
-          onObject:(id)otherObject
-          usingMapping:(RZDataManagerModelObjectMapping *)mapping
-           options:(NSDictionary *)options
-        completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(id)data forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping onObject:(NSObject *)object options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
     @throw [self abstractMethodException:_cmd];
 }

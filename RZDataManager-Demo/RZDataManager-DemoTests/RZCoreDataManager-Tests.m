@@ -460,8 +460,16 @@
     __block BOOL finished = NO;
     
     // This time all other entries should be removed from the "Red" collection
+    // The configuration is a bit tedious here, it may be worth trying to streamline if this is a common use case
+    
+    RZDataManagerModelObjectMapping *mapping = [self.dataManager mappingForClassNamed:@"DMCollection"];
+    RZDataManagerModelObjectRelationshipMapping *relMapping = [mapping relationshipMappingForDataKey:@"entries"];
+    relMapping.shouldReplaceExistingRelationships = YES;
+    [mapping setRelationshipMapping:relMapping forDataKey:@"entries"];
+    
     [self.dataManager importData:redCollection
                       objectType:@"DMCollection"
+                    usingMapping:mapping
                          options:nil
                       completion:^(id result, NSError *error)
      {
@@ -470,6 +478,8 @@
          // result object should be collection named "Red"
          DMCollection *collection = (DMCollection*)result;
          STAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
+         
+         // this time only two entries should exist - we overwrote all of the existing relationships
          STAssertEquals(collection.entries.count, (NSUInteger)2, @"Returned collection has wrong number of entries");
          
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];

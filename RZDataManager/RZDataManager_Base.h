@@ -40,10 +40,16 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
 
 #pragma mark - Fetching
 
-// Fetching objects from the data store by key/value pair.
-// "type" represents either class name as string or entity name for managed objects
+/***********************************************************
+ *
+ * Fetching objects from the data store by key/value pair.
+ * "type" refers to the class name or entity type name
+ *
+ ***********************************************************/
 
+// ============================================================
 // -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
+// ============================================================
 
 // Returns an object with value "value" for keypath "keyPath". If not found, will optionally create a new one.
 - (id)objectOfType:(NSString*)type
@@ -64,12 +70,14 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
 
 #pragma mark - Persisting
 
-/*
+/******************************************************************************
+ *
  *  Either updates existing object(s), if any, or creates and inserts new object.
  *  "data" expected to be either NSDictionary or NSArray. Results of import
  *  should be returned in completion block.
- */
-
+ *
+ ******************************************************************************/
+ 
 // Default signature, no overrides
 - (void)importData:(id)data
         objectType:(NSString*)type
@@ -83,47 +91,28 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
            options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
-/*
+/******************************************************************************
+ *
  *  Updates existing object or creates new, then attempts to create
  *  relationship with "otherObject" specified by "relationshipKey".
  *  Results of import should be returned in completion block.
- */
+ *
+ ******************************************************************************/
 
-// Default signature, no overrides
-- (void)importData:(id)data
-        objectType:(NSString *)type
-   forRelationship:(NSString*)relationshipKey
-          onObject:(id)otherObject
-           options:(NSDictionary*)options
-        completion:(RZDataManagerImportCompletionBlock)completion;
+- (void)importData:(id)data forRelationshipPropertyName:(NSString*)relationshipProperty onObject:(NSObject*)object options:(NSDictionary*)options completion:(RZDataManagerImportCompletionBlock)completion;
 
-// Use key-value pairs in keyMappings to override key->property import mappings
-- (void)importData:(id)data
-        objectType:(NSString *)type
-   forRelationship:(NSString*)relationshipKey
-          onObject:(id)otherObject
-       keyMappings:(NSDictionary*)keyMappings
-           options:(NSDictionary*)options
-        completion:(RZDataManagerImportCompletionBlock)completion;
-
-
+// ============================================================
 // -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
+// ============================================================
 
 // Mapping can be nil, in which case subclass should use default mapping for this object type
-
 - (void)importData:(id)data
         objectType:(NSString*)type
       usingMapping:(RZDataManagerModelObjectMapping*)mapping
            options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
-
-- (void)importData:(id)data
-        objectType:(NSString *)type
-   forRelationship:(NSString*)relationshipKey
-          onObject:(id)otherObject
-      usingMapping:(RZDataManagerModelObjectMapping*)mapping
-           options:(NSDictionary*)options
-        completion:(RZDataManagerImportCompletionBlock)completion;
+    
+- (void)importData:(id)data forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping*)relationshipMapping onObject:(NSObject*)object options:(NSDictionary*)options completion:(RZDataManagerImportCompletionBlock)completion;
 
 - (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock
                           completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;

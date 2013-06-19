@@ -280,12 +280,7 @@
                         
                     }
                     
-                    [self.dataManager importData:relData
-                                      objectType:relationshipMapping.relationshipObjectType
-                                 forRelationship:keyPath
-                                        onObject:object
-                                         options:nil
-                                      completion:nil];
+                    [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:nil completion:nil];
                 }
                 else{
                     
@@ -295,12 +290,8 @@
                     
                     NSDictionary *relData = @{relationshipIDKey : value};
                     
-                    [self.dataManager importData:relData
-                                      objectType:relationshipMapping.relationshipObjectType
-                                 forRelationship:keyPath
-                                        onObject:object
-                                         options:nil
-                                      completion:nil];
+                    [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:nil completion:nil];
+
                 }
             }
             else{

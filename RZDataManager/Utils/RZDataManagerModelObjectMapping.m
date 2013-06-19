@@ -105,7 +105,7 @@
 
 - (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForDataKey:(NSString *)key
 {
-    return [self.relationshipKeyMappings objectForKey:key];
+    return [[self.relationshipKeyMappings objectForKey:key] copy];
 }
 
 - (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForModelPropertyName:(NSString *)propName
@@ -120,12 +120,12 @@
         }
     }];
 
-    return returnMapping;
+    return [returnMapping copy];
 }
 
 - (void)setRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)mapping forDataKey:(NSString *)key
 {
-    [self.relationshipKeyMappings setObject:mapping forKey:key];
+    [self.relationshipKeyMappings setObject:[mapping copy] forKey:key];
 }
 
 - (NSString*)importSelectorNameForDataKey:(NSString*)key
@@ -187,10 +187,7 @@
     mapping.customSelectorKeyMappings = [self.customSelectorKeyMappings mutableCopy];
     
     // deep copy relationship key mappings
-    mapping.relationshipKeyMappings = [NSMutableDictionary dictionary];
-    [self.relationshipKeyMappings enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        [mapping.relationshipKeyMappings setObject:[obj copy] forKey:key];
-    }];
+    mapping.relationshipKeyMappings = [[NSMutableDictionary alloc] initWithDictionary:self.relationshipKeyMappings copyItems:YES];
     
     return mapping;
 }
@@ -214,6 +211,7 @@
                                                                                                               propertyName:self.relationshipPropertyName
                                                                                                        inversePropertyName:self.relationshipInversePropertyName];
     copy.shouldReplaceExistingRelationships = self.shouldReplaceExistingRelationships;
+    copy.relatedObjectMapping = [self.relatedObjectMapping copy];
     return copy;
 }
 
