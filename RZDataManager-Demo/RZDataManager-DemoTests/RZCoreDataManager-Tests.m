@@ -537,6 +537,43 @@
     }
 }
 
+- (void)test2053RemoveRelationships
+{
+        
+    // Should remove all entries from "Red" collection
+    NSDictionary *redCollection = @{
+                                    @"name" : @"Red",
+                                    @"entries" : [NSNull null]
+                                    };
+    
+    
+    __block BOOL finished = NO;
+    
+    [self.dataManager importData:redCollection
+                      objectType:@"DMCollection"
+                         options:nil
+                      completion:^(id result, NSError *error)
+     {
+         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         
+         // result object should be collection named "Red"
+         DMCollection *collection = (DMCollection*)result;
+         STAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
+         STAssertEquals(collection.entries.count, (NSUInteger)0, @"Failed to break relationship for entries");
+
+         // Ensure inverse relationship is correctly broken
+         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
+         STAssertNotNil(entry, @"Entry should still exist");
+         STAssertNil(entry.collection, @"Entry should not have a collection anymore");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
 
 - (void)test206ImportObjectWithDifferentEntityNameFromClass
 {

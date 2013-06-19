@@ -266,59 +266,76 @@
         
         if (relatedObjectMapping != nil){
             
-            NSString *relationshipIDKey = relatedObjectMapping.dataIdKey;
-            NSString *relationshipModelIDKey = relatedObjectMapping.modelIdPropertyName;
-            
-            if (relationshipIDKey && relationshipModelIDKey){
+            // If value is non-nil, import related object. Otherwise use invocation to nil it out.
+            if (value != nil)
+            {
                 
-                if ([value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSArray class]])
-                {
-                    id relData = value;
+                NSString *relationshipIDKey = relatedObjectMapping.dataIdKey;
+                NSString *relationshipModelIDKey = relatedObjectMapping.modelIdPropertyName;
+                
+                if (relationshipIDKey && relationshipModelIDKey){
                     
-                    if ([value isKindOfClass:[NSArray class]]){
+                    if ([value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSArray class]])
+                    {
+                        id relData = value;
                         
-                        // if array does not contain dictionaries, assume each value is a unique id value, wrap in dictionary
-                        if (![[(NSArray*)value objectAtIndex:0] isKindOfClass:[NSDictionary class]])
-                        {
-                            NSMutableArray *dataKeyPairs = [NSMutableArray arrayWithCapacity:[(NSArray*)value count]];
+                        if ([value isKindOfClass:[NSArray class]]){
                             
-                            [(NSArray*)value enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                                [dataKeyPairs addObject:@{relationshipIDKey : obj}];
-                            }];
+                            // if array does not contain dictionaries, assume each value is a unique id value, wrap in dictionary
+                            if (![[(NSArray*)value objectAtIndex:0] isKindOfClass:[NSDictionary class]])
+                            {
+                                NSMutableArray *dataKeyPairs = [NSMutableArray arrayWithCapacity:[(NSArray*)value count]];
+                                
+                                [(NSArray*)value enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                                    [dataKeyPairs addObject:@{relationshipIDKey : obj}];
+                                }];
+                                
+                                relData = dataKeyPairs;
+                            }
                             
-                            relData = dataKeyPairs;
                         }
                         
-                    }
-                    
-                    // If value is non-nil, import related object. Otherwise use invocation to nil it out.
-                    if (nil != value){
                         [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:nil completion:nil];
+
                     }
                     else{
-                        SEL setter = [[object class] rz_setterForPropertyNamed:relationshipMapping.relationshipPropertyName];
-                        if (setter){
-                            
-                        }
-                        else{
-                            
-                        }
+                        
+                        // wrap in a dictionary - we will assume it's the unique identifier
+                        // this is for cases when the relationship is specified by one key-value pair instead of fully-qualified
+                        // data for the other object
+                        
+                        NSDictionary *relData = @{relationshipIDKey : value};
+                        
+                        [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:nil completion:nil];
+
                     }
                 }
                 else{
-                    
-                    // wrap in a dictionary - we will assume it's the unique identifier
-                    // this is for cases when the relationship is specified by one key-value pair instead of fully-qualified
-                    // data for the other object
-                    
-                    NSDictionary *relData = @{relationshipIDKey : value};
-                    
-                    [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:nil completion:nil];
-
+                    [self rz_logError:@"Missing relationship id key and/or model id key for relationship object type %@", relationshipMapping.relationshipObjectType];
                 }
             }
             else{
-                [self rz_logError:@"Missing relationship id key and/or model id key for relationship object type %@", relationshipMapping.relationshipObjectType];
+                
+                SEL setter = [[object class] rz_setterForPropertyNamed:relationshipMapping.relationshipPropertyName];
+                if (setter){
+                    
+                    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:setter]];
+                    [invocation setTarget:object];
+                    [invocation setSelector:setter];
+                    [invocation setArgument:&value atIndex:2];
+                    
+                    @try {
+                        [invocation invoke];
+                    }
+                    @catch (NSException *exception) {
+                        [self rz_logError:@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(setter), NSStringFromClass([object class]), exception];
+                    }
+                    
+                }
+                else{
+                    [self rz_logError:@"Setter not found for property %@ on class %@", relationshipMapping.relationshipPropertyName, NSStringFromClass([object class])];
+                }
+                
             }
         }
         else{
