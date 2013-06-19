@@ -10,6 +10,8 @@
 #import "NSObject+RZPropertyUtils.h"
 #import <objc/runtime.h>
 
+// Constants intended for types that typically come up when importing data (NSManagedObject or otherwise)
+
 NSString* const kRZDataTypeNSArray               = @"NSArray";
 NSString* const kRZDataTypeNSDictionary          = @"NSDictionary";
 NSString* const kRZDataTypeNSSet                 = @"NSSet";

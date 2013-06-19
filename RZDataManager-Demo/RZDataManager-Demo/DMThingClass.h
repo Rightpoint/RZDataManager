@@ -16,4 +16,6 @@
 @property (nonatomic, retain) NSString * attribute2;
 @property (nonatomic, retain) NSString * myIdentifier;
 
+@property (nonatomic, strong, setter = setThisProperty:) NSString * someOtherProperty;
+
 @end

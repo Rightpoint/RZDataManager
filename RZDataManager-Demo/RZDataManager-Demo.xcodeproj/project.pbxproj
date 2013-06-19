@@ -249,14 +249,14 @@
 			children = (
 				FEA82B031742CC1B00FA206C /* NSDictionary+NonNSNull.h */,
 				FEA82B041742CC1B00FA206C /* NSDictionary+NonNSNull.m */,
+				9AEAD7251772042A00B8A6BE /* NSObject+RZLogHelper.h */,
+				9AEAD7261772042A00B8A6BE /* NSObject+RZLogHelper.m */,
 				9A58B79F17578D070065D1EA /* NSObject+RZPropertyUtils.h */,
 				9A58B7A017578D070065D1EA /* NSObject+RZPropertyUtils.m */,
 				FEA82B051742CC1B00FA206C /* NSString+HTMLEntities.h */,
 				FEA82B061742CC1B00FA206C /* NSString+HTMLEntities.m */,
 				9AC66E73175E6DE6007C603C /* RZDataManagerModelObjectMapping.h */,
 				9AC66E74175E6DE6007C603C /* RZDataManagerModelObjectMapping.m */,
-				9AEAD7251772042A00B8A6BE /* NSObject+RZLogHelper.h */,
-				9AEAD7261772042A00B8A6BE /* NSObject+RZLogHelper.m */,
 			);
 			path = Utils;
 			sourceTree = "<group>";

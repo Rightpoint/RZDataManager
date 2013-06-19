@@ -541,8 +541,8 @@
 - (void)test206ImportObjectWithDifferentEntityNameFromClass
 {
     
-    // The class name is DMThingClass, but the entity is DMThing. This should be handled by RZCoreDataManager
-    
+    // The class name is DMThingClass, but the entity is DMThing. This should be handled by RZCoreDataManager.
+
     NSDictionary * thingData = @{ @"id" : @"12345",
                                   @"attribute1" : @"whatup",
                                   @"attribute2" : @"withdat" };
@@ -558,11 +558,59 @@
          
          // is it a DMThingClass?
          STAssertTrue([result isKindOfClass:[DMThingClass class]], @"Returned object is wrong type");
-         STAssertTrue([[result myIdentifier] isEqualToString:@"12345"], @"Failed to import identifier attribute");
-         STAssertTrue([[result attribute1] isEqualToString:@"whatup"], @"Failed to import attribute1");
-         STAssertTrue([[result attribute2] isEqualToString:@"withdat"], @"Failed to import attribute2");
+         STAssertEqualObjects([result myIdentifier], @"12345", @"Failed to import identifier attribute");
+         STAssertEqualObjects([result attribute1], @"whatup", @"Failed to import attribute1");
+         STAssertEqualObjects([result attribute2], @"withdat", @"Failed to import attribute2");
          
          finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
+- (void)test2061SetAttributeToNilWithCustomSetter
+{
+    
+    // The class name is DMThingClass, but the entity is DMThing. This should be handled by RZCoreDataManager.
+    
+    NSDictionary * thingData = @{ @"id" : @"12345",
+                                  @"attribute1" : @"whatup",
+                                  @"attribute2" : @"withdat"};
+    
+    __block BOOL finished = NO;
+    
+    [self.dataManager importData:thingData
+                      objectType:@"DMThingClass"
+                         options:nil
+                      completion:^(id result, NSError *error)
+     {
+         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         
+         // is it a DMThingClass?
+         STAssertTrue([result isKindOfClass:[DMThingClass class]], @"Returned object is wrong type");
+         STAssertEqualObjects([result myIdentifier], @"12345", @"Failed to import identifier attribute");
+         STAssertEqualObjects([result attribute1], @"whatup", @"Failed to import attribute1");
+         STAssertEqualObjects([result attribute2], @"withdat", @"Failed to import attribute2");
+         
+         // Import data for a transient property
+         NSDictionary *someThingData = @{@"someOtherProperty" : @"something"};
+
+         [self.dataManager.dataImporter importData:someThingData toObject:result];
+         
+         STAssertEqualObjects([result someOtherProperty], @"something", @"Failed to import someOtherProperty");
+         
+         // Now clear out the value to nil.
+         // DMThingClass defines a custom setter name for this property so this tests whether the importer can handle that.
+         NSDictionary * moreThingData = @{ @"someOtherProperty" : [NSNull null] };
+         
+         [self.dataManager.dataImporter importData:moreThingData toObject:result];
+         
+         STAssertNil([result someOtherProperty], @"Failed to nil out someOtherProperty");
+
+         finished = YES;
+         
      }];
     
     while (!finished){

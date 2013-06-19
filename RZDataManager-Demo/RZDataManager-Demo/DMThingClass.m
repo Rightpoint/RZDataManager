@@ -14,6 +14,8 @@
 @dynamic attribute2;
 @dynamic myIdentifier;
 
+@synthesize someOtherProperty = _someOtherProperty;
+
 + (NSString*)dataImportDefaultDataIdKey
 {
     return @"id";
