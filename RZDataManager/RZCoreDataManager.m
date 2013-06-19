@@ -198,7 +198,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                             importedObj = [self objectOfType:relationshipMapping.relationshipObjectType withValue:uid forKeyPath:modelIdKey createNew:YES];
                         }
                         
-                        [self.dataImporter importData:data toObject:importedObj];
+                        [self.dataImporter importData:data toObject:importedObj usingMapping:objMapping];
                         
                         if (relationshipMapping.shouldReplaceExistingRelationships){
                             NSSet *importedRelObjs = [NSSet setWithObject:importedObj];
@@ -219,7 +219,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                         
                         // create or update object
                         importedObj = [self objectOfType:relationshipMapping.relationshipObjectType withValue:uid forKeyPath:modelIdKey createNew:YES];
-                        [self.dataImporter importData:data toObject:importedObj];
+                        [self.dataImporter importData:data toObject:importedObj usingMapping:objMapping];
                         
                         // set relationship on other object
                         [object setValue:importedObj forKey:relationshipMapping.relationshipPropertyName];
@@ -255,7 +255,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                                 importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
                             }
                             
-                            [self.dataImporter importData:objData toObject:importedObj];
+                            [self.dataImporter importData:objData toObject:importedObj usingMapping:objMapping];
                             
                             [importedRelObjs addObject:importedObj];
                         }

@@ -461,7 +461,6 @@
     
     // This time all other entries should be removed from the "Red" collection
     // The configuration is a bit tedious here, it may be worth trying to streamline if this is a common use case
-    
     RZDataManagerModelObjectMapping *mapping = [self.dataManager mappingForClassNamed:@"DMCollection"];
     RZDataManagerModelObjectRelationshipMapping *relMapping = [mapping relationshipMappingForDataKey:@"entries"];
     relMapping.shouldReplaceExistingRelationships = YES;
@@ -485,6 +484,67 @@
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
          STAssertNotNil(entry, @"Red entry not found");
          STAssertEquals(entry.popularity.doubleValue, 0.5, @"Entry not updated correctly");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
+- (void)test2052ImportRelationshipWithCustomMapping
+{
+    NSDictionary *redCollection = @{
+                                    @"name" : @"Red",
+                                    @"entries" :
+                                            @{
+                                                @"whatsmyname" : @"Pi",
+                                                @"uid" : @"1001"
+                                            }
+                                    };
+    
+    
+    __block BOOL finished = NO;
+    
+    // The configuration is a bit tedious here, it may be worth trying to streamline if this is a common use case
+    
+    // Get default mapping for "DMCollection"
+    RZDataManagerModelObjectMapping *collectionMapping = [self.dataManager mappingForClassNamed:@"DMCollection"];
+    
+    // Get default mapping for "DMEntry"
+    RZDataManagerModelObjectMapping *entryMapping = [self.dataManager mappingForClassNamed:@"DMEntry"];
+    
+    // Set custom mapping for whatsmyname -> name on "DMEntry"
+    [entryMapping setModelPropertyName:@"name" forDataKey:@"whatsmyname"];
+    
+    // Get relationship mapping for entries on "DMCollection"
+    RZDataManagerModelObjectRelationshipMapping *entryRelMapping = [collectionMapping relationshipMappingForDataKey:@"entries"];
+    
+    // Set the overridden "DMEntry" mapping
+    entryRelMapping.relatedObjectMapping = entryMapping;
+    
+    // Set the overriden entries relationship mapping
+    [collectionMapping setRelationshipMapping:entryRelMapping forDataKey:@"entries"];
+        
+    [self.dataManager importData:redCollection
+                      objectType:@"DMCollection"
+                    usingMapping:collectionMapping
+                         options:nil
+                      completion:^(id result, NSError *error)
+     {
+         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         
+         // result object should be collection named "Red"
+         DMCollection *collection = (DMCollection*)result;
+         STAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
+         
+         // Should have one extra entry
+         STAssertEquals(collection.entries.count, (NSUInteger)6, @"Returned collection has wrong number of entries");
+         
+         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1001" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
+         STAssertNotNil(entry, @"Pi entry not found");
+         STAssertEqualObjects(entry.name, @"Pi", @"Entry not updated correctly");
          
          finished = YES;
      }];
