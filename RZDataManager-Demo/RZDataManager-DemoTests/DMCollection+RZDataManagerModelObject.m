@@ -22,7 +22,7 @@
 
 + (NSDictionary*)dataImportRelationshipKeyMappings
 {
-    return @{ @"entries" : [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:@"DMEntry" propertyName:@"entries" inversePropertyName:@"collection"] };
+    return @{ @"entries" : [RZDataManagerModelObjectRelationshipMapping mappingWithClassNamed:@"DMEntry" propertyName:@"entries" inversePropertyName:@"collection"] };
 }
 
 @end

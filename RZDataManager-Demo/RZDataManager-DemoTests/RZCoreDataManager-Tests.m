@@ -115,7 +115,7 @@
                                 @"date" : @"2013-07-01T12:00:00Z"};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
     {
         STAssertNotNil(result, @"Result should not be nil");
         STAssertNil(error, @"Error during import: %@", error);
@@ -154,7 +154,7 @@
                                 @"createdDate" : [NSNull null]};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -187,7 +187,7 @@
                             ];
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -234,7 +234,7 @@
     
     // Use a custom mapping for the name property    
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" keyMappings:@{ @"mahNameIs" : @"name" } options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" keyMappings:@{ @"mahNameIs" : @"name" } options:nil completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -274,7 +274,7 @@
                                 @"collection" : @"Red"};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -334,7 +334,7 @@
     __block BOOL finished = NO;
     
     [self.dataManager importData:@[yellowCollection, greenCollection]
-                      objectType:@"DMCollection"
+                      forClassNamed:@"DMCollection"
                          options:nil
                       completion:^(id result, NSError *error)
     {
@@ -398,7 +398,7 @@
     __block BOOL finished = NO;
     
     [self.dataManager importData:redCollection
-                      objectType:@"DMCollection"
+                      forClassNamed:@"DMCollection"
                          options:nil
                       completion:^(id result, NSError *error)
      {
@@ -450,7 +450,7 @@
     [mapping setRelationshipMapping:relMapping forDataKey:@"entries"];
     
     [self.dataManager importData:redCollection
-                      objectType:@"DMCollection"
+                      forClassNamed:@"DMCollection"
                     usingMapping:mapping
                          options:nil
                       completion:^(id result, NSError *error)
@@ -511,7 +511,7 @@
     [collectionMapping setRelationshipMapping:entryRelMapping forDataKey:@"entries"];
         
     [self.dataManager importData:redCollection
-                      objectType:@"DMCollection"
+                      forClassNamed:@"DMCollection"
                     usingMapping:collectionMapping
                          options:nil
                       completion:^(id result, NSError *error)
@@ -550,7 +550,7 @@
     __block BOOL finished = NO;
     
     [self.dataManager importData:redCollection
-                      objectType:@"DMCollection"
+                      forClassNamed:@"DMCollection"
                          options:nil
                       completion:^(id result, NSError *error)
      {
@@ -587,7 +587,7 @@
     __block BOOL finished = NO;
     
     [self.dataManager importData:thingData
-                      objectType:@"DMThingClass"
+                      forClassNamed:@"DMThingClass"
                          options:nil
                       completion:^(id result, NSError *error)
      {
@@ -619,7 +619,7 @@
     __block BOOL finished = NO;
     
     [self.dataManager importData:thingData
-                      objectType:@"DMThingClass"
+                      forClassNamed:@"DMThingClass"
                          options:nil
                       completion:^(id result, NSError *error)
      {
@@ -666,7 +666,7 @@
                                 @"collection" : @"Red"};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -704,7 +704,7 @@
                  @"collection" : @"Red"};
     
     finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -754,7 +754,7 @@
                                 };
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);

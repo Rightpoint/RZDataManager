@@ -25,7 +25,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 - (void)saveContext:(BOOL)wait;
 - (NSURL*)applicationDocumentsDirectory;
 
-- (NSString*)entityNameForObjectType:(NSString*)type;
+- (NSString*)entityNameForClassNamed:(NSString*)type;
 
 @end
 
@@ -57,7 +57,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     return [self objectsForEntity:type matchingPredicate:predicate usingMOC:self.currentMoc];
 }
 
-- (void)importData:(NSDictionary *)data objectType:(NSString *)type usingMapping:(RZDataManagerModelObjectMapping *)mapping options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(NSDictionary *)data forClassNamed:(NSString *)type usingMapping:(RZDataManagerModelObjectMapping *)mapping options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
     if (nil == mapping){
         mapping = [self.dataImporter mappingForClassNamed:type];
@@ -88,7 +88,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         else if ([data isKindOfClass:[NSArray class]]){
             
             // optimize lookup for existing objects
-            NSString *entityName = [self entityNameForObjectType:type];
+            NSString *entityName = [self entityNameForClassNamed:type];
             NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
             NSError *err =nil;
             NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
@@ -163,7 +163,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     RZDataManagerModelObjectMapping *objMapping = [relationshipMapping relatedObjectMapping];
     if (nil == objMapping)
     {
-        objMapping = [self.dataImporter mappingForClassNamed:relationshipMapping.relationshipObjectType];
+        objMapping = [self.dataImporter mappingForClassNamed:relationshipMapping.relationshipClassName];
     }
     
     NSString *dataIdKey = objMapping.dataIdKey;
@@ -191,12 +191,12 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                         
                         // find object within other object's relationship set
                         NSSet * existingObjs = [object valueForKey:relationshipMapping.relationshipPropertyName];
-                        importedObj = [self objectOfType:relationshipMapping.relationshipObjectType withValue:uid forKeyPath:modelIdKey inCollection:existingObjs createNew:NO];
+                        importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey inCollection:existingObjs createNew:NO];
                         
                         // if not found in set, find globally
                         if (nil == importedObj)
                         {
-                            importedObj = [self objectOfType:relationshipMapping.relationshipObjectType withValue:uid forKeyPath:modelIdKey createNew:YES];
+                            importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey createNew:YES];
                         }
                         
                         [self.dataImporter importData:data toObject:importedObj usingMapping:objMapping];
@@ -219,7 +219,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     else{
                         
                         // create or update object
-                        importedObj = [self objectOfType:relationshipMapping.relationshipObjectType withValue:uid forKeyPath:modelIdKey createNew:YES];
+                        importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey createNew:YES];
                         [self.dataImporter importData:data toObject:importedObj usingMapping:objMapping];
                         
                         // set relationship on other object
@@ -228,7 +228,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     
                 }
                 else{
-                    [self rz_logError:@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, relationshipMapping.relationshipObjectType];
+                    [self rz_logError:@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, relationshipMapping.relationshipClassName];
                 }
                 
 
@@ -239,7 +239,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 if (relationshipDesc.isToMany){
                     
                     // optimize lookup for existing objects
-                    NSString *entityName = [self entityNameForObjectType:relationshipMapping.relationshipObjectType];
+                    NSString *entityName = [self entityNameForClassNamed:relationshipMapping.relationshipClassName];
                     NSArray * existingObjs = [(NSSet*)[object valueForKey:relationshipMapping.relationshipPropertyName] allObjects];                        
                     NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
                     
@@ -302,7 +302,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 
                 if ([data isKindOfClass:[NSDictionary class]]){
                     id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
-                    result = [self objectOfType:relationshipMapping.relationshipObjectType withValue:uid forKeyPath:modelIdKey createNew:NO];
+                    result = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey createNew:NO];
                 }
                 else if ([data isKindOfClass:[NSArray class]]){
                     
@@ -310,7 +310,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
                      {
                          id uid = [obj validObjectForKey:dataIdKey decodeHTML:NO];
-                         id resultEntry = [self objectOfType:relationshipMapping.relationshipObjectType withValue:uid forKeyPath:modelIdKey createNew:NO];
+                         id resultEntry = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey createNew:NO];
                          if (resultEntry){
                              [resultArray addObject:resultEntry];
                          }
@@ -410,7 +410,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 #pragma mark - Utilities
 
-- (NSString*)entityNameForObjectType:(NSString *)type
+- (NSString*)entityNameForClassNamed:(NSString *)type
 {
     __block NSString *entityName = [self.classToEntityMapping objectForKey:type];
     if (nil == entityName){
@@ -453,7 +453,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 - (id)objectForEntity:(NSString*)entity withValue:(id)value forKeyPath:(NSString*)keyPath usingMOC:(NSManagedObjectContext*)moc create:(BOOL)create
 {
     // ensure this is an entity type, not the class name
-    entity = [self entityNameForObjectType:entity];
+    entity = [self entityNameForClassNamed:entity];
     
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entity];
     request.predicate = [NSPredicate predicateWithFormat:@"%K == %@", keyPath, value];
@@ -475,7 +475,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 - (id)objectForEntity:(NSString *)entity withValue:(id)value forKeyPath:(NSString *)keyPath inCollection:(id)objects usingMOC:(NSManagedObjectContext *)moc create:(BOOL)create
 {
     // ensure this is an entity type, not the class name
-    entity = [self entityNameForObjectType:entity];
+    entity = [self entityNameForClassNamed:entity];
     
     id fetchedObject = nil;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%K == %@", keyPath, value];
@@ -504,7 +504,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 - (NSArray*)objectsForEntity:(NSString*)entity matchingPredicate:(NSPredicate*)predicate usingMOC:(NSManagedObjectContext*)moc
 {
     // ensure this is an entity type, not the class name
-    entity = [self entityNameForObjectType:entity];
+    entity = [self entityNameForClassNamed:entity];
     
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entity];
     request.predicate = predicate;

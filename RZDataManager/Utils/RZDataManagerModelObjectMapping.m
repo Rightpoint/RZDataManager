@@ -196,10 +196,10 @@
 
 @implementation RZDataManagerModelObjectRelationshipMapping
 
-+ (RZDataManagerModelObjectRelationshipMapping*)mappingWithObjectType:(NSString *)type propertyName:(NSString *)propertyName inversePropertyName:(NSString *)inverse
++ (RZDataManagerModelObjectRelationshipMapping*)mappingWithClassNamed:(NSString *)type propertyName:(NSString *)propertyName inversePropertyName:(NSString *)inverse
 {
     RZDataManagerModelObjectRelationshipMapping *mapping = [[RZDataManagerModelObjectRelationshipMapping alloc] init];
-    mapping.relationshipObjectType = type;
+    mapping.relationshipClassName = type;
     mapping.relationshipPropertyName = propertyName;
     mapping.relationshipInversePropertyName = inverse;
     return mapping;
@@ -207,7 +207,7 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    RZDataManagerModelObjectRelationshipMapping *copy = [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:self.relationshipObjectType
+    RZDataManagerModelObjectRelationshipMapping *copy = [RZDataManagerModelObjectRelationshipMapping mappingWithClassNamed:self.relationshipClassName
                                                                                                               propertyName:self.relationshipPropertyName
                                                                                                        inversePropertyName:self.relationshipInversePropertyName];
     copy.shouldReplaceExistingRelationships = self.shouldReplaceExistingRelationships;

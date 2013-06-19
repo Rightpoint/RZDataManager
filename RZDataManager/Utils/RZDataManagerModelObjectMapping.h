@@ -34,9 +34,9 @@
 
 @interface RZDataManagerModelObjectRelationshipMapping : NSObject <NSCopying>
 
-+ (RZDataManagerModelObjectRelationshipMapping*)mappingWithObjectType:(NSString*)type propertyName:(NSString*)propertyName inversePropertyName:(NSString*)inverse;
++ (RZDataManagerModelObjectRelationshipMapping*)mappingWithClassNamed:(NSString*)type propertyName:(NSString*)propertyName inversePropertyName:(NSString*)inverse;
 
-@property (nonatomic, copy) NSString *relationshipObjectType;
+@property (nonatomic, copy) NSString *relationshipClassName;
 @property (nonatomic, copy) NSString *relationshipPropertyName;
 @property (nonatomic, copy) NSString *relationshipInversePropertyName;
 

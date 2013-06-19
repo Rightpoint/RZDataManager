@@ -45,7 +45,7 @@
     Let current object have type "RZDepartment". 
     This method might return the following dictionary
  
-    @{ @"employees" : [RZDataManagerModelObjectRelationshipMapping mappingWithObjectType:@"RZEmployee" propertyName:@"employees" inversePropertyName:@"department"] }
+    @{ @"employees" : [RZDataManagerModelObjectRelationshipMapping mappingWithClassNamed:@"RZEmployee" propertyName:@"employees" inversePropertyName:@"department"] }
 */
 + (NSDictionary*)dataImportRelationshipKeyMappings;
 

@@ -80,13 +80,13 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
  
 // Default signature, no overrides
 - (void)importData:(id)data
-        objectType:(NSString*)type
+        forClassNamed:(NSString*)type
            options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
 // Use key-value pairs in keyMappings to override key->property import mappings
 - (void)importData:(id)data
-        objectType:(NSString*)type
+        forClassNamed:(NSString*)type
        keyMappings:(NSDictionary*)keyMappings
            options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
@@ -107,7 +107,7 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
 
 // Mapping can be nil, in which case subclass should use default mapping for this object type
 - (void)importData:(id)data
-        objectType:(NSString*)type
+        forClassNamed:(NSString*)type
       usingMapping:(RZDataManagerModelObjectMapping*)mapping
            options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;

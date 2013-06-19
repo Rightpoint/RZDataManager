@@ -262,7 +262,7 @@
     
     if (nil != relationshipMapping){
         
-        RZDataManagerModelObjectMapping *relatedObjectMapping = [self mappingForClassNamed:relationshipMapping.relationshipObjectType];
+        RZDataManagerModelObjectMapping *relatedObjectMapping = [self mappingForClassNamed:relationshipMapping.relationshipClassName];
         
         if (relatedObjectMapping != nil){
             
@@ -311,7 +311,7 @@
                     }
                 }
                 else{
-                    [self rz_logError:@"Missing relationship id key and/or model id key for relationship object type %@", relationshipMapping.relationshipObjectType];
+                    [self rz_logError:@"Missing relationship id key and/or model id key for relationship object type %@", relationshipMapping.relationshipClassName];
                 }
             }
             else{
@@ -339,7 +339,7 @@
             }
         }
         else{
-            [self rz_logError:@"could not find mapping for relationship object type %@ from object type %@", relationshipMapping.relationshipObjectType, NSStringFromClass([object class])];
+            [self rz_logError:@"could not find mapping for relationship object type %@ from object type %@", relationshipMapping.relationshipClassName, NSStringFromClass([object class])];
         }
     }
     else if (selectorName != nil){

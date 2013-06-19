@@ -63,16 +63,16 @@ NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'
 
 #pragma mark - Public Methods
 
-- (void)importData:(id)data objectType:(NSString *)type options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(id)data forClassNamed:(NSString *)type options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    [self importData:data objectType:type usingMapping:nil options:options completion:completion];
+    [self importData:data forClassNamed:type usingMapping:nil options:options completion:completion];
 }
 
-- (void)importData:(id)data objectType:(NSString *)type keyMappings:(NSDictionary *)keyMappings options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(id)data forClassNamed:(NSString *)type keyMappings:(NSDictionary *)keyMappings options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
     RZDataManagerModelObjectMapping *mapping = [self.dataImporter mappingForClassNamed:type];
     [mapping setModelPropertiesForKeyNames:keyMappings];
-    [self importData:data objectType:type usingMapping:mapping options:options completion:completion];
+    [self importData:data forClassNamed:type usingMapping:mapping options:options completion:completion];
 }
 
 - (void)importData:(id)data forRelationshipPropertyName:(NSString *)relationshipProperty onObject:(NSObject *)object options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
@@ -104,7 +104,7 @@ NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'
 }
 
 - (void)importData:(id)data
-        objectType:(NSString*)type
+        forClassNamed:(NSString*)type
           usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion
@@ -239,7 +239,7 @@ NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'
             // for relationships, don't serialze the entire other object - this could lead to infinite recursion
             // just convert the unique identifier key/value pairs
             RZDataManagerModelObjectRelationshipMapping * relMapping = [mapping relationshipMappingForModelPropertyName:propName];
-            RZDataManagerModelObjectMapping * otherObjMapping = [self.dataImporter mappingForClassNamed:relMapping.relationshipObjectType];
+            RZDataManagerModelObjectMapping * otherObjMapping = [self.dataImporter mappingForClassNamed:relMapping.relationshipClassName];
             
             id propValue = nil;
             @try {
@@ -256,7 +256,7 @@ NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'
                     otherObjUid = [obj valueForKey:otherObjMapping.modelIdPropertyName];
                 }
                 @catch (NSException *exception) {
-                    NSLog(@"RZDataImporter: Object of type %@ does not respond to key %@", relMapping.relationshipObjectType, otherObjMapping.modelIdPropertyName);
+                    NSLog(@"RZDataImporter: Object of type %@ does not respond to key %@", relMapping.relationshipClassName, otherObjMapping.modelIdPropertyName);
                 }
                 
                 return otherObjUid;
