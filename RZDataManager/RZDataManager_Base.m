@@ -163,67 +163,67 @@ NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'
             [invocation setTarget:object];
             [invocation setSelector:getter];
             
-            if ([propType isEqualToString:kRZDataManagerTypeChar]){
+            if ([propType isEqualToString:kRZDataTypeChar]){
                 char charValue;
                 [invocation invoke];
                 [invocation getReturnValue:&charValue];
                 numberValue = @(charValue);
             }
-            else if ([propType isEqualToString:kRZDataManagerTypeInt]){
+            else if ([propType isEqualToString:kRZDataTypeInt]){
                 NSInteger intValue;
                 [invocation invoke];
                 [invocation getReturnValue:&intValue];
                 numberValue = @(intValue);
             }
-            else if ([propType isEqualToString:kRZDataManagerTypeUnsignedInt]){
+            else if ([propType isEqualToString:kRZDataTypeUnsignedInt]){
                 NSUInteger uIntValue;
                 [invocation invoke];
                 [invocation getReturnValue:&uIntValue];
                 numberValue = @(uIntValue);
             }
-            else if ([propType isEqualToString:kRZDataManagerTypeShort]){
+            else if ([propType isEqualToString:kRZDataTypeShort]){
                 SInt16 shortValue;
                 [invocation invoke];
                 [invocation getReturnValue:&shortValue];
                 numberValue = @(shortValue);
             }
-            else if ([propType isEqualToString:kRZDataManagerTypeUnsignedShort]){
+            else if ([propType isEqualToString:kRZDataTypeUnsignedShort]){
                 UInt16 uShortValue;
                 [invocation invoke];
                 [invocation getReturnValue:&uShortValue];
                 numberValue = @(uShortValue);
             }
-            else if ([propType isEqualToString:kRZDataManagerTypeLong]){
+            else if ([propType isEqualToString:kRZDataTypeLong]){
                 SInt32 longValue;
                 [invocation invoke];
                 [invocation getReturnValue:&longValue];
                 numberValue = @(longValue);
             }
-            else if ([propType isEqualToString:kRZDataManagerTypeUnsignedLong]){
+            else if ([propType isEqualToString:kRZDataTypeUnsignedLong]){
                 UInt32 uLongValue;
                 [invocation invoke];
                 [invocation getReturnValue:&uLongValue];
                 numberValue = @(uLongValue);
             }
-            else if ([propType isEqualToString:kRZDataManagerTypeLongLong]){
+            else if ([propType isEqualToString:kRZDataTypeLongLong]){
                 SInt64 longLongValue;
                 [invocation invoke];
                 [invocation getReturnValue:&longLongValue];
                 numberValue = @(longLongValue);
             }
-            else if ([propType isEqualToString:kRZDataManagerTypeUnsignedLongLong]){
+            else if ([propType isEqualToString:kRZDataTypeUnsignedLongLong]){
                 UInt64 uLongLongValue;
                 [invocation invoke];
                 [invocation getReturnValue:&uLongLongValue];
                 numberValue = @(uLongLongValue);
             }
-            else if ([propType isEqualToString:kRZDataManagerTypeFloat]){
+            else if ([propType isEqualToString:kRZDataTypeFloat]){
                 float floatValue;
                 [invocation invoke];
                 [invocation getReturnValue:&floatValue];
                 numberValue = @(floatValue);
             }
-            else if ([propType isEqualToString:kRZDataManagerTypeDouble]){
+            else if ([propType isEqualToString:kRZDataTypeDouble]){
                 double doubleValue;
                 [invocation invoke];
                 [invocation getReturnValue:&doubleValue];

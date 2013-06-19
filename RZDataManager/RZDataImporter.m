@@ -13,6 +13,7 @@
 #import "NSDictionary+NonNSNull.h"
 #import "NSString+HTMLEntities.h"
 #import "NSObject+RZPropertyUtils.h"
+#import "NSObject+RZLogHelper.h"
 
 @interface RZDataImporter ()
 
@@ -30,6 +31,8 @@
 - (SEL)setterFromPropertyName:(NSString*)propertyName;
 
 - (id)convertValue:(id)value toType:(NSString*)conversionType withFormat:(NSString*)format;
+
+- (void)logErrorMessage:(NSString*)errorMessage, ...;
 
 @end
 
@@ -50,6 +53,11 @@
         self.defaultDateFormat = kRZDataManagerUTCDateFormat;
     }
     return self;
+}
+
+- (void)logErrorMessage:(NSString *)errorMessage, ...
+{
+    
 }
 
 #pragma mark - Public
@@ -182,10 +190,12 @@
 
 - (void)importData:(NSDictionary *)data toObject:(NSObject<RZDataManagerModelObject>*)object usingMapping:(RZDataManagerModelObjectMapping *)mapping
 {
+    // Prepare for import
     if ([object respondsToSelector:@selector(prepareForImportFromData:)]){
         [object prepareForImportFromData:data];
     }
     
+    // Do the import
     for (NSString* key in [data allKeys]){
                         
         // If we have valid mapping, go ahead and import it
@@ -211,20 +221,21 @@
                         [self importValue:value toObject:object fromKeyPath:keyPath withMapping:mapping];
                     }
                     else if (![mapping.ignoreKeys containsObject:keyPath]){
-                        NSLog(@"RZDataImporter: Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class]));
+                        [self rz_logError:@"Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class])];
                     }
                     
                 }
             }
             else
             {
-                NSLog(@"RZDataImporter: Could not find mapping for key %@ in object of class %@", key, NSStringFromClass([object class]));
+                [self rz_logError:@"Could not find mapping for key %@ in object of class %@", key, NSStringFromClass([object class])];
             }
 
         }
        
     }
     
+    // Finalize the import
     if ([object respondsToSelector:@selector(finalizeImportFromData:)]){
         [object finalizeImportFromData:data];
     }
@@ -280,7 +291,19 @@
                         
                     }
                     
-                    [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:nil completion:nil];
+                    // If value is non-nil, import related object. Otherwise use invocation to nil it out.
+                    if (nil != value){
+                        [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:nil completion:nil];
+                    }
+                    else{
+                        SEL setter = [[object class] rz_setterForPropertyNamed:relationshipMapping.relationshipPropertyName];
+                        if (setter){
+                            
+                        }
+                        else{
+                            
+                        }
+                    }
                 }
                 else{
                     
@@ -295,11 +318,11 @@
                 }
             }
             else{
-                NSLog(@"Missing relationship id key and/or model id key for relationship object type %@", relationshipMapping.relationshipObjectType);
+                [self rz_logError:@"Missing relationship id key and/or model id key for relationship object type %@", relationshipMapping.relationshipObjectType];
             }
         }
         else{
-            NSLog(@"RZDataImporter: could not find mapping for relationship object type %@ from object type %@", relationshipMapping.relationshipObjectType, NSStringFromClass([object class]));
+            [self rz_logError:@"could not find mapping for relationship object type %@ from object type %@", relationshipMapping.relationshipObjectType, NSStringFromClass([object class])];
         }
     }
     else if (selectorName != nil){
@@ -324,16 +347,16 @@
                     [invocation invoke];
                 }
                 @catch (NSException *exception) {
-                    NSLog(@"RZDataImporter: Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(importSelector), NSStringFromClass([object class]), exception);
+                    [self rz_logError:@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(importSelector), NSStringFromClass([object class]), exception];
                 }
                 
             }
             else{
-                NSLog(@"RZDataImporter: Too few arguments for import selector %@ on object of class %@", selectorName, NSStringFromClass([object class]));
+                [self rz_logError:@"Too few arguments for import selector %@ on object of class %@", selectorName, NSStringFromClass([object class])];
             }
         }
         else{
-            NSLog(@"RZDataImporter: Unable to perform custom import selector %@ on object of class %@", selectorName, NSStringFromClass([object class]));
+            [self rz_logError:@"Unable to perform custom import selector %@ on object of class %@", selectorName, NSStringFromClass([object class])];
         }
         
     }
@@ -387,7 +410,7 @@
         }
     }
     @catch (NSException *exception) {
-        NSLog(@"RZDataImporter: Error setting value for key %@ on object of class %@: %@", propertyName, NSStringFromClass([object class]), exception);
+        [self rz_logError:@"Error setting value for key %@ on object of class %@: %@", propertyName, NSStringFromClass([object class]), exception];
     }
 
 }
@@ -396,7 +419,7 @@
 {
     id newValue = value;
     
-    if ([conversionType isEqualToString:kRZDataManagerTypeNSDate])
+    if ([conversionType isEqualToString:kRZDataTypeNSDate])
     {
         if ([value isKindOfClass:[NSString class]]){
             
@@ -420,10 +443,10 @@
             newValue = [NSDate dateWithTimeIntervalSince1970:[(NSNumber*)value doubleValue]];
         }
         else if (![value isKindOfClass:[NSDate class]]){
-            NSLog(@"RZDataImporter: Object of class %@ cannot be converted to NSDate", NSStringFromClass([value class]));
+            [self rz_logError:@"Object of class %@ cannot be converted to NSDate", NSStringFromClass([value class])];
         }
     }
-    else if ([conversionType isEqualToString:kRZDataManagerTypeNSNumber])
+    else if ([conversionType isEqualToString:kRZDataTypeNSNumber])
     {
         if ([value isKindOfClass:[NSString class]]){
             @synchronized(self.numberFormatter){
@@ -431,10 +454,10 @@
             }
         }
         else if (![value isKindOfClass:[NSNumber class]]){
-            NSLog(@"RZDataImporter: Object of class %@ cannot be converted to NSNumber", NSStringFromClass([value class]));
+            [self rz_logError:@"Object of class %@ cannot be converted to NSNumber", NSStringFromClass([value class])];
         }
     }
-    else if ([conversionType isEqualToString:kRZDataManagerTypeNSString])
+    else if ([conversionType isEqualToString:kRZDataTypeNSString])
     {
         if ([value respondsToSelector:@selector(stringValue)])
         {

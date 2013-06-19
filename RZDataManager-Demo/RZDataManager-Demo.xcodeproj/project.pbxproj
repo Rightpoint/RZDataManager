@@ -23,6 +23,9 @@
 		9AC66E7B175E94A1007C603C /* RZDataManagerModelObjectMapping.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC66E74175E6DE6007C603C /* RZDataManagerModelObjectMapping.m */; };
 		9AC66E7E175E953F007C603C /* DMCollection+RZDataManagerModelObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC66E7D175E953E007C603C /* DMCollection+RZDataManagerModelObject.m */; };
 		9ACF8EE91760D58400974873 /* DMThingClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 9ACF8EE81760D58400974873 /* DMThingClass.m */; };
+		9AEAD723177201B400B8A6BE /* NSObject+RZPropertyUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A58B7A017578D070065D1EA /* NSObject+RZPropertyUtils.m */; };
+		9AEAD7271772042A00B8A6BE /* NSObject+RZLogHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AEAD7261772042A00B8A6BE /* NSObject+RZLogHelper.m */; };
+		9AEAD728177205AD00B8A6BE /* NSObject+RZLogHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AEAD7261772042A00B8A6BE /* NSObject+RZLogHelper.m */; };
 		FEA82A781742AFFE00FA206C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A771742AFFE00FA206C /* UIKit.framework */; };
 		FEA82A7A1742AFFE00FA206C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A791742AFFE00FA206C /* Foundation.framework */; };
 		FEA82A7C1742AFFE00FA206C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A7B1742AFFE00FA206C /* CoreGraphics.framework */; };
@@ -74,6 +77,8 @@
 		9AC66E7D175E953E007C603C /* DMCollection+RZDataManagerModelObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DMCollection+RZDataManagerModelObject.m"; sourceTree = "<group>"; };
 		9ACF8EE71760D58400974873 /* DMThingClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMThingClass.h; path = "RZDataManager-Demo/DMThingClass.h"; sourceTree = SOURCE_ROOT; };
 		9ACF8EE81760D58400974873 /* DMThingClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMThingClass.m; path = "RZDataManager-Demo/DMThingClass.m"; sourceTree = SOURCE_ROOT; };
+		9AEAD7251772042A00B8A6BE /* NSObject+RZLogHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+RZLogHelper.h"; sourceTree = "<group>"; };
+		9AEAD7261772042A00B8A6BE /* NSObject+RZLogHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+RZLogHelper.m"; sourceTree = "<group>"; };
 		FEA82A741742AFFE00FA206C /* RZDataManager-Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "RZDataManager-Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEA82A771742AFFE00FA206C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FEA82A791742AFFE00FA206C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -250,6 +255,8 @@
 				FEA82B061742CC1B00FA206C /* NSString+HTMLEntities.m */,
 				9AC66E73175E6DE6007C603C /* RZDataManagerModelObjectMapping.h */,
 				9AC66E74175E6DE6007C603C /* RZDataManagerModelObjectMapping.m */,
+				9AEAD7251772042A00B8A6BE /* NSObject+RZLogHelper.h */,
+				9AEAD7261772042A00B8A6BE /* NSObject+RZLogHelper.m */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -372,6 +379,7 @@
 				9A3366591755378800FCF766 /* RZDataManager_Base.m in Sources */,
 				9A58B7A117578D070065D1EA /* NSObject+RZPropertyUtils.m in Sources */,
 				9AC66E7B175E94A1007C603C /* RZDataManagerModelObjectMapping.m in Sources */,
+				9AEAD7271772042A00B8A6BE /* NSObject+RZLogHelper.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -392,6 +400,8 @@
 				9AC66E75175E6DE6007C603C /* RZDataManagerModelObjectMapping.m in Sources */,
 				9AC66E7E175E953F007C603C /* DMCollection+RZDataManagerModelObject.m in Sources */,
 				9ACF8EE91760D58400974873 /* DMThingClass.m in Sources */,
+				9AEAD723177201B400B8A6BE /* NSObject+RZPropertyUtils.m in Sources */,
+				9AEAD728177205AD00B8A6BE /* NSObject+RZLogHelper.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

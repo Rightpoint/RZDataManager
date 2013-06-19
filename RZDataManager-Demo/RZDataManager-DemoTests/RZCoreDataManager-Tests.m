@@ -35,6 +35,7 @@
     
     // Insert a few dummy objects and collections
     NSManagedObjectContext *moc = [self.dataManager managedObjectContext];
+    
     {
         NSArray *names = @[@"Alpha", @"Beta", @"Gamma", @"Delta", @"Epsilon"];
         
@@ -177,32 +178,14 @@
     NSArray * mockData = @[ @{@"name" : @"Omicron",
                                 @"uid" : @"1000",
                                 @"popularity" : @(0.5),
-                                @"testFloat" : @(1.0f),
-                                @"testDouble" : @(1.0),
-                                @"testUInt" : @(-1), // should wrap back to 0xFFFFFFFF
-                                @"testInt" : @(-1),
-                                @"testShort" : @(-1),
-                                @"testUShort" : @(-1), // should wrap back to 0xFFFF
-                                @"testLongLong" : @(-1),
-                                @"testULongLong" : @(-1), // should wrap back to 0xFFFFFFFFFFFFFFFF
-                                @"testBool" : @(YES),
                                 @"date" : @"2013-07-01T12:00:00Z"},
                             
-                            @{@"name" : @"Pi",
-                              @"uid" : @"1001",
-                              @"popularity" : @(0.8),
-                              @"testFloat" : @(1.0f),
-                              @"testDouble" : @(1.0),
-                              @"testUInt" : @(-1), // should wrap back to 0xFFFFFFFF
-                              @"testInt" : @(-1),
-                              @"testShort" : @(-1),
-                              @"testUShort" : @(-1), // should wrap back to 0xFFFF
-                              @"testLongLong" : @(-1),
-                              @"testULongLong" : @(-1), // should wrap back to 0xFFFFFFFFFFFFFFFF
-                              @"testBool" : @(YES),
-                              @"date" : @"2013-07-02T08:00:22Z"},
-    
+                                @{@"name" : @"Pi",
+                                  @"uid" : @"1001",
+                                  @"popularity" : @(0.8),
+                                  @"date" : @"2013-07-02T08:00:22Z"}
                             ];
+    
     __block BOOL finished = NO;
     [self.dataManager importData:mockData objectType:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {

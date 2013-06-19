@@ -1,5 +1,5 @@
 //
-//  NSObject+PropertyTypes.m
+//  NSObject+RZPropertyUtils.m
 //  RZDataManager-Demo
 //
 //  Created by Nick Donaldson on 5/30/13.
@@ -10,43 +10,43 @@
 #import "NSObject+RZPropertyUtils.h"
 #import <objc/runtime.h>
 
-NSString* const kRZDataManagerTypeNSArray               = @"NSArray";
-NSString* const kRZDataManagerTypeNSDictionary          = @"NSDictionary";
-NSString* const kRZDataManagerTypeNSSet                 = @"NSSet";
-NSString* const kRZDataManagerTypeNSOrderedSet          = @"NSOrderedSet";
-NSString* const kRZDataManagerTypeNSString              = @"NSString";
-NSString* const kRZDataManagerTypeNSDate                = @"NSDate";
-NSString* const kRZDataManagerTypeNSNumber              = @"NSNumber";
-NSString* const kRZDataManagerTypeUnsignedChar          = @"unsigned char";
-NSString* const kRZDataManagerTypeChar                  = @"char";
-NSString* const kRZDataManagerTypeShort                 = @"short";
-NSString* const kRZDataManagerTypeUnsignedShort         = @"unsigned short";
-NSString* const kRZDataManagerTypeInt                   = @"int";
-NSString* const kRZDataManagerTypeUnsignedInt           = @"unsigned int";
-NSString* const kRZDataManagerTypeLong                  = @"long";
-NSString* const kRZDataManagerTypeUnsignedLong          = @"unsigned long";
-NSString* const kRZDataManagerTypeLongLong              = @"long long";
-NSString* const kRZDataManagerTypeUnsignedLongLong      = @"unsigned long long";
-NSString* const kRZDataManagerTypeFloat                 = @"float";
-NSString* const kRZDataManagerTypeDouble                = @"double";
+NSString* const kRZDataTypeNSArray               = @"NSArray";
+NSString* const kRZDataTypeNSDictionary          = @"NSDictionary";
+NSString* const kRZDataTypeNSSet                 = @"NSSet";
+NSString* const kRZDataTypeNSOrderedSet          = @"NSOrderedSet";
+NSString* const kRZDataTypeNSString              = @"NSString";
+NSString* const kRZDataTypeNSDate                = @"NSDate";
+NSString* const kRZDataTypeNSNumber              = @"NSNumber";
+NSString* const kRZDataTypeUnsignedChar          = @"unsigned char";
+NSString* const kRZDataTypeChar                  = @"char";
+NSString* const kRZDataTypeShort                 = @"short";
+NSString* const kRZDataTypeUnsignedShort         = @"unsigned short";
+NSString* const kRZDataTypeInt                   = @"int";
+NSString* const kRZDataTypeUnsignedInt           = @"unsigned int";
+NSString* const kRZDataTypeLong                  = @"long";
+NSString* const kRZDataTypeUnsignedLong          = @"unsigned long";
+NSString* const kRZDataTypeLongLong              = @"long long";
+NSString* const kRZDataTypeUnsignedLongLong      = @"unsigned long long";
+NSString* const kRZDataTypeFloat                 = @"float";
+NSString* const kRZDataTypeDouble                = @"double";
 
 // Scalar type names
 static NSArray * scalarTypeNames = nil;
 
 __attribute__((constructor))
 static void initialize_rzScalarTypeNames() {
-    scalarTypeNames = @[kRZDataManagerTypeChar,
-                        kRZDataManagerTypeDouble,
-                        kRZDataManagerTypeFloat,
-                        kRZDataManagerTypeInt,
-                        kRZDataManagerTypeLong,
-                        kRZDataManagerTypeLongLong,
-                        kRZDataManagerTypeShort,
-                        kRZDataManagerTypeUnsignedChar,
-                        kRZDataManagerTypeUnsignedInt,
-                        kRZDataManagerTypeUnsignedLong,
-                        kRZDataManagerTypeUnsignedLongLong,
-                        kRZDataManagerTypeUnsignedShort];
+    scalarTypeNames = @[kRZDataTypeChar,
+                        kRZDataTypeDouble,
+                        kRZDataTypeFloat,
+                        kRZDataTypeInt,
+                        kRZDataTypeLong,
+                        kRZDataTypeLongLong,
+                        kRZDataTypeShort,
+                        kRZDataTypeUnsignedChar,
+                        kRZDataTypeUnsignedInt,
+                        kRZDataTypeUnsignedLong,
+                        kRZDataTypeUnsignedLongLong,
+                        kRZDataTypeUnsignedShort];
 }
 
 __attribute__((destructor))
@@ -65,18 +65,18 @@ static NSDictionary * rz_TypeMappings = nil;
 __attribute__((constructor))
 static void initialize_rzTypeMappings() {
     rz_TypeMappings = @{
-                            @"f" : kRZDataManagerTypeFloat,
-                            @"d" : kRZDataManagerTypeDouble,
-                            @"i" : kRZDataManagerTypeInt,
-                            @"I" : kRZDataManagerTypeUnsignedInt,
-                            @"s" : kRZDataManagerTypeShort,
-                            @"S" : kRZDataManagerTypeUnsignedShort,
-                            @"l" : kRZDataManagerTypeLong,
-                            @"L" : kRZDataManagerTypeUnsignedLong,
-                            @"q" : kRZDataManagerTypeLongLong,
-                            @"Q" : kRZDataManagerTypeUnsignedLongLong,
-                            @"c" : kRZDataManagerTypeChar,
-                            @"C" : kRZDataManagerTypeUnsignedChar
+                            @"f" : kRZDataTypeFloat,
+                            @"d" : kRZDataTypeDouble,
+                            @"i" : kRZDataTypeInt,
+                            @"I" : kRZDataTypeUnsignedInt,
+                            @"s" : kRZDataTypeShort,
+                            @"S" : kRZDataTypeUnsignedShort,
+                            @"l" : kRZDataTypeLong,
+                            @"L" : kRZDataTypeUnsignedLong,
+                            @"q" : kRZDataTypeLongLong,
+                            @"Q" : kRZDataTypeUnsignedLongLong,
+                            @"c" : kRZDataTypeChar,
+                            @"C" : kRZDataTypeUnsignedChar
                         };
 }
 
