@@ -18,6 +18,8 @@
 
 - (id)initWithModelClass:(Class)modelClass;
 
+- (BOOL)hasMappingDefinedForDataKey:(NSString*)key;
+
 - (NSString*)modelPropertyNameForDataKey:(NSString*)key;
 - (void)setModelPropertyName:(NSString*)propertyName forDataKey:(NSString*)key;
 - (void)setModelPropertiesForKeyNames:(NSDictionary*)mappingDict; // set ovverides all at once

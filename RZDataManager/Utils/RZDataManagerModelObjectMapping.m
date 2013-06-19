@@ -73,6 +73,12 @@
 
 #pragma mark - Public
 
+- (BOOL)hasMappingDefinedForDataKey:(NSString *)key
+{
+    return ([self modelPropertyNameForDataKey:key] != nil ||
+            [self relationshipMappingForDataKey:key] != nil ||
+            [self importSelectorNameForDataKey:key] != nil);
+}
 
 - (NSString*)modelPropertyNameForDataKey:(NSString *)key
 {

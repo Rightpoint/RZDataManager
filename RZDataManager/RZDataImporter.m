@@ -197,21 +197,24 @@
     
     // Do the import
     for (NSString* key in [data allKeys]){
-                        
+        
+        if ([[mapping keysToIgnore] containsObject:key]) continue;
+        
+        id value = [data validObjectForKey:key decodeHTML:NO];
+        
         // If we have valid mapping, go ahead and import it
-        if ([mapping modelPropertyNameForDataKey:key] != nil)
+        if ([mapping hasMappingDefinedForDataKey:key])
         {
-            id value = [data validObjectForKeyPath:key decodeHTML:NO];
             [self importValue:value toObject:object fromKeyPath:key withMapping:mapping];
         }
         // If value is a dictionary and there's no key mapping, attempt to flatten and look for keypath mappings
-        else if (![[mapping keysToIgnore] containsObject:key])
+        else
         {
             
-            if ([[data objectForKey:key] isKindOfClass:[NSDictionary class]])
+            if ([value isKindOfClass:[NSDictionary class]])
             {
             
-                NSDictionary *subDict = [data objectForKey:key];
+                NSDictionary *subDict = value;
                 for (NSString *subKey in [subDict allKeys]){
                     
                     NSString *keyPath = [NSString stringWithFormat:@"%@.%@",key,subKey];
