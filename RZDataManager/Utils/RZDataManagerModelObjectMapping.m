@@ -14,9 +14,10 @@
 
 @property (nonatomic, assign) Class modelClass;
 @property (nonatomic, strong) NSArray *classPropertyNames;
-@property (nonatomic, strong) NSMutableDictionary * dataKeyMappings;
-@property (nonatomic, strong) NSMutableDictionary * relationshipKeyMappings;
-@property (nonatomic, strong) NSMutableDictionary * customSelectorKeyMappings;
+@property (nonatomic, strong) NSMutableArray  *ignoreKeys;
+@property (nonatomic, strong) NSMutableDictionary *dataKeyMappings;
+@property (nonatomic, strong) NSMutableDictionary *relationshipKeyMappings;
+@property (nonatomic, strong) NSMutableDictionary *customSelectorKeyMappings;
 
 - (void)buildMappingCache;
 
@@ -60,6 +61,14 @@
         _customSelectorKeyMappings = [NSMutableDictionary dictionary];
     }
     return _customSelectorKeyMappings;
+}
+
+- (NSMutableArray*)ignoreKeys
+{
+    if (nil == _ignoreKeys){
+        _ignoreKeys = [NSMutableArray array];
+    }
+    return _ignoreKeys;
 }
 
 #pragma mark - Public
@@ -138,6 +147,16 @@
     [self.customSelectorKeyMappings setObject:selName forKey:key];
 }
 
+- (NSArray*)keysToIgnore
+{
+    return [self.ignoreKeys copy];
+}
+
+- (void)addKeysToIgnore:(NSArray *)keysToIgnore
+{
+    [self.ignoreKeys addObjectsFromArray:keysToIgnore];
+}
+
 #pragma mark - Private
 
 - (void)buildMappingCache
@@ -153,7 +172,7 @@
     
     if ([[self.modelClass class] respondsToSelector:@selector(dataImportIgnoreKeys)])
     {
-        self.ignoreKeys = [[self.modelClass class] dataImportIgnoreKeys];
+        self.ignoreKeys = [[[self.modelClass class] dataImportIgnoreKeys] mutableCopy];
     }
     
     if ([[self.modelClass class] respondsToSelector:@selector(dataImportKeyMappings)])
@@ -180,7 +199,7 @@
     mapping.dataIdKey = self.dataIdKey;
     mapping.modelIdPropertyName = self.modelIdPropertyName;
     mapping.dateFormat = self.dateFormat;
-    mapping.ignoreKeys = [self.ignoreKeys copy];
+    mapping.ignoreKeys = [self.ignoreKeys mutableCopy];
     mapping.modelClass = self.modelClass;
     mapping.classPropertyNames = [self.classPropertyNames copy];
     mapping.dataKeyMappings = [self.dataKeyMappings mutableCopy];

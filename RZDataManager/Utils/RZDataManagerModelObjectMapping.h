@@ -15,7 +15,6 @@
 @property (nonatomic, copy) NSString *dataIdKey;
 @property (nonatomic, copy) NSString *modelIdPropertyName;
 @property (nonatomic, copy) NSString *dateFormat;
-@property (nonatomic, copy) NSArray  *ignoreKeys;
 
 - (id)initWithModelClass:(Class)modelClass;
 
@@ -29,6 +28,9 @@
 
 - (NSString*)importSelectorNameForDataKey:(NSString*)key;
 - (void)setImportSelectorName:(NSString*)selName forDataKey:(NSString*)key;
+
+- (NSArray*)keysToIgnore;
+- (void)addKeysToIgnore:(NSArray*)keysToIgnore;
 
 @end
 

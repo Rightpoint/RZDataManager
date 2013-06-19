@@ -205,7 +205,7 @@
             [self importValue:value toObject:object fromKeyPath:key withMapping:mapping];
         }
         // If value is a dictionary and there's no key mapping, attempt to flatten and look for keypath mappings
-        else if (![mapping.ignoreKeys containsObject:key])
+        else if (![[mapping keysToIgnore] containsObject:key])
         {
             
             if ([[data objectForKey:key] isKindOfClass:[NSDictionary class]])
@@ -220,7 +220,7 @@
                         id value = [data validObjectForKeyPath:keyPath decodeHTML:NO];
                         [self importValue:value toObject:object fromKeyPath:keyPath withMapping:mapping];
                     }
-                    else if (![mapping.ignoreKeys containsObject:keyPath]){
+                    else if (![[mapping keysToIgnore] containsObject:keyPath]){
                         [self rz_logError:@"Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class])];
                     }
                     
