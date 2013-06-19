@@ -22,7 +22,7 @@
  *    to objects on the public MOC since the last save.
  *
  * 3) On that note, calling save on the public MOC will NOT persist to disk! Use
- *    saveContext: instead.
+ *    saveData: instead.
  *
  * 4) importInBackgroundUsingBlock: can be used to perform any managed object graph
  *    or object modifications in the background, not just imports.
@@ -34,11 +34,18 @@
 
 @interface RZCoreDataManager : RZDataManager
 
+//! Provide a model file name here without an extension BEFORE ACCESSING THE STACK. If left nil, will default to bundle display name.
 @property (nonatomic, strong) NSString *managedObjectModelName;
+
+//! Set the persistent store type BEFORE ACCESSING THE STACK. Defaults to NSInMemoryStoreType.
 @property (nonatomic, strong) NSString *persistentStoreType;
+
+//! Set the persistent store URL BEFORE ACCESSING THE STACK. Only used with disk-backed store coordinators. Defaults to /<YourApp>/Documents/<ModelName>.sqlite
 @property (nonatomic, strong) NSURL *persistentStoreURL;
 
+//! Main-thread accessible MOC. Saving this MOC does NOT persist to disk. Use saveData: instead.
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
+
 @property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
