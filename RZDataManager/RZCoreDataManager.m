@@ -25,7 +25,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 - (void)saveContext:(BOOL)wait;
 - (NSURL*)applicationDocumentsDirectory;
 
-- (NSString*)entityNameForClassNamed:(NSString*)type;
+- (NSString*)entityNameForClassNamed:(NSString*)className;
 
 @end
 
@@ -42,32 +42,32 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 
 #pragma mark - RZDataManager Subclass
 
-- (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath createNew:(BOOL)createNew
+- (id)objectOfType:(NSString *)className withValue:(id)value forKeyPath:(NSString *)keyPath createNew:(BOOL)createNew
 {
-    return [self objectForEntity:type withValue:value forKeyPath:keyPath usingMOC:self.currentMoc create:createNew];
+    return [self objectForEntity:className withValue:value forKeyPath:keyPath usingMOC:self.currentMoc create:createNew];
 }
 
-- (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath inCollection:(id)collection createNew:(BOOL)createNew
+- (id)objectOfType:(NSString *)className withValue:(id)value forKeyPath:(NSString *)keyPath inCollection:(id)collection createNew:(BOOL)createNew
 {
-    return [self objectForEntity:type withValue:value forKeyPath:keyPath inCollection:collection usingMOC:self.currentMoc create:createNew];
+    return [self objectForEntity:className withValue:value forKeyPath:keyPath inCollection:collection usingMOC:self.currentMoc create:createNew];
 }
 
-- (id)objectsOfType:(NSString *)type matchingPredicate:(NSPredicate *)predicate
+- (id)objectsOfType:(NSString *)className matchingPredicate:(NSPredicate *)predicate
 {
-    return [self objectsForEntity:type matchingPredicate:predicate usingMOC:self.currentMoc];
+    return [self objectsForEntity:className matchingPredicate:predicate usingMOC:self.currentMoc];
 }
 
-- (void)importData:(NSDictionary *)data forClassNamed:(NSString *)type usingMapping:(RZDataManagerModelObjectMapping *)mapping options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(NSDictionary *)data forClassNamed:(NSString *)className usingMapping:(RZDataManagerModelObjectMapping *)mapping options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
     if (nil == mapping){
-        mapping = [self.dataImporter mappingForClassNamed:type];
+        mapping = [self.dataImporter mappingForClassNamed:className];
     }
     
     NSString *dataIdKey = mapping.dataIdKey;
     NSString *modelIdKey = mapping.modelIdPropertyName;
     
     if (!dataIdKey || !modelIdKey){
-        [self rz_logError:@"missing data and/or model ID keys for object of type %@", type];
+        [self rz_logError:@"missing data and/or model ID keys for object of type %@", className];
         return;
     }
     
@@ -78,17 +78,17 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
             
             if (uid){
-                obj = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:YES];
+                obj = [self objectOfType:className withValue:uid forKeyPath:modelIdKey createNew:YES];
                 [self.dataImporter importData:data toObject:obj usingMapping:mapping];
             }
             else{
-                [self rz_logError:@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, type];
+                [self rz_logError:@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, className];
             }
         }
         else if ([data isKindOfClass:[NSArray class]]){
             
             // optimize lookup for existing objects
-            NSString *entityName = [self entityNameForClassNamed:type];
+            NSString *entityName = [self entityNameForClassNamed:className];
             NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
             NSError *err =nil;
             NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
@@ -129,7 +129,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 
                 if ([data isKindOfClass:[NSDictionary class]]){
                     id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
-                    result = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:NO];
+                    result = [self objectOfType:className withValue:uid forKeyPath:modelIdKey createNew:NO];
                 }
                 else if ([data isKindOfClass:[NSArray class]]){
                     
@@ -137,7 +137,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
                     {
                         id uid = [obj validObjectForKey:dataIdKey decodeHTML:NO];
-                        id resultEntry = [self objectOfType:type withValue:uid forKeyPath:modelIdKey createNew:NO];
+                        id resultEntry = [self objectOfType:className withValue:uid forKeyPath:modelIdKey createNew:NO];
                         if (resultEntry){
                             [resultArray addObject:resultEntry];
                         }

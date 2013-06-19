@@ -63,16 +63,16 @@ NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'
 
 #pragma mark - Public Methods
 
-- (void)importData:(id)data forClassNamed:(NSString *)type options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(id)data forClassNamed:(NSString *)className options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    [self importData:data forClassNamed:type usingMapping:nil options:options completion:completion];
+    [self importData:data forClassNamed:className usingMapping:nil options:options completion:completion];
 }
 
-- (void)importData:(id)data forClassNamed:(NSString *)type keyMappings:(NSDictionary *)keyMappings options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
+- (void)importData:(id)data forClassNamed:(NSString *)className keyMappings:(NSDictionary *)keyMappings options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    RZDataManagerModelObjectMapping *mapping = [self.dataImporter mappingForClassNamed:type];
+    RZDataManagerModelObjectMapping *mapping = [self.dataImporter mappingForClassNamed:className];
     [mapping setModelPropertiesForKeyNames:keyMappings];
-    [self importData:data forClassNamed:type usingMapping:mapping options:options completion:completion];
+    [self importData:data forClassNamed:className usingMapping:mapping options:options completion:completion];
 }
 
 - (void)importData:(id)data forRelationshipPropertyName:(NSString *)relationshipProperty onObject:(NSObject *)object options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
@@ -104,8 +104,8 @@ NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'
 }
 
 - (void)importData:(id)data
-        forClassNamed:(NSString*)type
-          usingMapping:(RZDataManagerModelObjectMapping *)mapping
+     forClassNamed:(NSString*)className
+      usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion
 {
