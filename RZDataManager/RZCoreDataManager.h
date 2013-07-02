@@ -18,14 +18,14 @@
  * 1) If you do not explicitly set the context, model, or store coordinator, they will
  *    be built automatically when first accessed.
  *
- * 2) Performing an import DOES NOT SAVE to disk. This allows "undo" of all changes
- *    to objects on the public MOC since the last save.
+ * 2) Performing an import DOES NOT SAVE to the persistent store! This allows "undo" of 
+ *    all changes to objects since the last save (using discardChanges:).
  *
  * 3) On that note, calling save on the public MOC will NOT persist to disk! Use
- *    saveData: instead.
+ *    RZDataManager's saveData: instead.
  *
  * 4) importInBackgroundUsingBlock: can be used to perform any managed object graph
- *    or object modifications in the background, not just imports.
+ *    or object modifications on a background thread, not just imports.
  *
  ************************************************************************************/
 
