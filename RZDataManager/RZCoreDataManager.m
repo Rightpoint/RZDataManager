@@ -372,7 +372,10 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     else{
         NSManagedObjectContext *moc = self.currentMoc;
         if (moc){
-            internalImportBlock(moc);
+            // we can perform this and wait safely on a bg thread
+            [moc performBlockAndWait:^{
+                internalImportBlock(moc);
+            }];
         }
         else{
             @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"RZDataManager attempting to import on a thread with no MOC" userInfo:nil];
