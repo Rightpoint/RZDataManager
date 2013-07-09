@@ -90,6 +90,12 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             // optimize lookup for existing objects
             NSString *entityName = [self entityNameForClassNamed:className];
             NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
+            
+            BOOL deleteStale =  [options objectForKey:kRZDataManagerDeleteStaleItemsPredicate] != nil;
+            if (deleteStale) {
+                uidFetch.predicate = options[kRZDataManagerDeleteStaleItemsPredicate];
+            }
+            
             NSError *err =nil;
             NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
             if (!err){
@@ -108,6 +114,16 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     }
                     
                 }];
+                
+                if (deleteStale) {
+                    NSSet *dataObjsUuids = [NSSet setWithArray:[(NSArray*)data valueForKey:dataIdKey]];
+                    [existingObjsByUid enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+                        // if this model object is not present in the list of objects to import, delete it. 
+                        if (![dataObjsUuids containsObject:key]) {
+                            [self.currentMoc deleteObject:obj];
+                        }
+                    }];
+                }
             }
             else{
                 [self rz_logError:@"Error fetching existing objects of type %@: %@", entityName, err];
@@ -392,6 +408,40 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 - (void)discardChanges
 {
     [self.managedObjectContext rollback];
+}
+
+#pragma mark - Delete Options
+
+- (void)deleteObjectsFromList:(NSArray *)inputList
+                             ofType:(NSString *)entityType
+                             uidKey:(NSString *)uidKey
+                          objectKey:(NSString *)objKey
+    notPresentInResultFromPredicate:(NSPredicate *)predicate
+                            context:(NSManagedObjectContext *)context
+{
+    NSFetchRequest *req = [NSFetchRequest fetchRequestWithEntityName:entityType];
+    req.predicate = predicate;
+    NSError *err = nil;
+    NSArray *result = [context executeFetchRequest:req error:&err];
+    if (err)
+    {
+        [self rz_logError:[err localizedDescription]];
+        return;
+    }
+    
+    NSMutableSet *inputSet = [NSMutableSet set];
+    for (id inputObj in inputList)
+    {
+        [inputSet addObject:[inputObj valueForKey:uidKey]];
+    }
+    
+    for (id obj in result)
+    {
+        if (![inputSet containsObject:[obj valueForKey:objKey]])
+        {
+            [context deleteObject:obj];
+        }
+    }
 }
 
 #pragma mark - Properties
