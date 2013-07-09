@@ -91,11 +91,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             NSString *entityName = [self entityNameForClassNamed:className];
             NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
             
-            BOOL deleteStale =  [options objectForKey:kRZDataManagerDeleteStaleItemsPredicate] != nil;
-            if (deleteStale) {
-                uidFetch.predicate = options[kRZDataManagerDeleteStaleItemsPredicate];
-            }
-            
             NSError *err =nil;
             NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
             if (!err){
@@ -115,11 +110,14 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     
                 }];
                 
-                if (deleteStale) {
+                if (options[kRZDataManagerDeleteStaleItemsPredicate]) {
+                    NSPredicate *stalePred = options[kRZDataManagerDeleteStaleItemsPredicate];
+                    NSArray *existingObjsToCheck = [existingObjsByUid.allValues filteredArrayUsingPredicate:stalePred];
+                    
                     NSSet *dataObjsUuids = [NSSet setWithArray:[(NSArray*)data valueForKey:dataIdKey]];
-                    [existingObjsByUid enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-                        // if this model object is not present in the list of objects to import, delete it. 
-                        if (![dataObjsUuids containsObject:key]) {
+                    [existingObjsToCheck enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                        // if this model object is not present in the list of objects to import, delete it.
+                        if (![dataObjsUuids containsObject:[obj valueForKey:modelIdKey]]) {
                             [self.currentMoc deleteObject:obj];
                         }
                     }];
