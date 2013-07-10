@@ -19,6 +19,10 @@
 
 OBJC_EXTERN NSString* const kRZDataManagerUTCDateFormat;
 
+// Delete any items that are present in the result produced by this predicate and not
+// present in the items to be imported.
+OBJC_EXTERN NSString* const kRZDataManagerDeleteStaleItemsPredicate;
+
 typedef void (^RZDataManagerImportBlock)();
 typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, collection, or nil
 typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
