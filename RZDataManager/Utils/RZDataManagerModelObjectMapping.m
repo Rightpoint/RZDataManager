@@ -120,7 +120,7 @@
 
 - (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForDataKey:(NSString *)key
 {
-    return [[self.relationshipKeyMappings objectForKey:key] copy];
+    return [self.relationshipKeyMappings objectForKey:key];
 }
 
 - (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForModelPropertyName:(NSString *)propName

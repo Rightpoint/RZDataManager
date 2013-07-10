@@ -515,7 +515,6 @@
     RZDataManagerModelObjectMapping *mapping = [self.dataManager mappingForClassNamed:@"DMCollection"];
     RZDataManagerModelObjectRelationshipMapping *relMapping = [mapping relationshipMappingForDataKey:@"entries"];
     relMapping.shouldReplaceExistingRelationships = YES;
-    [mapping setRelationshipMapping:relMapping forDataKey:@"entries"];
     
     [self.dataManager importData:redCollection
                       forClassNamed:@"DMCollection"
