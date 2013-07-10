@@ -186,6 +186,14 @@
                                   @"date" : @"2013-07-02T08:00:22Z"}
                             ];
     
+    // create existing model obj, not in import list, should not be touched. 
+    DMEntry *existingEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:YES];
+    existingEntry.uid = @"4444411";
+    existingEntry.name = @"Delete Me";
+    existingEntry.popularity = @(0.5);
+    existingEntry.createdDate = [NSDate date];
+    [self.dataManager saveData:YES];
+    
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
@@ -206,6 +214,66 @@
          STAssertNotNil(entry, @"Newly created entry not found");
          STAssertEqualObjects(entry.name, @"Pi", @"Newly created entry has wrong name");
          STAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+         
+         // look up existing entry, should still be there
+         DMEntry *existEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"4444411" forKeyPath:@"uid" createNew:NO];
+         STAssertNotNil(existEntry, @"Existing entry was not present.");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
+- (void)test201bImportMultipleObjects_deleteStale
+{
+    NSArray * mockData = @[ @{@"name" : @"Omicron",
+                              @"uid" : @"1000",
+                              @"popularity" : @(0.5),
+                              @"date" : @"2013-07-01T12:00:00Z"},
+                            
+                            @{@"name" : @"Pi",
+                              @"uid" : @"1001",
+                              @"popularity" : @(0.8),
+                              @"date" : @"2013-07-02T08:00:22Z"}
+                            ];
+    
+    // create existing model obj, not in import list, should be deleted.
+    DMEntry *existingEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:YES];
+    existingEntry.uid = @"4444411";
+    existingEntry.name = @"Delete Me";
+    existingEntry.popularity = @(0.5);
+    existingEntry.createdDate = [NSDate date];
+    [self.dataManager saveData:YES];
+    
+    // predicate = all dates > ref date, effectivly all entries. 
+    NSDictionary *options = @{kRZDataManagerDeleteStaleItemsPredicate: [NSPredicate predicateWithFormat:@"createdDate > %@", [NSDate dateWithTimeIntervalSinceReferenceDate:0]]};
+    __block BOOL finished = NO;
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:options completion:^(id result, NSError *error)
+     {
+         STAssertNotNil(result, @"Result should not be nil");
+         STAssertNil(error, @"Error during import: %@", error);
+         
+         STAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be array");
+         
+         // attempt clean fetch of new objects
+         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
+         
+         STAssertNotNil(entry, @"Newly created entry not found");
+         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
+         STAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+         
+         entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1001" forKeyPath:@"uid" createNew:NO];
+         
+         STAssertNotNil(entry, @"Newly created entry not found");
+         STAssertEqualObjects(entry.name, @"Pi", @"Newly created entry has wrong name");
+         STAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+         
+         // look up the entry that should have been deleted
+         DMEntry *staleEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"4444411" forKeyPath:@"uid" createNew:NO];
+         STAssertNil(staleEntry, @"Stale object was not deleted");
          
          finished = YES;
      }];

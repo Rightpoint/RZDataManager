@@ -90,6 +90,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             // optimize lookup for existing objects
             NSString *entityName = [self entityNameForClassNamed:className];
             NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
+            
             NSError *err =nil;
             NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
             if (!err){
@@ -108,6 +109,19 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     }
                     
                 }];
+                
+                if (options[kRZDataManagerDeleteStaleItemsPredicate]) {
+                    NSPredicate *stalePred = options[kRZDataManagerDeleteStaleItemsPredicate];
+                    NSArray *existingObjsToCheck = [existingObjsByUid.allValues filteredArrayUsingPredicate:stalePred];
+                    
+                    NSSet *dataObjsUuids = [NSSet setWithArray:[(NSArray*)data valueForKey:dataIdKey]];
+                    [existingObjsToCheck enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                        // if this model object is not present in the list of objects to import, delete it.
+                        if (![dataObjsUuids containsObject:[obj valueForKey:modelIdKey]]) {
+                            [self.currentMoc deleteObject:obj];
+                        }
+                    }];
+                }
             }
             else{
                 [self rz_logError:@"Error fetching existing objects of type %@: %@", entityName, err];
