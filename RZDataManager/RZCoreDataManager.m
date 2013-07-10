@@ -408,40 +408,6 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     [self.managedObjectContext rollback];
 }
 
-#pragma mark - Delete Options
-
-- (void)deleteObjectsFromList:(NSArray *)inputList
-                             ofType:(NSString *)entityType
-                             uidKey:(NSString *)uidKey
-                          objectKey:(NSString *)objKey
-    notPresentInResultFromPredicate:(NSPredicate *)predicate
-                            context:(NSManagedObjectContext *)context
-{
-    NSFetchRequest *req = [NSFetchRequest fetchRequestWithEntityName:entityType];
-    req.predicate = predicate;
-    NSError *err = nil;
-    NSArray *result = [context executeFetchRequest:req error:&err];
-    if (err)
-    {
-        [self rz_logError:[err localizedDescription]];
-        return;
-    }
-    
-    NSMutableSet *inputSet = [NSMutableSet set];
-    for (id inputObj in inputList)
-    {
-        [inputSet addObject:[inputObj valueForKey:uidKey]];
-    }
-    
-    for (id obj in result)
-    {
-        if (![inputSet containsObject:[obj valueForKey:objKey]])
-        {
-            [context deleteObject:obj];
-        }
-    }
-}
-
 #pragma mark - Properties
 
 - (NSManagedObjectContext*)currentMoc
