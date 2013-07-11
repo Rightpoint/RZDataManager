@@ -1,23 +1,43 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="2061" systemVersion="12D78" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model name="" userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="2061" systemVersion="12E55" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="DMCollection" representedClassName="DMCollection" syncable="YES">
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="entries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DMEntry" inverseName="collection" inverseEntity="DMEntry" syncable="YES"/>
     </entity>
+    <entity name="DMCustomEntry" representedClassName="DMCustomEntry" syncable="YES">
+        <attribute name="age" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="uid" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
     <entity name="DMEntry" representedClassName="DMEntry" syncable="YES">
-        <attribute name="date" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="popularity" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <attribute name="testBool" optional="YES" attributeType="Boolean" syncable="YES"/>
         <attribute name="testDouble" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
         <attribute name="testFloat" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
         <attribute name="testInt" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="testLongLong" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="testShort" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="testUInt" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
-        <attribute name="uid" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="testULongLong" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="testUShort" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="uid" optional="YES" attributeType="String" syncable="YES">
+            <userInfo>
+                <entry key="isIdentifierProperty" value="yes"/>
+            </userInfo>
+        </attribute>
         <relationship name="collection" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DMCollection" inverseName="entries" inverseEntity="DMCollection" syncable="YES"/>
+    </entity>
+    <entity name="DMThing" representedClassName="DMThingClass" syncable="YES">
+        <attribute name="attribute1" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="attribute2" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="myIdentifier" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <elements>
         <element name="DMCollection" positionX="160" positionY="192" width="128" height="75"/>
-        <element name="DMEntry" positionX="160" positionY="192" width="128" height="195"/>
+        <element name="DMEntry" positionX="160" positionY="192" width="128" height="255"/>
+        <element name="DMThing" positionX="160" positionY="192" width="128" height="90"/>
+        <element name="DMCustomEntry" positionX="160" positionY="192" width="128" height="90"/>
     </elements>
 </model>

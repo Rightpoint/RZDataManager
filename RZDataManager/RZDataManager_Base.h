@@ -6,94 +6,134 @@
 //  Copyright (c) 2013 Raizlabs. All rights reserved.
 //
 
+// =========================================================
+//
+// This is an ABSTRACT BASE CLASS and should not be used directly.
+// Use one of the provided concrete subclasses or create your own.
+//
+// =========================================================
+
+
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
 
-typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, array, or nil
+OBJC_EXTERN NSString* const kRZDataManagerUTCDateFormat;
 
-// This is an ABSTRACT BASE CLASS and should not be used directly. Use one of the provided concrete subclasses or create your own.
+// Delete any items that are present in the result produced by this predicate and not
+// present in the items to be imported.
+OBJC_EXTERN NSString* const kRZDataManagerDeleteStaleItemsPredicate;
+
+typedef void (^RZDataManagerImportBlock)();
+typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, collection, or nil
+typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
 
 @interface RZDataManager : NSObject
 
-// Singleton accessor that will work for subclasses.
+// Singleton accessor will correctly cast return type for subclasses.
 + (instancetype)defaultManager;
+
+#pragma mark - Utilities
+
++ (NSURL*)applicationDocumentsDirectory;
+
+// pass through to data importer
+- (RZDataManagerModelObjectMapping*)mappingForClassNamed:(NSString*)className;
 
 @property (nonatomic, readonly, strong) RZDataImporter *dataImporter;
 
-// Directory helpers
-- (NSURL*)applicationDocumentsDirectory;
 
 #pragma mark - Fetching
 
+/***********************************************************
+ *
+ * Fetching objects from the data store by key/value pair.
+ * "type" refers to the class name or entity type name
+ *
+ ***********************************************************/
+
+// ============================================================
 // -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
+// ============================================================
 
-// Catch-all method for retrieving an individual object
-// "type" represents either class name as string or entity name for managed objects
-- (id)objectOfType:(NSString*)type withValue:(id)value forKeyPath:(NSString*)keyPath createNew:(BOOL)createNew;
+// Returns an object with value "value" for keypath "keyPath". If not found, will optionally create a new one.
+- (id)objectOfType:(NSString*)type
+         withValue:(id)value
+        forKeyPath:(NSString*)keyPath
+         createNew:(BOOL)createNew;
 
-- (id)objectOfType:(NSString*)type withValue:(id)value forKeyPath:(NSString*)keyPath inSet:(NSSet*)objects createNew:(BOOL)createNew;
+// Limit search to a specific collection (set or array)
+- (id)objectOfType:(NSString*)type
+         withValue:(id)value
+        forKeyPath:(NSString*)keyPath
+      inCollection:(id)collection
+         createNew:(BOOL)createNew;
 
-- (NSArray*)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate;
+- (id)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate;
 
 // -------------------------------------------------------------
 
 #pragma mark - Persisting
 
-// These versions use the default ID key provided by the mapping plist for a given object
-
-// Either updates existing object(s), if any, or creates and inserts new object.
-// "data" expected to be either NSDictionary or NSArray
-// Infers unique identifier keys from mapping plist if possible.
+/******************************************************************************
+ *
+ *  Either updates existing object(s), if any, or creates and inserts new object.
+ *  "data" expected to be either NSDictionary or NSArray. Results of import
+ *  should be returned in completion block.
+ *
+ ******************************************************************************/
+ 
+// Default signature, no overrides
 - (void)importData:(id)data
-        objectType:(NSString*)type
+        forClassNamed:(NSString*)className
+           options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
-// Updates existing object or creates new, then attempts to create relationship with "otherObject" specified by "relationshipKey"
-// Infers unique identifier keys from mapping plist if possible.
+// Use key-value pairs in keyMappings to override key->property import mappings
 - (void)importData:(id)data
-        objectType:(NSString *)type
-   forRelationship:(NSString*)relationshipKey
-          onObject:(id)otherObject
+        forClassNamed:(NSString*)className
+       keyMappings:(NSDictionary*)keyMappings
+           options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
+/******************************************************************************
+ *
+ *  Updates existing object or creates new, then attempts to create
+ *  relationship with "otherObject" specified by "relationshipKey".
+ *  Results of import should be returned in completion block.
+ *
+ ******************************************************************************/
 
-// Update an array of objects with a new array of dictionaries, representing objects of the same type.
-// Will update, insert, remove, and re-order objects as necessary.
-// Infers unique identifier keys from mapping plist if possible.
-- (void)updateObjects:(NSArray*)objects
-               ofType:(NSString*)type
-             withData:(NSArray*)data
-           completion:(RZDataManagerImportCompletionBlock)completion;
+- (void)importData:(id)data forRelationshipPropertyName:(NSString*)relationshipProperty onObject:(NSObject*)object options:(NSDictionary*)options completion:(RZDataManagerImportCompletionBlock)completion;
 
-
+// ============================================================
 // -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
+// ============================================================
 
-// These versions allow override for which keys are used to uniquely identify data/model objects
-
+// Mapping can be nil, in which case subclass should use default mapping for this object type
 - (void)importData:(id)data
-        objectType:(NSString*)type
-     dataIdKeyPath:(NSString*)dataIdKeyPath
-    modelIdKeyPath:(NSString*)modelIdKeyPath
+     forClassNamed:(NSString*)className
+      usingMapping:(RZDataManagerModelObjectMapping*)mapping
+           options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
+    
+- (void)importData:(id)data forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping*)relationshipMapping onObject:(NSObject*)object options:(NSDictionary*)options completion:(RZDataManagerImportCompletionBlock)completion;
 
-- (void)importData:(id)data
-        objectType:(NSString *)type
-     dataIdKeyPath:(NSString *)dataIdKeyPath
-    modelIdKeyPath:(NSString *)modelIdKeyPath
-   forRelationship:(NSString*)relationshipKey
-          onObject:(id)otherObject
-        completion:(RZDataManagerImportCompletionBlock)completion;
-
-- (void)updateObjects:(NSArray*)objects
-               ofType:(NSString*)type
-             withData:(NSArray*)data
-        dataIdKeyPath:(NSString*)dataIdKeyPath
-       modelIdKeyPath:(NSString*)modelIdKeyPath
-           completion:(RZDataManagerImportCompletionBlock)completion;
+- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
 
 // -------------------------------------------------------------
 
 // Save method. Not all subclasses may need to be explicitly saved/persisted, so this is optional.
 - (void)saveData:(BOOL)synchronous;
 
+// Discard changes. Not all subclasses may need to do this, so this is optional.
+- (void)discardChanges;
+
+
+#pragma mark - Miscellaneous
+
+- (NSDictionary*)dictionaryFromModelObject:(NSObject*)object;
+- (NSDictionary*)dictionaryFromModelObject:(NSObject*)object usingMapping:(RZDataManagerModelObjectMapping*)mapping;
+
 @end
+
+
