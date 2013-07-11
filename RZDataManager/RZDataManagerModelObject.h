@@ -21,6 +21,15 @@
 
 @optional
 
+//! Allow the caller to provide the entire implementation for importing data onto a model.
+/*!
+    Implementing this method will cause the importer to ignore all other mapping configuration for the given model type. 
+    It is intended for use only when the incoming data structure is such that mappings can not easily be defined via the 
+    standard declarative mechanisms. 
+ */
+
+- (void)dataImportPerformImportWithData:(NSDictionary *)importData;
+
 //! Date format string for string-date conversions
 + (NSString*)dataImportDateFormat;
 
@@ -74,7 +83,6 @@
  
 */
 + (NSArray*)dataImportIgnoreKeys;
-
 
 //! Implement this method to prepare the object to be updated with new data
 - (void)prepareForImportFromData:(NSDictionary*)data;
