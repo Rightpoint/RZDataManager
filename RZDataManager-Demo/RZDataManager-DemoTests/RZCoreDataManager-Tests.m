@@ -11,6 +11,7 @@
 #import "DMCollection.h"
 #import "DMEntry.h"
 #import "DMThingClass.h"
+#import "DMCustomEntry.h"
 
 @interface RZCoreDataManager_Tests ()
 
@@ -147,6 +148,36 @@
     }
 }
 
+- (void)test200bImportObject_importOverride
+{
+    NSDictionary *mockData = @{ @"uid": @"1000",
+                                @"subDict": @{
+                                        @"1": @"Omicron",
+                                        @"2": @21
+                                        } };
+    
+    __block BOOL finished = NO;
+    [self.dataManager importData:mockData forClassNamed:@"DMCustomEntry" options:nil completion:^(id result, NSError *error)
+     {
+         STAssertNotNil(result, @"Result should not be nil");
+         STAssertNil(error, @"Error during import: %@", error);
+                  
+         // attempt clean fetch of new object
+         DMCustomEntry *entry = [self.dataManager objectOfType:@"DMCustomEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
+         
+         STAssertNotNil(entry, @"Newly created entry not found");
+         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
+         STAssertEqualObjects(entry.age, @21, @"Newly created entry has wrong age.");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
+
 - (void)test2001SetImportedPropertyToNil
 {
     // Importing from JSON with null value should set property to nil
@@ -274,6 +305,50 @@
          // look up the entry that should have been deleted
          DMEntry *staleEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"4444411" forKeyPath:@"uid" createNew:NO];
          STAssertNil(staleEntry, @"Stale object was not deleted");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
+- (void)test201cImportMultipleObjects_importOverride
+{
+    NSArray *mockData = @[ @{ @"uid": @"1000",
+                              @"subDict": @{
+                                      @"1": @"Omicron",
+                                      @"2": @21
+                                      } },
+                           
+                           @{ @"uid": @"101",
+                              @"subDict": @{
+                                      @"1": @"Delta",
+                                      @"2": @27
+                                      } }
+                           ];
+    
+    __block BOOL finished = NO;
+    [self.dataManager importData:mockData forClassNamed:@"DMCustomEntry" options:nil completion:^(id result, NSError *error)
+     {
+         STAssertNotNil(result, @"Result should not be nil");
+         STAssertNil(error, @"Error during import: %@", error);
+         
+         STAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be array");
+         
+         // attempt clean fetch of new objects
+         DMCustomEntry *entry = [self.dataManager objectOfType:@"DMCustomEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
+         
+         STAssertNotNil(entry, @"Newly created entry not found");
+         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
+         STAssertEqualObjects(entry.age, @21, @"Newly created entry has wrong age.");
+         
+         entry = [self.dataManager objectOfType:@"DMCustomEntry" withValue:@"101" forKeyPath:@"uid" createNew:NO];
+         
+         STAssertNotNil(entry, @"Newly created entry not found");
+         STAssertEqualObjects(entry.name, @"Delta", @"Newly created entry has wrong name");
+         STAssertEqualObjects(entry.age, @27, @"Newly created entry has wrong age.");
          
          finished = YES;
      }];

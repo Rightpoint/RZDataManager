@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		728A1904178EF1C900A04E9F /* DMCustomEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 728A1903178EF1C900A04E9F /* DMCustomEntry.m */; };
+		728A1907178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 728A1906178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.m */; };
 		9A3366591755378800FCF766 /* RZDataManager_Base.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A3366581755378800FCF766 /* RZDataManager_Base.m */; };
 		9A33665C17553CFC00FCF766 /* RZCoreDataManager-Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A33665B17553CFC00FCF766 /* RZCoreDataManager-Tests.m */; };
 		9A33666017553E0A00FCF766 /* DMCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A33665E17553E0A00FCF766 /* DMCollection.m */; };
@@ -58,6 +60,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		728A1902178EF1C900A04E9F /* DMCustomEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DMCustomEntry.h; sourceTree = "<group>"; };
+		728A1903178EF1C900A04E9F /* DMCustomEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DMCustomEntry.m; sourceTree = "<group>"; };
+		728A1905178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DMCustomEntry+RZDataManagerModelObject.h"; sourceTree = "<group>"; };
+		728A1906178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DMCustomEntry+RZDataManagerModelObject.m"; sourceTree = "<group>"; };
 		9A3366571755378800FCF766 /* RZDataManager_Base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = RZDataManager_Base.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		9A3366581755378800FCF766 /* RZDataManager_Base.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = RZDataManager_Base.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		9A33665A17553CFC00FCF766 /* RZCoreDataManager-Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RZCoreDataManager-Tests.h"; sourceTree = "<group>"; };
@@ -141,6 +147,8 @@
 				9AC66E6C175E641A007C603C /* DMEntry+RZDataManagerModelObject.m */,
 				9AC66E7C175E953E007C603C /* DMCollection+RZDataManagerModelObject.h */,
 				9AC66E7D175E953E007C603C /* DMCollection+RZDataManagerModelObject.m */,
+				728A1905178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.h */,
+				728A1906178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.m */,
 			);
 			name = "Data Model Mapping";
 			sourceTree = "<group>";
@@ -206,6 +214,8 @@
 			children = (
 				FEA82AA21742AFFF00FA206C /* Supporting Files */,
 				FEA82A911742AFFE00FA206C /* RZDataManager_Test.xcdatamodeld */,
+				728A1902178EF1C900A04E9F /* DMCustomEntry.h */,
+				728A1903178EF1C900A04E9F /* DMCustomEntry.m */,
 				9ACF8EE71760D58400974873 /* DMThingClass.h */,
 				9ACF8EE81760D58400974873 /* DMThingClass.m */,
 				9A33666117553E0B00FCF766 /* DMEntry.h */,
@@ -402,6 +412,8 @@
 				9ACF8EE91760D58400974873 /* DMThingClass.m in Sources */,
 				9AEAD723177201B400B8A6BE /* NSObject+RZPropertyUtils.m in Sources */,
 				9AEAD728177205AD00B8A6BE /* NSObject+RZLogHelper.m in Sources */,
+				728A1904178EF1C900A04E9F /* DMCustomEntry.m in Sources */,
+				728A1907178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
