@@ -79,7 +79,11 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             
             if (uid){
                 obj = [self objectOfType:className withValue:uid forKeyPath:modelIdKey createNew:YES];
-                [self.dataImporter importData:data toObject:obj usingMapping:mapping];
+                if ([obj respondsToSelector:@selector(dataImportPerformImportWithData:)]) {
+                    [obj dataImportPerformImportWithData:data];
+                } else {
+                    [self.dataImporter importData:data toObject:obj usingMapping:mapping];
+                }
             }
             else{
                 [self rz_logError:@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, className];
@@ -105,7 +109,11 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                             importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
                         }
                         
-                        [self.dataImporter importData:objData toObject:importedObj];
+                        if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)]) {
+                            [importedObj dataImportPerformImportWithData:objData];
+                        } else {
+                            [self.dataImporter importData:objData toObject:importedObj];
+                        }
                     }
                     
                 }];
