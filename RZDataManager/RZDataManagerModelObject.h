@@ -75,6 +75,11 @@
 */
 + (NSArray*)dataImportIgnoreKeys;
 
+//! Allow the caller to provide the entire implementation for importing data onto a model. 
+/*!
+ */
+
+- (void)dataImportPerformImportWithData:(NSDictionary *)importData;
 
 //! Implement this method to prepare the object to be updated with new data
 - (void)prepareForImportFromData:(NSDictionary*)data;
