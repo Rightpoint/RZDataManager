@@ -15,13 +15,17 @@
 @dynamic name;
 @dynamic uid;
 @dynamic popularity;
-@dynamic date;
+@dynamic createdDate;
 @dynamic collection;
 
 @dynamic testFloat;
 @dynamic testDouble;
 @dynamic testInt;
 @dynamic testUInt;
+@dynamic testShort;
+@dynamic testUShort;
+@dynamic testLongLong;
+@dynamic testULongLong;
 @dynamic testBool;
 
 @end
