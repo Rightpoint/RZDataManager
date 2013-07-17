@@ -12,6 +12,8 @@
 // For storing moc reference in thread dictionary
 static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
 
+NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataManagerDidResetDatabase";
+
 @interface RZCoreDataManager ()
 
 @property (nonatomic, readonly) NSManagedObjectContext *currentMoc;
@@ -588,6 +590,9 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     {
         NSError *error = nil;
         _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
+        
+        // TODO: Add auto-migrate capabilities for lightweight database migration
+        
         if(![_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:nil error:&error])
         {
             if (NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
@@ -697,6 +702,28 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             [backgroundMoc performBlock:saveBackground];
         }
     }
+}
+
+- (void)resetDatabase
+{
+    // Database file will automatically be deleted on next lazy-load, but let's delete it anyway for security.
+    
+    BOOL shouldDeleteFile = ![self.persistentStoreType isEqualToString:NSInMemoryStoreType];
+    
+    if (shouldDeleteFile && nil != self.persistentStoreURL)
+    {
+        NSError *removeFileError = nil;
+        if([[NSFileManager defaultManager] removeItemAtURL:self.persistentStoreURL error:&removeFileError])
+        {
+            NSLog(@"Could not delete database file at url %@. Error: %@", self.persistentStoreURL.absoluteString, removeFileError);
+        }
+    }
+    
+    self.backgroundMoc = nil;
+    self.managedObjectContext = nil;
+    self.persistentStoreCoordinator = nil;
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:kRZCoreDataManagerDidResetDatabaseNotification object:self];
 }
 
 #pragma mark - Application's Documents directory

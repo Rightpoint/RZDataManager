@@ -29,6 +29,7 @@
  *
  ************************************************************************************/
 
+OBJC_EXTERN NSString * const kRZCoreDataManagerDidResetDatabaseNotification;
 
 @class RZDataImporter;
 
@@ -48,5 +49,8 @@
 
 @property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
+
+//! Clears out CoreData stack and posts reset notification. Will be rebuilt via lazy-load on next access to the MOC.
+- (void)resetDatabase;
 
 @end
