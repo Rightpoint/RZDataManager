@@ -706,8 +706,11 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
 
 - (void)resetDatabase
 {
-    // Database file will automatically be deleted on next lazy-load, but let's delete it anyway for security.
+    self.backgroundMoc = nil;
+    self.managedObjectContext = nil;
+    self.persistentStoreCoordinator = nil;
     
+    // Database file will automatically be deleted on next lazy-load, but let's delete it anyway for security.
     BOOL shouldDeleteFile = ![self.persistentStoreType isEqualToString:NSInMemoryStoreType];
     
     if (shouldDeleteFile && nil != self.persistentStoreURL)
@@ -718,10 +721,6 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
             NSLog(@"Could not delete database file at url %@. Error: %@", self.persistentStoreURL.absoluteString, removeFileError);
         }
     }
-    
-    self.backgroundMoc = nil;
-    self.managedObjectContext = nil;
-    self.persistentStoreCoordinator = nil;
     
     [[NSNotificationCenter defaultCenter] postNotificationName:kRZCoreDataManagerDidResetDatabaseNotification object:self];
 }
