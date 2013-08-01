@@ -7,7 +7,7 @@
 
 #import "RZCoreDataManager.h"
 #import "NSDictionary+NonNSNull.h"
-#import "NSObject+RZLogHelper.h"
+#import "RZLogHelper.h"
 
 // For storing moc reference in thread dictionary
 static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
@@ -67,7 +67,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     NSString *modelIdKey = mapping.modelIdPropertyName;
     
     if (!dataIdKey || !modelIdKey){
-        [self rz_logError:@"missing data and/or model ID keys for object of type %@", className];
+        RZLogDebug(@"Missing data and/or model ID keys for object of type %@", className);
         return;
     }
     
@@ -86,7 +86,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 }
             }
             else{
-                [self rz_logError:@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, className];
+                RZLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, className);
             }
         }
         else if ([data isKindOfClass:[NSArray class]]){
@@ -132,12 +132,12 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 }
             }
             else{
-                [self rz_logError:@"Error fetching existing objects of type %@: %@", entityName, err];
+                RZLogError(@"Error fetching existing objects of type %@: %@", entityName, err);
             }
             
         }
         else{
-            [self rz_logError:@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class])];
+            RZLogError(@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class]));
         }
 
                 
@@ -192,7 +192,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     NSString *modelIdKey = objMapping.modelIdPropertyName;
     
     if (!dataIdKey || !modelIdKey){
-        [self rz_logError:@"missing data and/or model ID keys for object of type %@", objectClassName];
+        RZLogError(@"Missing data and/or model ID keys for object of type %@", objectClassName);
         return;
     }
     
@@ -250,7 +250,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     
                 }
                 else{
-                    [self rz_logError:@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, relationshipMapping.relationshipClassName];
+                    RZLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, relationshipMapping.relationshipClassName);
                 }
                 
 
@@ -302,16 +302,16 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     
                 }
                 else{
-                    [self rz_logError:@"Cannot import multiple objects for to-one relationship."];
+                    RZLogError(@"Cannot import multiple objects for to-one relationship.");
                 }
             
             }
             else{
-                [self rz_logError:@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class])];
+                RZLogError(@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class]));
             }
         }
         else{
-            [self rz_logError:@"Could not find relationship %@ on entity named %@", relationshipMapping.relationshipPropertyName, entityDesc.name];
+            RZLogDebug(@"Could not find relationship %@ on entity named %@", relationshipMapping.relationshipPropertyName, entityDesc.name);
         }
         
     } completion:^(NSError *error) {
@@ -363,7 +363,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         NSError *error = nil;
         if(![privateMoc save:&error])
         {
-            [self rz_logError:@"Error saving import in background: %@", error];
+            RZLogError(@"Error saving import in background: %@", error);
         }
         
         dispatch_sync(dispatch_get_main_queue(), ^{
@@ -681,7 +681,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             NSError *error = nil;
             if(![moc save:&error])
             {
-                [self rz_logError:@"Error saving changes for main MOC: %@", error];
+                RZLogError(@"Error saving changes for main MOC: %@", error);
             }
         }];
     }
@@ -690,7 +690,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         NSError *error = nil;
         if(![backgroundMoc save:&error])
         {
-            [self rz_logError:@"Error saving changes to disk: %@", error];
+            RZLogError(@"Error saving changes to disk: %@", error);
         }
     };
     

@@ -13,7 +13,7 @@
 #import "NSDictionary+NonNSNull.h"
 #import "NSString+HTMLEntities.h"
 #import "NSObject+RZPropertyUtils.h"
-#import "NSObject+RZLogHelper.h"
+#import "RZLogHelper.h"
 
 @interface RZDataImporter ()
 
@@ -222,14 +222,14 @@
                         [self importValue:value toObject:object fromKeyPath:keyPath withMapping:mapping];
                     }
                     else if (![[mapping keysToIgnore] containsObject:keyPath]){
-                        [self rz_logError:@"Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class])];
+                        RZLogDebug(@"Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class]));
                     }
                     
                 }
             }
             else
             {
-                [self rz_logError:@"Could not find mapping for key %@ in object of class %@", key, NSStringFromClass([object class])];
+                RZLogDebug(@"Could not find mapping for key %@ in object of class %@", key, NSStringFromClass([object class]));
             }
 
         }
@@ -312,7 +312,7 @@
                     }
                 }
                 else{
-                    [self rz_logError:@"Missing relationship id key and/or model id key for relationship object type %@", relationshipMapping.relationshipClassName];
+                    RZLogDebug(@"Missing relationship id key and/or model id key for relationship object type %@", relationshipMapping.relationshipClassName);
                 }
             }
             else{
@@ -329,18 +329,18 @@
                         [invocation invoke];
                     }
                     @catch (NSException *exception) {
-                        [self rz_logError:@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(setter), NSStringFromClass([object class]), exception];
+                        RZLogError(@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(setter), NSStringFromClass([object class]), exception);
                     }
                     
                 }
                 else{
-                    [self rz_logError:@"Setter not found for property %@ on class %@", relationshipMapping.relationshipPropertyName, NSStringFromClass([object class])];
+                    RZLogError(@"Setter not found for property %@ on class %@", relationshipMapping.relationshipPropertyName, NSStringFromClass([object class]));
                 }
                 
             }
         }
         else{
-            [self rz_logError:@"could not find mapping for relationship object type %@ from object type %@", relationshipMapping.relationshipClassName, NSStringFromClass([object class])];
+            RZLogDebug(@"could not find mapping for relationship object type %@ from object type %@", relationshipMapping.relationshipClassName, NSStringFromClass([object class]));
         }
     }
     else if (selectorName != nil){
@@ -365,16 +365,16 @@
                     [invocation invoke];
                 }
                 @catch (NSException *exception) {
-                    [self rz_logError:@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(importSelector), NSStringFromClass([object class]), exception];
+                    RZLogError(@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(importSelector), NSStringFromClass([object class]), exception);
                 }
                 
             }
             else{
-                [self rz_logError:@"Too few arguments for import selector %@ on object of class %@", selectorName, NSStringFromClass([object class])];
+                RZLogDebug(@"Too few arguments for import selector %@ on object of class %@", selectorName, NSStringFromClass([object class]));
             }
         }
         else{
-            [self rz_logError:@"Unable to perform custom import selector %@ on object of class %@", selectorName, NSStringFromClass([object class])];
+            RZLogDebug(@"Unable to perform custom import selector %@ on object of class %@", selectorName, NSStringFromClass([object class]));
         }
         
     }
@@ -428,7 +428,7 @@
         }
     }
     @catch (NSException *exception) {
-        [self rz_logError:@"Error setting value for key %@ on object of class %@: %@", propertyName, NSStringFromClass([object class]), exception];
+        RZLogError(@"Error setting value for key %@ on object of class %@: %@", propertyName, NSStringFromClass([object class]), exception);
     }
 
 }
@@ -461,7 +461,7 @@
             newValue = [NSDate dateWithTimeIntervalSince1970:[(NSNumber*)value doubleValue]];
         }
         else if (![value isKindOfClass:[NSDate class]]){
-            [self rz_logError:@"Object of class %@ cannot be converted to NSDate", NSStringFromClass([value class])];
+            RZLogDebug(@"Object of class %@ cannot be converted to NSDate", NSStringFromClass([value class]));
         }
     }
     else if ([conversionType isEqualToString:kRZDataTypeNSNumber])
@@ -472,7 +472,7 @@
             }
         }
         else if (![value isKindOfClass:[NSNumber class]]){
-            [self rz_logError:@"Object of class %@ cannot be converted to NSNumber", NSStringFromClass([value class])];
+            RZLogDebug(@"Object of class %@ cannot be converted to NSNumber", NSStringFromClass([value class]));
         }
     }
     else if ([conversionType isEqualToString:kRZDataTypeNSString])
