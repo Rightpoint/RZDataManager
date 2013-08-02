@@ -26,8 +26,6 @@
 		9AC66E7E175E953F007C603C /* DMCollection+RZDataManagerModelObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC66E7D175E953E007C603C /* DMCollection+RZDataManagerModelObject.m */; };
 		9ACF8EE91760D58400974873 /* DMThingClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 9ACF8EE81760D58400974873 /* DMThingClass.m */; };
 		9AEAD723177201B400B8A6BE /* NSObject+RZPropertyUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A58B7A017578D070065D1EA /* NSObject+RZPropertyUtils.m */; };
-		9AEAD7271772042A00B8A6BE /* NSObject+RZLogHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AEAD7261772042A00B8A6BE /* NSObject+RZLogHelper.m */; };
-		9AEAD728177205AD00B8A6BE /* NSObject+RZLogHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AEAD7261772042A00B8A6BE /* NSObject+RZLogHelper.m */; };
 		FEA82A781742AFFE00FA206C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A771742AFFE00FA206C /* UIKit.framework */; };
 		FEA82A7A1742AFFE00FA206C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A791742AFFE00FA206C /* Foundation.framework */; };
 		FEA82A7C1742AFFE00FA206C /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A7B1742AFFE00FA206C /* CoreGraphics.framework */; };
@@ -64,6 +62,7 @@
 		728A1903178EF1C900A04E9F /* DMCustomEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DMCustomEntry.m; sourceTree = "<group>"; };
 		728A1905178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DMCustomEntry+RZDataManagerModelObject.h"; sourceTree = "<group>"; };
 		728A1906178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DMCustomEntry+RZDataManagerModelObject.m"; sourceTree = "<group>"; };
+		9A18D01317AAE8C400F006D0 /* RZLogHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZLogHelper.h; sourceTree = "<group>"; };
 		9A3366571755378800FCF766 /* RZDataManager_Base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = RZDataManager_Base.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		9A3366581755378800FCF766 /* RZDataManager_Base.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = RZDataManager_Base.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		9A33665A17553CFC00FCF766 /* RZCoreDataManager-Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RZCoreDataManager-Tests.h"; sourceTree = "<group>"; };
@@ -83,8 +82,6 @@
 		9AC66E7D175E953E007C603C /* DMCollection+RZDataManagerModelObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = "DMCollection+RZDataManagerModelObject.m"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		9ACF8EE71760D58400974873 /* DMThingClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMThingClass.h; path = "RZDataManager-Demo/DMThingClass.h"; sourceTree = SOURCE_ROOT; };
 		9ACF8EE81760D58400974873 /* DMThingClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMThingClass.m; path = "RZDataManager-Demo/DMThingClass.m"; sourceTree = SOURCE_ROOT; };
-		9AEAD7251772042A00B8A6BE /* NSObject+RZLogHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+RZLogHelper.h"; sourceTree = "<group>"; };
-		9AEAD7261772042A00B8A6BE /* NSObject+RZLogHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+RZLogHelper.m"; sourceTree = "<group>"; };
 		FEA82A741742AFFE00FA206C /* RZDataManager-Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "RZDataManager-Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEA82A771742AFFE00FA206C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FEA82A791742AFFE00FA206C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -257,10 +254,9 @@
 		FEA82B021742CC1B00FA206C /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				9A18D01317AAE8C400F006D0 /* RZLogHelper.h */,
 				FEA82B031742CC1B00FA206C /* NSDictionary+NonNSNull.h */,
 				FEA82B041742CC1B00FA206C /* NSDictionary+NonNSNull.m */,
-				9AEAD7251772042A00B8A6BE /* NSObject+RZLogHelper.h */,
-				9AEAD7261772042A00B8A6BE /* NSObject+RZLogHelper.m */,
 				9A58B79F17578D070065D1EA /* NSObject+RZPropertyUtils.h */,
 				9A58B7A017578D070065D1EA /* NSObject+RZPropertyUtils.m */,
 				FEA82B051742CC1B00FA206C /* NSString+HTMLEntities.h */,
@@ -389,7 +385,6 @@
 				9A3366591755378800FCF766 /* RZDataManager_Base.m in Sources */,
 				9A58B7A117578D070065D1EA /* NSObject+RZPropertyUtils.m in Sources */,
 				9AC66E7B175E94A1007C603C /* RZDataManagerModelObjectMapping.m in Sources */,
-				9AEAD7271772042A00B8A6BE /* NSObject+RZLogHelper.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -411,7 +406,6 @@
 				9AC66E7E175E953F007C603C /* DMCollection+RZDataManagerModelObject.m in Sources */,
 				9ACF8EE91760D58400974873 /* DMThingClass.m in Sources */,
 				9AEAD723177201B400B8A6BE /* NSObject+RZPropertyUtils.m in Sources */,
-				9AEAD728177205AD00B8A6BE /* NSObject+RZLogHelper.m in Sources */,
 				728A1904178EF1C900A04E9F /* DMCustomEntry.m in Sources */,
 				728A1907178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.m in Sources */,
 			);
