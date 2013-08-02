@@ -103,7 +103,7 @@
  * ensure that logging is not accidentally left enabled by accident in release builds.
  */
 #ifndef RZ_LOGGING_ENABLED
-#	define RZ_LOGGING_ENABLED		0
+#	define RZ_LOGGING_ENABLED		1
 #endif
 
 /**
@@ -129,13 +129,13 @@
  * in the log entries. This can be set either here or as a compiler build setting.
  */
 #ifndef RZ_LOGGING_INCLUDE_CODE_LOCATION
-#define RZ_LOGGING_INCLUDE_CODE_LOCATION	0
+    #define RZ_LOGGING_INCLUDE_CODE_LOCATION	0
 #endif
 
 // *********** END OF USER SETTINGS  - Do not change anything below this line ***********
 
 
-#if !(defined(LOGGING_ENABLED) && RZ_LOGGING_ENABLED)
+#if !(defined(RZ_LOGGING_ENABLED) && RZ_LOGGING_ENABLED)
 #undef RZ_LOGGING_LEVEL_TRACE
 #undef RZ_LOGGING_LEVEL_INFO
 #undef RZ_LOGGING_LEVEL_ERROR
@@ -160,21 +160,21 @@
 #endif
 
 // Info logging - for general, non-performance affecting information messages
-#if defined(LOGGING_LEVEL_INFO) && RZ_LOGGING_LEVEL_INFO
+#if defined(RZ_LOGGING_LEVEL_INFO) && RZ_LOGGING_LEVEL_INFO
 #define RZLogInfo(fmt, ...) RZ_LOG_FORMAT(fmt, @"info", ##__VA_ARGS__)
 #else
 #define RZLogInfo(...)
 #endif
 
 // Error logging - only when there is an error to be logged
-#if defined(LOGGING_LEVEL_ERROR) && RZ_LOGGING_LEVEL_ERROR
+#if defined(RZ_LOGGING_LEVEL_ERROR) && RZ_LOGGING_LEVEL_ERROR
 #define RZLogError(fmt, ...) RZ_LOG_FORMAT(fmt, @"***ERROR***", ##__VA_ARGS__)
 #else
 #define RZLogError(...)
 #endif
 
 // Debug logging - use only temporarily for highlighting and tracking down problems
-#if defined(LOGGING_LEVEL_DEBUG) && RZ_LOGGING_LEVEL_DEBUG
+#if defined(RZ_LOGGING_LEVEL_DEBUG) && RZ_LOGGING_LEVEL_DEBUG
 #define RZLogDebug(fmt, ...) RZ_LOG_FORMAT(fmt, @"DEBUG", ##__VA_ARGS__)
 #else
 #define RZLogDebug(...)
