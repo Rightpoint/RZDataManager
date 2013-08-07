@@ -716,7 +716,7 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
     if (shouldDeleteFile && nil != self.persistentStoreURL)
     {
         NSError *removeFileError = nil;
-        if([[NSFileManager defaultManager] removeItemAtURL:self.persistentStoreURL error:&removeFileError])
+        if(![[NSFileManager defaultManager] removeItemAtURL:self.persistentStoreURL error:&removeFileError])
         {
             NSLog(@"Could not delete database file at url %@. Error: %@", self.persistentStoreURL.absoluteString, removeFileError);
         }
