@@ -2,30 +2,26 @@
 //  DMEntry.m
 //  RZDataManager-Demo
 //
-//  Created by Nick Donaldson on 5/28/13.
+//  Created by Nick Donaldson on 8/15/13.
 //  Copyright (c) 2013 Raizlabs. All rights reserved.
 //
 
 #import "DMEntry.h"
 #import "DMCollection.h"
 
-
 @implementation DMEntry
 
-@dynamic name;
-@dynamic uid;
-@dynamic popularity;
 @dynamic createdDate;
-@dynamic collection;
-
-@dynamic testFloat;
-@dynamic testDouble;
-@dynamic testInt;
-@dynamic testUInt;
-@dynamic testShort;
-@dynamic testUShort;
-@dynamic testLongLong;
-@dynamic testULongLong;
+@dynamic popularity;
 @dynamic testBool;
+@dynamic testDouble;
+@dynamic testFloat;
+@dynamic testInt;
+@dynamic testLongLong;
+@dynamic testShort;
+@dynamic testUInt;
+@dynamic testULongLong;
+@dynamic testUShort;
+@dynamic collection;
 
 @end
