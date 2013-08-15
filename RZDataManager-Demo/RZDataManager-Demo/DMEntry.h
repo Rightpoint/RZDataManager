@@ -2,24 +2,22 @@
 //  DMEntry.h
 //  RZDataManager-Demo
 //
-//  Created by Nick Donaldson on 5/28/13.
+//  Created by Nick Donaldson on 8/15/13.
 //  Copyright (c) 2013 Raizlabs. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import "DMBaseEntry.h"
 
 @class DMCollection;
 
-@interface DMEntry : NSManagedObject
+@interface DMEntry : DMBaseEntry
 
-@property (nonatomic, retain) NSString  * name;
-@property (nonatomic, retain) NSString  * uid;
-@property (nonatomic, retain) NSNumber  * popularity;
-@property (nonatomic, retain) NSDate    * createdDate;
+@property (nonatomic, retain) NSDate * createdDate;
+@property (nonatomic, retain) NSNumber * popularity;
 @property (nonatomic, retain) DMCollection *collection;
 
-// extra datatypes for testing importer conversion
 @property (nonatomic, assign) float         testFloat;
 @property (nonatomic, assign) double        testDouble;
 @property (nonatomic, assign) NSInteger     testInt;

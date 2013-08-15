@@ -12,7 +12,6 @@
 		9A3366591755378800FCF766 /* RZDataManager_Base.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A3366581755378800FCF766 /* RZDataManager_Base.m */; };
 		9A33665C17553CFC00FCF766 /* RZCoreDataManager-Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A33665B17553CFC00FCF766 /* RZCoreDataManager-Tests.m */; };
 		9A33666017553E0A00FCF766 /* DMCollection.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A33665E17553E0A00FCF766 /* DMCollection.m */; };
-		9A33666417553E0B00FCF766 /* DMEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A33666217553E0B00FCF766 /* DMEntry.m */; };
 		9A33666517553E1300FCF766 /* RZDataManager_Test.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = FEA82A911742AFFE00FA206C /* RZDataManager_Test.xcdatamodeld */; };
 		9A33666717553E1F00FCF766 /* RZDataImporter.m in Sources */ = {isa = PBXBuildFile; fileRef = FEA82AFF1742CB5600FA206C /* RZDataImporter.m */; };
 		9A33666817553E1F00FCF766 /* RZDataManager_Base.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A3366581755378800FCF766 /* RZDataManager_Base.m */; };
@@ -25,6 +24,8 @@
 		9AC66E7B175E94A1007C603C /* RZDataManagerModelObjectMapping.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC66E74175E6DE6007C603C /* RZDataManagerModelObjectMapping.m */; };
 		9AC66E7E175E953F007C603C /* DMCollection+RZDataManagerModelObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC66E7D175E953E007C603C /* DMCollection+RZDataManagerModelObject.m */; };
 		9ACF8EE91760D58400974873 /* DMThingClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 9ACF8EE81760D58400974873 /* DMThingClass.m */; };
+		9AD91B5617BD51C7003A1B1F /* DMEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AD91B5517BD51C7003A1B1F /* DMEntry.m */; };
+		9AD91B5917BD51C8003A1B1F /* DMBaseEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AD91B5817BD51C8003A1B1F /* DMBaseEntry.m */; };
 		9AEAD723177201B400B8A6BE /* NSObject+RZPropertyUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A58B7A017578D070065D1EA /* NSObject+RZPropertyUtils.m */; };
 		FEA82A781742AFFE00FA206C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A771742AFFE00FA206C /* UIKit.framework */; };
 		FEA82A7A1742AFFE00FA206C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A791742AFFE00FA206C /* Foundation.framework */; };
@@ -69,8 +70,6 @@
 		9A33665B17553CFC00FCF766 /* RZCoreDataManager-Tests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = "RZCoreDataManager-Tests.m"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		9A33665D17553E0A00FCF766 /* DMCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMCollection.h; path = "../RZDataManager-Demo/DMCollection.h"; sourceTree = "<group>"; };
 		9A33665E17553E0A00FCF766 /* DMCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMCollection.m; path = "../RZDataManager-Demo/DMCollection.m"; sourceTree = "<group>"; };
-		9A33666117553E0B00FCF766 /* DMEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMEntry.h; path = "../RZDataManager-Demo/DMEntry.h"; sourceTree = "<group>"; };
-		9A33666217553E0B00FCF766 /* DMEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMEntry.m; path = "../RZDataManager-Demo/DMEntry.m"; sourceTree = "<group>"; };
 		9A3528511757C57C0009F78B /* RZDataManagerModelObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RZDataManagerModelObject.h; sourceTree = "<group>"; };
 		9A58B79F17578D070065D1EA /* NSObject+RZPropertyUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+RZPropertyUtils.h"; sourceTree = "<group>"; };
 		9A58B7A017578D070065D1EA /* NSObject+RZPropertyUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+RZPropertyUtils.m"; sourceTree = "<group>"; };
@@ -82,6 +81,10 @@
 		9AC66E7D175E953E007C603C /* DMCollection+RZDataManagerModelObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = "DMCollection+RZDataManagerModelObject.m"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		9ACF8EE71760D58400974873 /* DMThingClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMThingClass.h; path = "RZDataManager-Demo/DMThingClass.h"; sourceTree = SOURCE_ROOT; };
 		9ACF8EE81760D58400974873 /* DMThingClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMThingClass.m; path = "RZDataManager-Demo/DMThingClass.m"; sourceTree = SOURCE_ROOT; };
+		9AD91B5417BD51C7003A1B1F /* DMEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMEntry.h; path = "RZDataManager-Demo/DMEntry.h"; sourceTree = SOURCE_ROOT; };
+		9AD91B5517BD51C7003A1B1F /* DMEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMEntry.m; path = "RZDataManager-Demo/DMEntry.m"; sourceTree = SOURCE_ROOT; };
+		9AD91B5717BD51C8003A1B1F /* DMBaseEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DMBaseEntry.h; path = "RZDataManager-Demo/DMBaseEntry.h"; sourceTree = SOURCE_ROOT; };
+		9AD91B5817BD51C8003A1B1F /* DMBaseEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DMBaseEntry.m; path = "RZDataManager-Demo/DMBaseEntry.m"; sourceTree = SOURCE_ROOT; };
 		FEA82A741742AFFE00FA206C /* RZDataManager-Demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "RZDataManager-Demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEA82A771742AFFE00FA206C /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		FEA82A791742AFFE00FA206C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -211,12 +214,14 @@
 			children = (
 				FEA82AA21742AFFF00FA206C /* Supporting Files */,
 				FEA82A911742AFFE00FA206C /* RZDataManager_Test.xcdatamodeld */,
+				9AD91B5717BD51C8003A1B1F /* DMBaseEntry.h */,
+				9AD91B5817BD51C8003A1B1F /* DMBaseEntry.m */,
+				9AD91B5417BD51C7003A1B1F /* DMEntry.h */,
+				9AD91B5517BD51C7003A1B1F /* DMEntry.m */,
 				728A1902178EF1C900A04E9F /* DMCustomEntry.h */,
 				728A1903178EF1C900A04E9F /* DMCustomEntry.m */,
 				9ACF8EE71760D58400974873 /* DMThingClass.h */,
 				9ACF8EE81760D58400974873 /* DMThingClass.m */,
-				9A33666117553E0B00FCF766 /* DMEntry.h */,
-				9A33666217553E0B00FCF766 /* DMEntry.m */,
 				9A33665D17553E0A00FCF766 /* DMCollection.h */,
 				9A33665E17553E0A00FCF766 /* DMCollection.m */,
 				9AC66E6A175E63EE007C603C /* Data Model Mapping */,
@@ -394,7 +399,6 @@
 			files = (
 				9A33665C17553CFC00FCF766 /* RZCoreDataManager-Tests.m in Sources */,
 				9A33666017553E0A00FCF766 /* DMCollection.m in Sources */,
-				9A33666417553E0B00FCF766 /* DMEntry.m in Sources */,
 				9A33666517553E1300FCF766 /* RZDataManager_Test.xcdatamodeld in Sources */,
 				9A33666717553E1F00FCF766 /* RZDataImporter.m in Sources */,
 				9A33666817553E1F00FCF766 /* RZDataManager_Base.m in Sources */,
@@ -408,6 +412,8 @@
 				9AEAD723177201B400B8A6BE /* NSObject+RZPropertyUtils.m in Sources */,
 				728A1904178EF1C900A04E9F /* DMCustomEntry.m in Sources */,
 				728A1907178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.m in Sources */,
+				9AD91B5617BD51C7003A1B1F /* DMEntry.m in Sources */,
+				9AD91B5917BD51C8003A1B1F /* DMBaseEntry.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
