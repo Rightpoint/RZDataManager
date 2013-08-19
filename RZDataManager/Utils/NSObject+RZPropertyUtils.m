@@ -88,11 +88,29 @@ static void destroy_rzTypeMappings() {
 }
 
 
+static objc_property_t RZGetProperty(NSString *name, Class class)
+{
+    objc_property_t property = class_getProperty(class, [name UTF8String]);
+    if (property == NULL)
+    {
+        // check base classes
+        Class baseClass = class_getSuperclass(class);
+        while (baseClass != nil && property == NULL)
+        {
+            property = class_getProperty(baseClass, [name UTF8String]);
+            baseClass = class_getSuperclass(baseClass);
+        }
+    }
+    
+    return property;
+}
+
+
 @implementation NSObject (RZPropertyUtils)
 
 + (BOOL)rz_hasPropertyNamed:(NSString *)propertyName
 {
-    return (class_getProperty([self class], [propertyName UTF8String]) != NULL);
+    return RZGetProperty(propertyName, [self class]) != NULL;
 }
 
 + (NSArray*)rz_getPropertyNames
@@ -108,13 +126,21 @@ static void destroy_rzTypeMappings() {
         [names addObject:[NSString stringWithUTF8String:property_getName(property)]];
     }
     
+    // Add properties from base classes
+    Class baseClass = class_getSuperclass([self class]);
+    while (baseClass != nil)
+    {
+        [names addObjectsFromArray:[baseClass rz_getPropertyNames]];
+        baseClass = class_getSuperclass(baseClass);
+    }
+
     return names;
 }
 
 + (NSString*)rz_dataTypeForPropertyNamed:(NSString *)propertyName
 {
     NSString * typenameString = nil;
-    objc_property_t property = class_getProperty([self class], [propertyName UTF8String]);
+    objc_property_t property = RZGetProperty(propertyName, [self class]);
     const char * propAttrString = property_getAttributes(property);
     
     if (propAttrString != NULL){
@@ -145,7 +171,7 @@ static void destroy_rzTypeMappings() {
 + (SEL)rz_getterForPropertyNamed:(NSString *)propertyName
 {
     __block NSString * getterString = nil;
-    objc_property_t property = class_getProperty([self class], [propertyName UTF8String]);
+    objc_property_t property = RZGetProperty(propertyName, [self class]);
     const char * propAttrString = property_getAttributes(property);
     
     if (propAttrString != NULL){
@@ -169,11 +195,10 @@ static void destroy_rzTypeMappings() {
 + (SEL)rz_setterForPropertyNamed:(NSString *)propertyName
 {
     __block NSString * setterString = nil; 
-    objc_property_t property = class_getProperty([self class], [propertyName UTF8String]);
+    objc_property_t property = RZGetProperty(propertyName, [self class]);
     const char * propAttrString = property_getAttributes(property);
     
     if (propAttrString != NULL){
-        
         
         NSString * propString = [NSString stringWithUTF8String:propAttrString];
         NSArray *propComponents = [propString componentsSeparatedByString:@","];
