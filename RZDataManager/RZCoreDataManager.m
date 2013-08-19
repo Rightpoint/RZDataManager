@@ -98,84 +98,124 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             
             // optimize lookup for existing objects
             NSString *entityName = [self entityNameForClassNamed:className];
-            NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
+            NSEntityDescription *entityDesc = [NSEntityDescription entityForName:entityName inManagedObjectContext:self.managedObjectContext];
+            NSDictionary *entityProps = [entityDesc propertiesByName];
             
-            NSError *err =nil;
-            NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
+            NSPropertyDescription *modelIdProp = [entityProps objectForKey:modelIdKey];
             
-            if (!err){
+            if (modelIdProp != nil)
+            {
                 
-                NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
+                // Fetch only uid and object ID
+                // Expression description solution from http://stackoverflow.com/a/4792331/1128820
                 
-                NSInteger objectsRemaining = [data count];
-                NSInteger objectOffset = 0;
+                NSExpressionDescription* objectIdDesc = [[NSExpressionDescription alloc] init];
+                objectIdDesc.name = @"objectID";
+                objectIdDesc.expression = [NSExpression expressionForEvaluatedObject];
+                objectIdDesc.expressionResultType = NSObjectIDAttributeType;
                 
-                while (objectsRemaining > 0)
+                NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
+                [uidFetch setResultType:NSDictionaryResultType];
+                [uidFetch setIncludesPendingChanges:YES];
+                [uidFetch setPropertiesToFetch:@[modelIdProp, objectIdDesc]];
+                
+                NSError *err =nil;
+                NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
+                
+                if (err == nil )
                 {
                     
-                    NSUInteger blockSize = MIN(objectsRemaining, kRZCoreDataManagerImportBatchBlockSize);
-                    NSIndexSet *objectsToEnumerate = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(objectOffset, blockSize)];
+                    NSDictionary *existingObjIdsByUid = [NSDictionary dictionaryWithObjects:[existingObjs valueForKey:@"objectID"] forKeys:[existingObjs valueForKey:modelIdKey]];
                     
-                    objectsRemaining -= blockSize;
-                    objectOffset += blockSize;
+                    NSInteger objectsRemaining = [data count];
+                    NSInteger objectOffset = 0;
                     
-                    // Avoid bloating memory - only import a few objects at a time
-                    
-                    @autoreleasepool {
+                    while (objectsRemaining > 0)
+                    {
                         
-                        NSMutableArray *importedObjects = [NSMutableArray array];
+                        NSUInteger blockSize = MIN(objectsRemaining, kRZCoreDataManagerImportBatchBlockSize);
+                        NSIndexSet *objectsToEnumerate = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(objectOffset, blockSize)];
                         
-                        [(NSArray*)data enumerateObjectsAtIndexes:objectsToEnumerate options:0 usingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
+                        objectsRemaining -= blockSize;
+                        objectOffset += blockSize;
+                        
+                        // Avoid bloating memory - only import a few objects at a time
+                        
+                        @autoreleasepool {
                             
-                            id uid = [objData valueForKey:dataIdKey];
-                            if (uid != nil)
-                            {
-                                id importedObj = [existingObjsByUid objectForKey:uid];
+                            NSMutableArray *importedObjects = [NSMutableArray array];
+                            
+                            [(NSArray*)data enumerateObjectsAtIndexes:objectsToEnumerate options:0 usingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
                                 
-                                if (importedObj == nil)
+                                id uid = [objData valueForKey:dataIdKey];
+                                if (uid != nil)
                                 {
-                                    importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+                                    id importedObj = nil;
+                                    NSManagedObjectID *importedObjId = [existingObjIdsByUid objectForKey:uid];
+                                    
+                                    if (importedObjId != nil)
+                                    {
+                                        importedObj = [self.currentMoc objectWithID:importedObjId];
+                                    }
+                                    else
+                                    {
+                                        importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+                                    }
+                                    
+                                    if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)]) {
+                                        [importedObj dataImportPerformImportWithData:objData];
+                                    } else {
+                                        [self.dataImporter importData:objData toObject:importedObj];
+                                    }
+                                    
+                                    [importedObjects addObject:importedObj];
                                 }
                                 
-                                if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)]) {
-                                    [importedObj dataImportPerformImportWithData:objData];
-                                } else {
-                                    [self.dataImporter importData:objData toObject:importedObj];
-                                }
-                                
-                                [importedObjects addObject:importedObj];
+                            }];
+                            
+                            // Get permanent object ids for these
+                            NSError *poErr = nil;
+                            if (![self.currentMoc obtainPermanentIDsForObjects:importedObjects error:&poErr])
+                            {
+                                RZLogError(@"Error obtaining permanent object ids for newly imported objects. %@", poErr);
                             }
                             
-                        }];
-                        
-                        // Get permanent object ids for these
-                        NSError *poErr = nil;
-                        if (![self.currentMoc obtainPermanentIDsForObjects:importedObjects error:&poErr])
-                        {
-                            RZLogError(@"Error obtaining permanent object ids for newly imported objects. %@", poErr);
+                            [permanentObjectIDs addObjectsFromArray:[importedObjects valueForKey:@"objectID"]];
                         }
-                        
-                        [permanentObjectIDs addObjectsFromArray:[importedObjects valueForKey:@"objectID"]];
+
                     }
 
-                }
-
-                
-                if (options[kRZDataManagerDeleteStaleItemsPredicate]) {
-                    NSPredicate *stalePred = options[kRZDataManagerDeleteStaleItemsPredicate];
-                    NSArray *existingObjsToCheck = [existingObjsByUid.allValues filteredArrayUsingPredicate:stalePred];
                     
-                    NSSet *dataObjsUuids = [NSSet setWithArray:[(NSArray*)data valueForKey:dataIdKey]];
-                    [existingObjsToCheck enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-                        // if this model object is not present in the list of objects to import, delete it.
-                        if (![dataObjsUuids containsObject:[obj valueForKey:modelIdKey]]) {
-                            [self.currentMoc deleteObject:obj];
-                        }
-                    }];
+                    if (options[kRZDataManagerDeleteStaleItemsPredicate] != nil)
+                    {
+                        NSPredicate *stalePred = options[kRZDataManagerDeleteStaleItemsPredicate];
+
+                        // Get the actual objects from their object IDs
+                        NSMutableArray *objectsToCheck = [NSMutableArray array];
+                        [[existingObjIdsByUid allValues] enumerateObjectsUsingBlock:^(NSManagedObjectID * objID, NSUInteger idx, BOOL *stop) {
+                            [objectsToCheck addObject:[self.currentMoc objectWithID:objID]];
+                        }];
+                        
+                        [objectsToCheck filterUsingPredicate:stalePred];
+                                                
+                        NSSet *dataObjsUuids = [NSSet setWithArray:[(NSArray*)data valueForKey:dataIdKey]];
+                        
+                        [objectsToCheck enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                            // if this model object is not present in the list of objects to import, delete it.
+                            if (![dataObjsUuids containsObject:[obj valueForKey:modelIdKey]]) {
+                                [self.currentMoc deleteObject:obj];
+                            }
+                        }];
+                    }
+                }
+                else
+                {
+                    RZLogError(@"Error fetching existing objects of type %@: %@", entityName, err);
                 }
             }
-            else{
-                RZLogError(@"Error fetching existing objects of type %@: %@", entityName, err);
+            else
+            {
+                RZLogError(@"No property named %@ found on entity named %@", modelIdKey, entityName);
             }
             
         }

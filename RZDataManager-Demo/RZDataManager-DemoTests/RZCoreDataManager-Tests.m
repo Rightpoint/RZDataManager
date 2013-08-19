@@ -69,8 +69,7 @@
         }
     }
     
-    NSError *err = nil;
-    [moc save:&err];
+    [self.dataManager saveData:YES];
 }
 
 - (void)tearDown
@@ -232,7 +231,7 @@
          STAssertNil(error, @"Error during import: %@", error);
          
          STAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be array");
-         
+                           
          // attempt clean fetch of new objects
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
          
@@ -288,7 +287,7 @@
          STAssertNil(error, @"Error during import: %@", error);
          
          STAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be array");
-         
+                  
          // attempt clean fetch of new objects
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
          
@@ -889,13 +888,44 @@
     
     // Import and don't return imported objects
     __block BOOL finished = NO;
-    
+    NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
     // import and don't return objects
     [self.dataManager importData:dataToImport forClassNamed:@"DMEntry" options:@{kRZDataManagerDisableReturningObjectsFromImport : @(YES)} completion:^(id result, NSError *error)
      {
          STAssertNil(result, @"Result should be nil - we passed the option not to return objects");
          STAssertNil(error, @"Error during import: %@", error);
-                        
+         
+         NSTimeInterval executionTime = [NSDate timeIntervalSinceReferenceDate] - startTime;
+         NSLog(@"First import finished in %.3f seconds", executionTime);
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+    
+    // Do another big ol' import
+    dataToImport = [NSMutableArray arrayWithCapacity:numIterations];
+    for (NSInteger i=0; i<numIterations; i++)
+    {
+        [dataToImport addObject:@{  @"name" : [NSString stringWithFormat:@"Item %d", i+50001],
+         @"uid"  : [NSString stringWithFormat:@"%d", i + 50000],
+         @"collection" : @"Red"
+         }];
+    }
+    
+    finished = NO;
+    startTime = [NSDate timeIntervalSinceReferenceDate];
+    // import and don't return objects
+    [self.dataManager importData:dataToImport forClassNamed:@"DMEntry" options:@{kRZDataManagerDisableReturningObjectsFromImport : @(YES)} completion:^(id result, NSError *error)
+     {
+         STAssertNil(result, @"Result should be nil - we passed the option not to return objects");
+         STAssertNil(error, @"Error during import: %@", error);
+         
+         NSTimeInterval executionTime = [NSDate timeIntervalSinceReferenceDate] - startTime;
+         NSLog(@"Second import finished in %.3f seconds", executionTime);
+         
          finished = YES;
      }];
     
