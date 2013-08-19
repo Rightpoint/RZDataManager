@@ -226,6 +226,11 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 
     } completion:^(NSError *error){
         
+        if (![[options objectForKey:kRZDataManagerDisableSaveAfterImport] boolValue])
+        {
+            [self saveContext:YES];
+        }
+        
         if (completion)
         {
             
@@ -397,6 +402,11 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         
     } completion:^(NSError *error) {
         
+        if (![[options objectForKey:kRZDataManagerDisableSaveAfterImport] boolValue])
+        {
+            [self saveContext:YES];
+        }
+        
         if (completion){
             
             // Need to fetch object from main thread moc for completion block
@@ -437,7 +447,8 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
 {
     // only setup new moc if on main thread, otherwise assume we are on a background thread with associated moc
     
-    void (^internalImportBlock)(NSManagedObjectContext *privateMoc) = ^(NSManagedObjectContext *privateMoc){
+    
+    void (^internalImportBlock)(BOOL, NSManagedObjectContext*) = ^(BOOL fromMainThread, NSManagedObjectContext *privateMoc){
         
         importBlock();
         
@@ -447,15 +458,30 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             RZLogError(@"Error saving import in background: %@", error);
         }
         
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            
+        [self.managedObjectContext performBlockAndWait:^{
             [self.managedObjectContext processPendingChanges];
-                        
+        }];
+
+        
+        if (fromMainThread)
+        {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+
+                if (completionBlock)
+                {
+                    completionBlock(error);
+                }
+            });
+        }
+        else
+        {
+            
             if (completionBlock)
             {
                 completionBlock(error);
             }
-        });
+        }
+
     };
     
     if ([NSThread isMainThread]){
@@ -470,7 +496,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 [[[NSThread currentThread] threadDictionary] setObject:privateMoc forKey:kRZCoreDataManagerConfinedMocKey];
             }
             
-            internalImportBlock(privateMoc);
+            internalImportBlock(YES, privateMoc);
         }];
     }
     else{
@@ -478,7 +504,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         if (moc){
             // we can perform this and wait safely on a bg thread
             [moc performBlockAndWait:^{
-                internalImportBlock(moc);
+                internalImportBlock(NO, moc);
             }];
         }
         else{

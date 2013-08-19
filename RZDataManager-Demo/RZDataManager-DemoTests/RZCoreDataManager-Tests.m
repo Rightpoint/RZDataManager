@@ -845,7 +845,7 @@
                  @"collection" : @"Red"};
     
     finished = NO;
-    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{kRZDataManagerDisableSaveAfterImport : @(YES)} completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);

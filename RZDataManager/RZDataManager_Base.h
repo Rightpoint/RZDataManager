@@ -31,9 +31,14 @@ OBJC_EXTERN NSString* const kRZDataManagerUTCDateFormat;
 // present in the items to be imported.
 OBJC_EXTERN NSString* const kRZDataManagerDeleteStaleItemsPredicate;
 
+// Disable automatic full-stack save of database after each import.
+// Useful when you might want to undo an import.
+// To set option, value should be an NSNumber with bool value YES
+OBJC_EXTERN NSString* const kRZDataManagerDisableSaveAfterImport;
+
 // Disable completion block from returning imported items on main thread managed object context.
 // May want to use this to prevent resource usage when importing a large number of objects.
-// Value should be an NSNumber with bool value YES
+// To set option, value should be an NSNumber with bool value YES
 OBJC_EXTERN NSString* const kRZDataManagerDisableReturningObjectsFromImport;
 
 @interface RZDataManager : NSObject
