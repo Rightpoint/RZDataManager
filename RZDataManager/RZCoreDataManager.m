@@ -132,7 +132,8 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                             {
                                 id importedObj = [existingObjsByUid objectForKey:uid];
                                 
-                                if (!importedObj){
+                                if (importedObj == nil)
+                                {
                                     importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
                                 }
                                 
