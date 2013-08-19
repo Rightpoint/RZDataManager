@@ -17,15 +17,24 @@
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
 
+typedef void (^RZDataManagerImportBlock)();
+typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, collection, or nil
+typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
+
 OBJC_EXTERN NSString* const kRZDataManagerUTCDateFormat;
+
+// ============================================================
+//                KEYS FOR OPTIONS DICTIONARY
+// ============================================================
 
 // Delete any items that are present in the result produced by this predicate and not
 // present in the items to be imported.
 OBJC_EXTERN NSString* const kRZDataManagerDeleteStaleItemsPredicate;
 
-typedef void (^RZDataManagerImportBlock)();
-typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, collection, or nil
-typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
+// Disable completion block from returning imported items on main thread managed object context.
+// May want to use this to prevent resource usage when importing a large number of objects.
+// Value should be an NSNumber with bool value YES
+OBJC_EXTERN NSString* const kRZDataManagerDisableReturningObjectsFromImport;
 
 @interface RZDataManager : NSObject
 
@@ -52,7 +61,7 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
  ***********************************************************/
 
 // ============================================================
-// -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
+//          SUBCLASSES MUST IMPLEMENT THESE METHODS             
 // ============================================================
 
 // Returns an object with value "value" for keypath "keyPath". If not found, will optionally create a new one.
@@ -84,13 +93,13 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
  
 // Default signature, no overrides
 - (void)importData:(id)data
-        forClassNamed:(NSString*)className
+    forClassNamed:(NSString*)className
            options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
 // Use key-value pairs in keyMappings to override key->property import mappings
 - (void)importData:(id)data
-        forClassNamed:(NSString*)className
+     forClassNamed:(NSString*)className
        keyMappings:(NSDictionary*)keyMappings
            options:(NSDictionary*)options
         completion:(RZDataManagerImportCompletionBlock)completion;

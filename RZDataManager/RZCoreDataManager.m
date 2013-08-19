@@ -9,6 +9,9 @@
 #import "NSDictionary+NonNSNull.h"
 #import "RZLogHelper.h"
 
+// Number of items to import in a single batch when importing a lot of items
+#define kRZCoreDataManagerImportBatchBlockSize 50
+
 // For storing moc reference in thread dictionary
 static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
 
@@ -71,6 +74,8 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         return;
     }
     
+    NSMutableArray *permanentObjectIDs = [NSMutableArray array];
+    
     [self importInBackgroundUsingBlock:^{
         
         if ([data isKindOfClass:[NSDictionary class]]){
@@ -97,26 +102,63 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
             
             NSError *err =nil;
             NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
+            
             if (!err){
+                
                 NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
-                [(NSArray*)data enumerateObjectsUsingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
+                
+                NSInteger objectsRemaining = [data count];
+                NSInteger objectOffset = 0;
+                
+                while (objectsRemaining > 0)
+                {
                     
-                    id uid = [objData valueForKey:dataIdKey];
-                    if (uid){
-                        id importedObj = [existingObjsByUid objectForKey:uid];
+                    NSUInteger blockSize = MIN(objectsRemaining, kRZCoreDataManagerImportBatchBlockSize);
+                    NSIndexSet *objectsToEnumerate = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(objectOffset, blockSize)];
+                    
+                    objectsRemaining -= blockSize;
+                    objectOffset += blockSize;
+                    
+                    // Avoid bloating memory - only import a few objects at a time
+                    
+                    @autoreleasepool {
                         
-                        if (!importedObj){
-                            importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+                        NSMutableArray *importedObjects = [NSMutableArray array];
+                        
+                        [(NSArray*)data enumerateObjectsAtIndexes:objectsToEnumerate options:0 usingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
+                            
+                            id uid = [objData valueForKey:dataIdKey];
+                            if (uid != nil)
+                            {
+                                id importedObj = [existingObjsByUid objectForKey:uid];
+                                
+                                if (!importedObj){
+                                    importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+                                }
+                                
+                                if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)]) {
+                                    [importedObj dataImportPerformImportWithData:objData];
+                                } else {
+                                    [self.dataImporter importData:objData toObject:importedObj];
+                                }
+                                
+                                [importedObjects addObject:importedObj];
+                            }
+                            
+                        }];
+                        
+                        // Get permanent object ids for these
+                        NSError *poErr = nil;
+                        if (![self.currentMoc obtainPermanentIDsForObjects:importedObjects error:&poErr])
+                        {
+                            RZLogError(@"Error obtaining permanent object ids for newly imported objects. %@", poErr);
                         }
                         
-                        if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)]) {
-                            [importedObj dataImportPerformImportWithData:objData];
-                        } else {
-                            [self.dataImporter importData:objData toObject:importedObj];
-                        }
+                        [permanentObjectIDs addObjectsFromArray:[importedObjects valueForKey:@"objectID"]];
                     }
-                    
-                }];
+
+                }
+
                 
                 if (options[kRZDataManagerDeleteStaleItemsPredicate]) {
                     NSPredicate *stalePred = options[kRZDataManagerDeleteStaleItemsPredicate];
@@ -143,11 +185,13 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 
     } completion:^(NSError *error){
         
-        if (completion){
+        if (completion)
+        {
             
             // Need to fetch object from main thread moc for completion block
             id result = nil;
-            if (!error){
+            if (error == nil && ![[options valueForKey:kRZDataManagerDisableReturningObjectsFromImport] boolValue])
+            {
                 
                 if ([data isKindOfClass:[NSDictionary class]]){
                     id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
@@ -155,14 +199,10 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                 }
                 else if ([data isKindOfClass:[NSArray class]]){
                     
-                    NSMutableArray *resultArray = [NSMutableArray arrayWithCapacity:[(NSArray*)data count]];
-                    [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+                    NSMutableArray *resultArray = [NSMutableArray array];
+                    [permanentObjectIDs enumerateObjectsUsingBlock:^(NSManagedObjectID *objID, NSUInteger idx, BOOL *stop)
                     {
-                        id uid = [obj validObjectForKey:dataIdKey decodeHTML:NO];
-                        id resultEntry = [self objectOfType:className withValue:uid forKeyPath:modelIdKey createNew:NO];
-                        if (resultEntry){
-                            [resultArray addObject:resultEntry];
-                        }
+                        [resultArray addObject:[self.managedObjectContext objectWithID:objID]];
                     }];
                     
                     result = resultArray;
@@ -264,9 +304,9 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
                     NSString *entityName = [self entityNameForClassNamed:relationshipMapping.relationshipClassName];
                     NSArray * existingObjs = [(NSSet*)[object valueForKey:relationshipMapping.relationshipPropertyName] allObjects];                        
                     NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
-                    
+                                        
                     NSMutableArray *importedRelObjs = [NSMutableArray arrayWithCapacity:[(NSArray*)data count]];
-                    
+                                        
                     [(NSArray*)data enumerateObjectsUsingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
                         
                         id uid = [objData valueForKey:dataIdKey];
@@ -381,6 +421,7 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
         
         NSManagedObjectContext *privateMoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
         privateMoc.parentContext = self.managedObjectContext;
+        privateMoc.undoManager = nil; // should be nil already, but let's make it explicit
         
         [privateMoc performBlock:^{
             

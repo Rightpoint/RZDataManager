@@ -12,6 +12,7 @@
 NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
 
 NSString* const kRZDataManagerDeleteStaleItemsPredicate = @"RZDataManagerDeleteStaleItemsPredicate";
+NSString* const kRZDataManagerDisableReturningObjectsFromImport = @"RZDataManagerDisableReturningObjectsFromImport";
 
 @interface RZDataManager ()
 

@@ -874,6 +874,36 @@
     }
 }
 
+- (void)test208HugeImport
+{
+    // Make a whole lot of data to import
+    NSInteger numIterations = 2000;
+    NSMutableArray *dataToImport = [NSMutableArray arrayWithCapacity:numIterations];
+    for (NSInteger i=0; i<numIterations; i++)
+    {
+        [dataToImport addObject:@{  @"name" : [NSString stringWithFormat:@"Item %d", i+1],
+                                    @"uid"  : [NSString stringWithFormat:@"%d", i + 10000],
+                                    @"collection" : @"Red"
+                                }];
+    }
+    
+    // Import and don't return imported objects
+    __block BOOL finished = NO;
+    
+    // import and don't return objects
+    [self.dataManager importData:dataToImport forClassNamed:@"DMEntry" options:@{kRZDataManagerDisableReturningObjectsFromImport : @(YES)} completion:^(id result, NSError *error)
+     {
+         STAssertNil(result, @"Result should be nil - we passed the option not to return objects");
+         STAssertNil(error, @"Error during import: %@", error);
+                        
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
 #pragma mark - Dictionary conversion test
 
 - (void)test300ConvertToDictionary
