@@ -12,6 +12,7 @@
 // For storing moc reference in thread dictionary
 static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
 
+NSString * const kRZCoreDataManagerWillResetDatabaseNotification = @"RZCoreDataManagerWillResetDatabase";
 NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataManagerDidResetDatabase";
 
 @interface RZCoreDataManager ()
@@ -706,6 +707,8 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
 
 - (void)resetDatabase
 {
+    [[NSNotificationCenter defaultCenter] postNotificationName:kRZCoreDataManagerWillResetDatabaseNotification object:self];
+    
     self.backgroundMoc = nil;
     self.managedObjectContext = nil;
     self.persistentStoreCoordinator = nil;

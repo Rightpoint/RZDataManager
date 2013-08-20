@@ -29,6 +29,7 @@
  *
  ************************************************************************************/
 
+OBJC_EXTERN NSString * const kRZCoreDataManagerWillResetDatabaseNotification;
 OBJC_EXTERN NSString * const kRZCoreDataManagerDidResetDatabaseNotification;
 
 @class RZDataImporter;
