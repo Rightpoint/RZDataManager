@@ -61,8 +61,8 @@ OBJC_EXTERN NSString * const kRZCoreDataManagerImportAsynchronously;
 @property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
-// If synchronously is true, will queue imports using a private dispatch queue to happen on background, but serially.
-// If false, will perform import on private queue confinement moc, parallel to any other import operations
+// If synchronously is true, background import operations will be enqueued on a private dispatch queue and will not run in parallel.
+// If false, background import operations will be performed on a private queue confinement moc, parallel to any other background import operations
 - (void)importInBackgroundSynchronously:(BOOL)synchronously usingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
 
 //! Clears out CoreData stack and posts reset notifications. Will be rebuilt via lazy-load on next access to the MOC.
