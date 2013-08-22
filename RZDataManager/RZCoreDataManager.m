@@ -20,6 +20,9 @@ NSString * const kRZCoreDataManagerImportAsynchronously = @"RZCoreDataManagerImp
 static dispatch_queue_t s_RZCoredataManagerPrivateImportQueue = nil;
 static char * const s_RZCoreDataManagerPrivateImportQueueName = "com.raizlabs.RZCoreDataManagerImport";
 
+NSString * const kRZCoreDataManagerWillResetDatabaseNotification = @"RZCoreDataManagerWillResetDatabase";
+NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataManagerDidResetDatabase";
+
 @interface RZCoreDataManager ()
 
 @property (nonatomic, readonly) NSManagedObjectContext *currentMoc;
@@ -750,6 +753,9 @@ static char * const s_RZCoreDataManagerPrivateImportQueueName = "com.raizlabs.RZ
     {
         NSError *error = nil;
         _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
+        
+        // TODO: Add auto-migrate capabilities for lightweight database migration
+        
         if(![_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:nil error:&error])
         {
             if (NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
@@ -859,6 +865,29 @@ static char * const s_RZCoreDataManagerPrivateImportQueueName = "com.raizlabs.RZ
             [backgroundMoc performBlock:saveBackground];
         }
     }
+}
+
+- (void)resetDatabase
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:kRZCoreDataManagerWillResetDatabaseNotification object:self];
+    
+    self.backgroundMoc = nil;
+    self.managedObjectContext = nil;
+    self.persistentStoreCoordinator = nil;
+    
+    // Database file will automatically be deleted on next lazy-load, but let's delete it anyway for security.
+    BOOL shouldDeleteFile = ![self.persistentStoreType isEqualToString:NSInMemoryStoreType];
+    
+    if (shouldDeleteFile && nil != self.persistentStoreURL)
+    {
+        NSError *removeFileError = nil;
+        if(![[NSFileManager defaultManager] removeItemAtURL:self.persistentStoreURL error:&removeFileError])
+        {
+            NSLog(@"Could not delete database file at url %@. Error: %@", self.persistentStoreURL.absoluteString, removeFileError);
+        }
+    }
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:kRZCoreDataManagerDidResetDatabaseNotification object:self];
 }
 
 #pragma mark - Application's Documents directory
