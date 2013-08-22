@@ -15,6 +15,9 @@
 // For storing moc reference in thread dictionary
 static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
 
+static dispatch_queue_t s_RZCoredataManagerPrivateImportQueue = nil;
+static char * const s_RZCoreDataManagerPrivateImportQueueName = "com.raizlabs.RZCoreDataManagerImport";
+
 @interface RZCoreDataManager ()
 
 @property (nonatomic, readonly) NSManagedObjectContext *currentMoc;
@@ -39,6 +42,11 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     self = [super init];
     if (self){
         _classToEntityMapping = [NSMutableDictionary dictionary];
+        
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            s_RZCoredataManagerPrivateImportQueue = dispatch_queue_create(s_RZCoreDataManagerPrivateImportQueueName, NULL);
+        });
     }
     return self;
 }
@@ -442,8 +450,12 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     }];
 }
 
-
 - (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock
+{
+    [self importInBackgroundSynchronously:YES usingBlock:importBlock completion:completionBlock];
+}
+
+- (void)importInBackgroundSynchronously:(BOOL)synchronously usingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
 {
     // only setup new moc if on main thread, otherwise assume we are on a background thread with associated moc
     
@@ -486,26 +498,54 @@ static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerCon
     
     if ([NSThread isMainThread]){
         
-        NSManagedObjectContext *privateMoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
-        privateMoc.parentContext = self.managedObjectContext;
-        privateMoc.undoManager = nil; // should be nil already, but let's make it explicit
-        
-        [privateMoc performBlock:^{
+        if (synchronously)
+        {
+            dispatch_async(s_RZCoredataManagerPrivateImportQueue, ^{
+               
+                NSManagedObjectContext *privateMoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
+                privateMoc.parentContext = self.managedObjectContext;
+                privateMoc.undoManager = nil; // should be nil already, but let's make it explicit
+                
+                if (![NSThread isMainThread]){
+                    [[[NSThread currentThread] threadDictionary] setObject:privateMoc forKey:kRZCoreDataManagerConfinedMocKey];
+                }
+
+                internalImportBlock(YES, privateMoc);
+                
+            });
+        }
+        else
+        {
+            NSManagedObjectContext *privateMoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+            privateMoc.parentContext = self.managedObjectContext;
+            privateMoc.undoManager = nil; // should be nil already, but let's make it explicit
             
-            if (![NSThread isMainThread]){
-                [[[NSThread currentThread] threadDictionary] setObject:privateMoc forKey:kRZCoreDataManagerConfinedMocKey];
-            }
-            
-            internalImportBlock(YES, privateMoc);
-        }];
+            [privateMoc performBlock:^{
+                
+                if (![NSThread isMainThread]){
+                    [[[NSThread currentThread] threadDictionary] setObject:privateMoc forKey:kRZCoreDataManagerConfinedMocKey];
+                }
+                
+                internalImportBlock(YES, privateMoc);
+            }];
+        }
+
     }
     else{
         NSManagedObjectContext *moc = self.currentMoc;
         if (moc){
-            // we can perform this and wait safely on a bg thread
-            [moc performBlockAndWait:^{
+            
+            if (moc.concurrencyType == NSPrivateQueueConcurrencyType)
+            {
+                // we can perform this and wait safely on a bg thread
+                [moc performBlockAndWait:^{
+                    internalImportBlock(NO, moc);
+                }];
+            }
+            else
+            {
                 internalImportBlock(NO, moc);
-            }];
+            }
         }
         else{
             @throw [NSException exceptionWithName:NSInternalInconsistencyException reason:@"RZDataManager attempting to import on a thread with no MOC" userInfo:nil];

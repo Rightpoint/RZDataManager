@@ -49,4 +49,8 @@
 @property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
+// If synchronously is true, will queue imports using a private dispatch queue to happen on background, but serially.
+// If false, will perform import on private queue confinement moc, parallel to any other import operations
+- (void)importInBackgroundSynchronously:(BOOL)synchronously usingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
+
 @end
