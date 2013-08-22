@@ -15,6 +15,8 @@
 // For storing moc reference in thread dictionary
 static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
 
+NSString * const kRZCoreDataManagerImportAsynchronously = @"RZCoreDataManagerImportAsynhcronously";
+
 static dispatch_queue_t s_RZCoredataManagerPrivateImportQueue = nil;
 static char * const s_RZCoreDataManagerPrivateImportQueueName = "com.raizlabs.RZCoreDataManagerImport";
 
@@ -84,7 +86,9 @@ static char * const s_RZCoreDataManagerPrivateImportQueueName = "com.raizlabs.RZ
     
     NSMutableArray *permanentObjectIDs = [NSMutableArray array];
     
-    [self importInBackgroundUsingBlock:^{
+    BOOL synchronousImport = ![[options valueForKey:kRZCoreDataManagerImportAsynchronously] boolValue];
+    
+    [self importInBackgroundSynchronously:synchronousImport usingBlock:^{
         
         if ([data isKindOfClass:[NSDictionary class]]){
             id obj = nil;
@@ -290,7 +294,9 @@ static char * const s_RZCoreDataManagerPrivateImportQueueName = "com.raizlabs.RZ
         return;
     }
     
-    [self importInBackgroundUsingBlock:^{
+    BOOL synchronousImport = ![[options valueForKey:kRZCoreDataManagerImportAsynchronously] boolValue];
+    
+    [self importInBackgroundSynchronously:synchronousImport usingBlock:^{
         
         NSEntityDescription *entityDesc = [(NSManagedObject*)object entity];
         NSRelationshipDescription *relationshipDesc = [[entityDesc relationshipsByName] objectForKey:relationshipMapping.relationshipPropertyName];
