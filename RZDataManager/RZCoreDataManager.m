@@ -204,33 +204,28 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
 
                     }
 
-                    
-                    if (options[kRZDataManagerDeleteStaleItemsPredicate] != nil)
-                    {
-                        NSPredicate *stalePred = options[kRZDataManagerDeleteStaleItemsPredicate];
+                    NSPredicate *stalePred = options[kRZDataManagerDeleteStaleItemsPredicate];
 
-                        // Get the actual objects from their object IDs
-                        NSMutableArray *objectsToCheck = [NSMutableArray array];
-                        [[existingObjIdsByUid allValues] enumerateObjectsUsingBlock:^(NSManagedObjectID * objID, NSUInteger idx, BOOL *stop) {
-                            NSError *existingObjErr = nil;
-                            id existingObj = [self.currentMoc existingObjectWithID:objID error:&existingObjErr];
-                            if (existingObjErr || existingObj == nil)
-                            {
-                                RZLogError(@"Error fetching existing object. %@", existingObjErr);
-                            }
-                            else
-                            {
-                                [objectsToCheck addObject:existingObj];
-                            }
-                        }];
+                    if (stalePred != nil)
+                    {
                         
-                        [objectsToCheck filterUsingPredicate:stalePred];
-                                                
+                        // Fetch objects to check for staleness
+                        NSFetchRequest *staleFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
+                        staleFetch.predicate = stalePred;
+                        
+                        NSError *stFetchErr = nil;
+                        NSArray *objectsToCheck = [self.currentMoc executeFetchRequest:staleFetch error:&stFetchErr];
+                        if (stFetchErr != nil)
+                        {
+                            RZLogError(@"Error executing fetch for stale objects. %@", stFetchErr);
+                        }
+
                         NSSet *dataObjsUuids = [NSSet setWithArray:[(NSArray*)data valueForKey:dataIdKey]];
                         
                         [objectsToCheck enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
                             // if this model object is not present in the list of objects to import, delete it.
-                            if (![dataObjsUuids containsObject:[obj valueForKey:modelIdKey]]) {
+                            if (![dataObjsUuids containsObject:[obj valueForKey:modelIdKey]])
+                            {
                                 [self.currentMoc deleteObject:obj];
                             }
                         }];
