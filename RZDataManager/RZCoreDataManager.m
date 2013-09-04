@@ -87,7 +87,7 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
         return;
     }
     
-    NSMutableArray *permanentObjectIDs = [NSMutableArray array];
+    NSMutableArray *importedObjectIDs = [NSMutableArray array];
     
     BOOL synchronousImport = ![[options valueForKey:kRZCoreDataManagerImportAsynchronously] boolValue];
     
@@ -170,11 +170,24 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                                     
                                     if (importedObjId != nil)
                                     {
-                                        importedObj = [self.currentMoc objectWithID:importedObjId];
+                                        NSError *existingObjErr = nil;
+                                        importedObj = [self.currentMoc existingObjectWithID:importedObjId error:&existingObjErr];
+                                        if (existingObjErr || importedObj == nil)
+                                        {
+                                            RZLogDebug(@"Error fetching existing object. %@", existingObjErr);
+                                        }
                                     }
-                                    else
+                                    
+                                    if (importedObj == nil)
                                     {
                                         importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+                                        
+                                        // If we are creating a new object, obtain a permanent ID for it
+                                        NSError *permIdErr = nil;
+                                        if (![self.currentMoc obtainPermanentIDsForObjects:@[importedObj] error:&permIdErr])
+                                        {
+                                            RZLogDebug(@"Error obtaining permanent id for new object. %@", permIdErr);
+                                        }
                                     }
                                     
                                     if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)]) {
@@ -182,20 +195,13 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                                     } else {
                                         [self.dataImporter importData:objData toObject:importedObj];
                                     }
-                                    
-                                    [importedObjects addObject:importedObj];
+
+                                    [importedObjectIDs addObject:[importedObj objectID]];
+
                                 }
                                 
                             }];
-                            
-                            // Get permanent object ids for these
-                            NSError *poErr = nil;
-                            if (![self.currentMoc obtainPermanentIDsForObjects:importedObjects error:&poErr])
-                            {
-                                RZLogError(@"Error obtaining permanent object ids for newly imported objects. %@", poErr);
-                            }
-                            
-                            [permanentObjectIDs addObjectsFromArray:[importedObjects valueForKey:@"objectID"]];
+
                         }
 
                     }
@@ -261,7 +267,7 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                 else if ([data isKindOfClass:[NSArray class]]){
                     
                     NSMutableArray *resultArray = [NSMutableArray array];
-                    [permanentObjectIDs enumerateObjectsUsingBlock:^(NSManagedObjectID *objID, NSUInteger idx, BOOL *stop)
+                    [importedObjectIDs enumerateObjectsUsingBlock:^(NSManagedObjectID *objID, NSUInteger idx, BOOL *stop)
                     {
                         [resultArray addObject:[self.managedObjectContext objectWithID:objID]];
                     }];
