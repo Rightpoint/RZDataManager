@@ -157,9 +157,7 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                         // Avoid bloating memory - only import a few objects at a time
                         
                         @autoreleasepool {
-                            
-                            NSMutableArray *importedObjects = [NSMutableArray array];
-                            
+                                                        
                             [(NSArray*)data enumerateObjectsAtIndexes:objectsToEnumerate options:0 usingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
                                 
                                 id uid = [objData valueForKey:dataIdKey];
@@ -174,7 +172,7 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                                         importedObj = [self.currentMoc existingObjectWithID:importedObjId error:&existingObjErr];
                                         if (existingObjErr || importedObj == nil)
                                         {
-                                            RZLogDebug(@"Error fetching existing object. %@", existingObjErr);
+                                            RZLogError(@"Error fetching existing object. %@", existingObjErr);
                                         }
                                     }
                                     
@@ -186,7 +184,7 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                                         NSError *permIdErr = nil;
                                         if (![self.currentMoc obtainPermanentIDsForObjects:@[importedObj] error:&permIdErr])
                                         {
-                                            RZLogDebug(@"Error obtaining permanent id for new object. %@", permIdErr);
+                                            RZLogError(@"Error obtaining permanent id for new object. %@", permIdErr);
                                         }
                                     }
                                     
@@ -214,7 +212,16 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                         // Get the actual objects from their object IDs
                         NSMutableArray *objectsToCheck = [NSMutableArray array];
                         [[existingObjIdsByUid allValues] enumerateObjectsUsingBlock:^(NSManagedObjectID * objID, NSUInteger idx, BOOL *stop) {
-                            [objectsToCheck addObject:[self.currentMoc objectWithID:objID]];
+                            NSError *existingObjErr = nil;
+                            id existingObj = [self.currentMoc existingObjectWithID:objID error:&existingObjErr];
+                            if (existingObjErr || existingObj == nil)
+                            {
+                                RZLogError(@"Error fetching existing object. %@", existingObjErr);
+                            }
+                            else
+                            {
+                                [objectsToCheck addObject:existingObj];
+                            }
                         }];
                         
                         [objectsToCheck filterUsingPredicate:stalePred];
