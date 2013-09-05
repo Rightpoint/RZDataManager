@@ -37,9 +37,15 @@ OBJC_EXTERN NSString * const kRZCoreDataManagerDidResetDatabaseNotification;
 @interface RZCoreDataManager : RZDataManager
 
 //! Attempt automatic lightweight migration when building data stack. Defaults to YES
+/*!
+    This flag must be set immediately after instance is created, prior to accessing data stack.
+*/
 @property (nonatomic, assign) BOOL attemptAutomaticMigration;
 
 //! Delete the database file if creation of the persistent store coordinator fails. Defaults to YES.
+/*!
+ This flag must be set immediately after instance is created, prior to accessing data stack.
+ */
 @property (nonatomic, assign) BOOL deleteDatabaseIfUnreadable;
 
 //! Provide a model file name here without an extension BEFORE ACCESSING THE STACK. If left nil, will default to bundle display name.
