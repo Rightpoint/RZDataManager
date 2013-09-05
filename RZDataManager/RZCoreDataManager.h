@@ -36,6 +36,12 @@ OBJC_EXTERN NSString * const kRZCoreDataManagerDidResetDatabaseNotification;
 
 @interface RZCoreDataManager : RZDataManager
 
+//! Attempt automatic lightweight migration when building data stack. Defaults to YES
+@property (nonatomic, assign) BOOL attemptAutomaticMigration;
+
+//! Delete the database file if creation of the persistent store coordinator fails. Defaults to YES.
+@property (nonatomic, assign) BOOL deleteDatabaseIfUnreadable;
+
 //! Provide a model file name here without an extension BEFORE ACCESSING THE STACK. If left nil, will default to bundle display name.
 @property (nonatomic, strong) NSString *managedObjectModelName;
 
@@ -49,6 +55,7 @@ OBJC_EXTERN NSString * const kRZCoreDataManagerDidResetDatabaseNotification;
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
 
 @property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
+
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
 //! Clears out CoreData stack and posts reset notification. Will be rebuilt via lazy-load on next access to the MOC.
