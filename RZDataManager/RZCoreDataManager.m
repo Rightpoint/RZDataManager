@@ -13,15 +13,15 @@
 #define kRZCoreDataManagerImportBatchBlockSize 50
 
 // For storing moc reference in thread dictionary
-static NSString* const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
+static NSString * const kRZCoreDataManagerConfinedMocKey        = @"RZCoreDataManagerConfinedMoc";
 
-NSString * const kRZCoreDataManagerImportAsynchronously = @"RZCoreDataManagerImportAsynhcronously";
+NSString * const kRZCoreDataManagerImportAsynchronously         = @"RZCoreDataManagerImportAsynhcronously";
 
-static dispatch_queue_t s_RZCoredataManagerPrivateImportQueue = nil;
-static char * const s_RZCoreDataManagerPrivateImportQueueName = "com.raizlabs.RZCoreDataManagerImport";
+static dispatch_queue_t s_RZCoredataManagerPrivateImportQueue   = nil;
+static char * const s_RZCoreDataManagerPrivateImportQueueName   = "com.raizlabs.RZCoreDataManagerImport";
 
-NSString * const kRZCoreDataManagerWillResetDatabaseNotification = @"RZCoreDataManagerWillResetDatabase";
-NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataManagerDidResetDatabase";
+NSString * const kRZCoreDataManagerWillResetDatabaseNotification    = @"RZCoreDataManagerWillResetDatabase";
+NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDataManagerDidResetDatabase";
 
 @interface RZCoreDataManager ()
 
@@ -134,10 +134,10 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                 [uidFetch setIncludesPendingChanges:YES];
                 [uidFetch setPropertiesToFetch:@[modelIdProp, objectIdDesc]];
                 
-                NSError *err =nil;
+                NSError *err = nil;
                 NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
                 
-                if (err == nil )
+                if (err == nil)
                 {
                     
                     NSDictionary *existingObjIdsByUid = [NSDictionary dictionaryWithObjects:[existingObjs valueForKey:@"objectID"] forKeys:[existingObjs valueForKey:modelIdKey]];
@@ -155,11 +155,10 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                         objectOffset += blockSize;
                         
                         // Avoid bloating memory - only import a few objects at a time
-                        
-                        @autoreleasepool {
-                                                        
-                            [(NSArray*)data enumerateObjectsAtIndexes:objectsToEnumerate options:0 usingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
-                                
+                        @autoreleasepool
+                        {
+                            [(NSArray*)data enumerateObjectsAtIndexes:objectsToEnumerate options:0 usingBlock:^(id objData, NSUInteger idx, BOOL *stop)
+                            {
                                 id uid = [objData valueForKey:dataIdKey];
                                 if (uid != nil)
                                 {
@@ -170,9 +169,13 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                                     {
                                         NSError *existingObjErr = nil;
                                         importedObj = [self.currentMoc existingObjectWithID:importedObjId error:&existingObjErr];
-                                        if (existingObjErr || importedObj == nil)
+                                        if (existingObjErr != nil)
                                         {
                                             RZLogError(@"Error fetching existing object. %@", existingObjErr);
+                                        }
+                                        else if (importedObj == nil)
+                                        {
+                                            RZLogError(@"Error: Existing object expected but not found for %@ : %@", dataIdKey, uid);
                                         }
                                     }
                                     
@@ -188,18 +191,18 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                                         }
                                     }
                                     
-                                    if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)]) {
+                                    if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)])
+                                    {
                                         [importedObj dataImportPerformImportWithData:objData];
-                                    } else {
+                                    }
+                                    else
+                                    {
                                         [self.dataImporter importData:objData toObject:importedObj];
                                     }
 
                                     [importedObjectIDs addObject:[importedObj objectID]];
-
                                 }
-                                
                             }];
-
                         }
 
                     }
@@ -490,7 +493,6 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
         [self.managedObjectContext performBlockAndWait:^{
             [self.managedObjectContext processPendingChanges];
         }];
-
         
         if (fromMainThread)
         {
@@ -504,13 +506,11 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
         }
         else
         {
-            
             if (completionBlock)
             {
                 completionBlock(error);
             }
         }
-
     };
     
     if ([NSThread isMainThread]){
@@ -518,7 +518,7 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
         if (synchronously)
         {
             dispatch_async(s_RZCoredataManagerPrivateImportQueue, ^{
-               
+
                 NSManagedObjectContext *privateMoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
                 privateMoc.parentContext = self.managedObjectContext;
                 privateMoc.undoManager = nil; // should be nil already, but let's make it explicit
@@ -528,7 +528,6 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
                 }
 
                 internalImportBlock(YES, privateMoc);
-                
             });
         }
         else

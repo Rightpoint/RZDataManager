@@ -21,7 +21,7 @@ typedef void (^RZDataManagerImportBlock)();
 typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, collection, or nil
 typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
 
-OBJC_EXTERN NSString* const kRZDataManagerUTCDateFormat;
+OBJC_EXTERN NSString * const kRZDataManagerUTCDateFormat;
 
 // ============================================================
 //                KEYS FOR OPTIONS DICTIONARY
@@ -29,17 +29,17 @@ OBJC_EXTERN NSString* const kRZDataManagerUTCDateFormat;
 
 // Delete any items that are present in the result produced by this predicate and not
 // present in the items to be imported.
-OBJC_EXTERN NSString* const kRZDataManagerDeleteStaleItemsPredicate;
+OBJC_EXTERN NSString * const kRZDataManagerDeleteStaleItemsPredicate;
 
 // Disable automatic full-stack save of database after each import.
 // Useful when you might want to undo an import.
 // To set option, value should be an NSNumber with bool value YES
-OBJC_EXTERN NSString* const kRZDataManagerDisableSaveAfterImport;
+OBJC_EXTERN NSString * const kRZDataManagerDisableSaveAfterImport;
 
 // Disable completion block from returning imported items on main thread managed object context.
 // May want to use this to prevent resource usage when importing a large number of objects.
 // To set option, value should be an NSNumber with bool value YES
-OBJC_EXTERN NSString* const kRZDataManagerDisableReturningObjectsFromImport;
+OBJC_EXTERN NSString * const kRZDataManagerDisableReturningObjectsFromImport;
 
 @interface RZDataManager : NSObject
 

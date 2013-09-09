@@ -9,11 +9,11 @@
 #import "RZDataManager_Base.h"
 #import "NSObject+RZPropertyUtils.h"
 
-NSString* const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
+NSString * const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
 
-NSString* const kRZDataManagerDeleteStaleItemsPredicate = @"RZDataManagerDeleteStaleItemsPredicate";
-NSString* const kRZDataManagerDisableSaveAfterImport = @"RZDataManagerDisableSaveAfterImport";
-NSString* const kRZDataManagerDisableReturningObjectsFromImport = @"RZDataManagerDisableReturningObjectsFromImport";
+NSString * const kRZDataManagerDeleteStaleItemsPredicate = @"RZDataManagerDeleteStaleItemsPredicate";
+NSString * const kRZDataManagerDisableSaveAfterImport = @"RZDataManagerDisableSaveAfterImport";
+NSString * const kRZDataManagerDisableReturningObjectsFromImport = @"RZDataManagerDisableReturningObjectsFromImport";
 
 @interface RZDataManager ()
 
