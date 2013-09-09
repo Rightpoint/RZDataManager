@@ -17,7 +17,7 @@ static NSString * const kRZCoreDataManagerConfinedMocKey        = @"RZCoreDataMa
 
 NSString * const kRZCoreDataManagerImportAsynchronously         = @"RZCoreDataManagerImportAsynhcronously";
 
-static dispatch_queue_t s_RZCoredataManagerPrivateImportQueue   = nil;
+static dispatch_queue_t s_RZCoreDataManagerPrivateImportQueue   = nil;
 static char * const s_RZCoreDataManagerPrivateImportQueueName   = "com.raizlabs.RZCoreDataManagerImport";
 
 NSString * const kRZCoreDataManagerWillResetDatabaseNotification    = @"RZCoreDataManagerWillResetDatabase";
@@ -50,7 +50,7 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
         
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
-            s_RZCoredataManagerPrivateImportQueue = dispatch_queue_create(s_RZCoreDataManagerPrivateImportQueueName, NULL);
+            s_RZCoreDataManagerPrivateImportQueue = dispatch_queue_create(s_RZCoreDataManagerPrivateImportQueueName, NULL);
         });
     }
     return self;
@@ -75,14 +75,16 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
 
 - (void)importData:(NSDictionary *)data forClassNamed:(NSString *)className usingMapping:(RZDataManagerModelObjectMapping *)mapping options:(NSDictionary *)options completion:(RZDataManagerImportCompletionBlock)completion
 {
-    if (nil == mapping){
+    if (nil == mapping)
+    {
         mapping = [self.dataImporter mappingForClassNamed:className];
     }
     
     NSString *dataIdKey = mapping.dataIdKey;
     NSString *modelIdKey = mapping.modelIdPropertyName;
     
-    if (!dataIdKey || !modelIdKey){
+    if (!dataIdKey || !modelIdKey)
+    {
         RZLogDebug(@"Missing data and/or model ID keys for object of type %@", className);
         return;
     }
@@ -93,11 +95,13 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
     
     [self importInBackgroundSynchronously:synchronousImport usingBlock:^{
         
-        if ([data isKindOfClass:[NSDictionary class]]){
+        if ([data isKindOfClass:[NSDictionary class]])
+        {
             id obj = nil;
             id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
             
-            if (uid){
+            if (uid)
+            {
                 obj = [self objectOfType:className withValue:uid forKeyPath:modelIdKey createNew:YES];
                 if ([obj respondsToSelector:@selector(dataImportPerformImportWithData:)]) {
                     [obj dataImportPerformImportWithData:data];
@@ -105,11 +109,13 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
                     [self.dataImporter importData:data toObject:obj usingMapping:mapping];
                 }
             }
-            else{
+            else
+            {
                 RZLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, className);
             }
         }
-        else if ([data isKindOfClass:[NSArray class]]){
+        else if ([data isKindOfClass:[NSArray class]])
+        {
             
             // optimize lookup for existing objects
             NSString *entityName = [self entityNameForClassNamed:className];
@@ -143,7 +149,7 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
                     NSDictionary *existingObjIdsByUid = [NSDictionary dictionaryWithObjects:[existingObjs valueForKey:@"objectID"] forKeys:[existingObjs valueForKey:modelIdKey]];
                     
                     NSInteger objectsRemaining = [data count];
-                    NSInteger objectOffset = 0;
+                    NSUInteger objectOffset = 0;
                     
                     while (objectsRemaining > 0)
                     {
@@ -265,12 +271,13 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
             if (error == nil && ![[options valueForKey:kRZDataManagerDisableReturningObjectsFromImport] boolValue])
             {
                 
-                if ([data isKindOfClass:[NSDictionary class]]){
+                if ([data isKindOfClass:[NSDictionary class]])
+                {
                     id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
                     result = [self objectOfType:className withValue:uid forKeyPath:modelIdKey createNew:NO];
                 }
-                else if ([data isKindOfClass:[NSArray class]]){
-                    
+                else if ([data isKindOfClass:[NSArray class]])
+                {
                     NSMutableArray *resultArray = [NSMutableArray array];
                     [importedObjectIDs enumerateObjectsUsingBlock:^(NSManagedObjectID *objID, NSUInteger idx, BOOL *stop)
                     {
@@ -314,17 +321,16 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
         
         NSEntityDescription *entityDesc = [(NSManagedObject*)object entity];
         NSRelationshipDescription *relationshipDesc = [[entityDesc relationshipsByName] objectForKey:relationshipMapping.relationshipPropertyName];
-        if (relationshipDesc != nil){
-            
-            if ([data isKindOfClass:[NSDictionary class]]){
-                
+        if (relationshipDesc != nil)
+        {
+            if ([data isKindOfClass:[NSDictionary class]])
+            {
                 id importedObj = nil;
                 id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
                 if (uid){
-                    
                     // need to be able to handle many-to-many
-                    if (relationshipDesc.isToMany){
-                        
+                    if (relationshipDesc.isToMany)
+                    {
                         // find object within other object's relationship set
                         NSSet * existingObjs = [object valueForKey:relationshipMapping.relationshipPropertyName];
                         importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey inCollection:existingObjs createNew:NO];
@@ -337,11 +343,13 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
                         
                         [self.dataImporter importData:data toObject:importedObj usingMapping:objMapping];
                         
-                        if (relationshipMapping.shouldReplaceExistingRelationships){
+                        if (relationshipMapping.shouldReplaceExistingRelationships)
+                        {
                             NSSet *importedRelObjs = [NSSet setWithObject:importedObj];
                             [object setValue:importedRelObjs forKey:relationshipMapping.relationshipPropertyName];
                         }
-                        else{
+                        else
+                        {
                             NSMutableSet *relObjs = [[object valueForKey:relationshipMapping.relationshipPropertyName] mutableCopy];
                             if (relObjs == nil){
                                 relObjs = [NSMutableSet set];
@@ -352,8 +360,8 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
 
                         
                     }
-                    else{
-                        
+                    else
+                    {
                         // create or update object
                         importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey createNew:YES];
                         [self.dataImporter importData:data toObject:importedObj usingMapping:objMapping];
@@ -363,17 +371,16 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
                     }
                     
                 }
-                else{
+                else
+                {
                     RZLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, relationshipMapping.relationshipClassName);
                 }
-                
-
             }
-            else if ([data isKindOfClass:[NSArray class]]){
-
+            else if ([data isKindOfClass:[NSArray class]])
+            {
                 // need to be able to handle many-to-many
-                if (relationshipDesc.isToMany){
-                    
+                if (relationshipDesc.isToMany)
+                {
                     // optimize lookup for existing objects
                     NSString *entityName = [self entityNameForClassNamed:relationshipMapping.relationshipClassName];
                     NSArray * existingObjs = [(NSSet*)[object valueForKey:relationshipMapping.relationshipPropertyName] allObjects];                        
@@ -384,11 +391,12 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
                     [(NSArray*)data enumerateObjectsUsingBlock:^(id objData, NSUInteger idx, BOOL *stop) {
                         
                         id uid = [objData valueForKey:dataIdKey];
-                        if (uid){
-                            
+                        if (uid)
+                        {
                             id importedObj = [existingObjsByUid objectForKey:uid];
                             
-                            if (!importedObj){
+                            if (!importedObj)
+                            {
                                 importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
                             }
                             
@@ -415,16 +423,19 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
                     
                     
                 }
-                else{
+                else
+                {
                     RZLogError(@"Cannot import multiple objects for to-one relationship.");
                 }
             
             }
-            else{
+            else
+            {
                 RZLogError(@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class]));
             }
         }
-        else{
+        else
+        {
             RZLogDebug(@"Could not find relationship %@ on entity named %@", relationshipMapping.relationshipPropertyName, entityDesc.name);
         }
         
@@ -439,14 +450,15 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
             
             // Need to fetch object from main thread moc for completion block
             id result = nil;
-            if (!error){
-                
-                if ([data isKindOfClass:[NSDictionary class]]){
+            if (!error)
+            {
+                if ([data isKindOfClass:[NSDictionary class]])
+                {
                     id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
                     result = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey createNew:NO];
                 }
-                else if ([data isKindOfClass:[NSArray class]]){
-                    
+                else if ([data isKindOfClass:[NSArray class]])
+                {
                     NSMutableArray *resultArray = [NSMutableArray arrayWithCapacity:[(NSArray*)data count]];
                     [(NSArray*)data enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
                      {
@@ -459,14 +471,11 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
                     
                     result = resultArray;
                 }
-                
-                
             }
             
             completion(result, error);
         }
 
-        
     }];
 }
 
@@ -517,7 +526,7 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification     = @"RZCoreDa
         
         if (synchronously)
         {
-            dispatch_async(s_RZCoredataManagerPrivateImportQueue, ^{
+            dispatch_async(s_RZCoreDataManagerPrivateImportQueue, ^{
 
                 NSManagedObjectContext *privateMoc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSConfinementConcurrencyType];
                 privateMoc.parentContext = self.managedObjectContext;
