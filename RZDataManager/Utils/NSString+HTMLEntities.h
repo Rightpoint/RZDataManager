@@ -8,16 +8,17 @@
 
 #import <Foundation/Foundation.h>
 
-extern NSString* const kRZHTMLStringUtilsRegularFont;
-extern NSString* const kRZHTMLStringUtilsBoldFont;
-extern NSString* const kRZHTMLStringUtilsItalicFont;
+extern NSString *const kRZHTMLStringUtilsRegularFont;
+extern NSString *const kRZHTMLStringUtilsBoldFont;
+extern NSString *const kRZHTMLStringUtilsItalicFont;
 
 @interface NSString (HTMLEntities)
 
 - (NSString *)stringByDecodingHTMLEntities;
+
 - (NSString *)stringByRemovingHTMLTags;
 
 //! Put each type of font into font dictionary. If not found will default to system fonts.
-- (NSAttributedString*)attributedStringByDecodingHTMLTagsWithFontDictionary:(NSDictionary*)fontDict;
+- (NSAttributedString *)attributedStringByDecodingHTMLTagsWithFontDictionary:(NSDictionary *)fontDict;
 
 @end

@@ -14,10 +14,10 @@
 @required
 
 //! The default key by which incoming data is uniquely identified
-+ (NSString*)dataImportDefaultDataIdKey;
++ (NSString *)dataImportDefaultDataIdKey;
 
 //! The property by which the model object is uniquely identified
-+ (NSString*)dataImportModelIdPropertyName;
++ (NSString *)dataImportModelIdPropertyName;
 
 @optional
 
@@ -31,7 +31,7 @@
 - (void)dataImportPerformImportWithData:(NSDictionary *)importData;
 
 //! Date format string for string-date conversions
-+ (NSString*)dataImportDateFormat;
++ (NSString *)dataImportDateFormat;
 
 //! Return a dictionary of data keys mapped to property names, if keys/names differ for a particular mapping.
 /*!
@@ -46,7 +46,7 @@
         @"id"    : @"uniqueId"
     }
 */
-+ (NSDictionary*)dataImportKeyMappings;
++ (NSDictionary *)dataImportKeyMappings;
 
 //! Return a dictionary of RZDataManagerModelObjectRelationshipMapping objects keyed by property name
 /*!
@@ -58,7 +58,7 @@
  
     @{ @"employees" : [RZDataManagerModelObjectRelationshipMapping mappingWithClassNamed:@"RZEmployee" propertyName:@"employees" inversePropertyName:@"department"] }
 */
-+ (NSDictionary*)dataImportRelationshipKeyMappings;
++ (NSDictionary *)dataImportRelationshipKeyMappings;
 
 //! Return a dictionary of data keys mapped to the name of a selector (as string) to call for custom import logic
 /*!
@@ -70,7 +70,7 @@
     @{ @"someDataKey" : @"importThisData:" }
  
 */
-+ (NSDictionary*)dataImportCustomSelectorKeyMappings;
++ (NSDictionary *)dataImportCustomSelectorKeyMappings;
 
 //! Keys (and/or keypaths) to ignore when importing data
 /*!
@@ -82,13 +82,13 @@
     @[ @"extraneous", @"somedict.extraData" ]
  
 */
-+ (NSArray*)dataImportIgnoreKeys;
++ (NSArray *)dataImportIgnoreKeys;
 
 //! Implement this method to prepare the object to be updated with new data
-- (void)prepareForImportFromData:(NSDictionary*)data;
+- (void)prepareForImportFromData:(NSDictionary *)data;
 
 //! Implement this method to finalize the import and send "updated" notifications
-- (void)finalizeImportFromData:(NSDictionary*)data;
+- (void)finalizeImportFromData:(NSDictionary *)data;
 
 
 @end

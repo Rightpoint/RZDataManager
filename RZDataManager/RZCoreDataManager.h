@@ -30,8 +30,8 @@
  ************************************************************************************/
 
 
-OBJC_EXTERN NSString * const kRZCoreDataManagerWillResetDatabaseNotification;
-OBJC_EXTERN NSString * const kRZCoreDataManagerDidResetDatabaseNotification;
+OBJC_EXTERN NSString *const kRZCoreDataManagerWillResetDatabaseNotification;
+OBJC_EXTERN NSString *const kRZCoreDataManagerDidResetDatabaseNotification;
 
 // ============================================================
 //                KEYS FOR OPTIONS DICTIONARY
@@ -40,7 +40,7 @@ OBJC_EXTERN NSString * const kRZCoreDataManagerDidResetDatabaseNotification;
 // If value is YES, will perform background import on its own thread, independent and parallel to other background imports.
 // This is useful when importing large amounts of data that doesn't affect other imports and may otherwise hold up the queue.
 // Defaults to NO.
-OBJC_EXTERN NSString * const kRZCoreDataManagerImportAsynchronously;
+OBJC_EXTERN NSString *const kRZCoreDataManagerImportAsynchronously;
 
 @class RZDataImporter;
 
@@ -58,12 +58,14 @@ OBJC_EXTERN NSString * const kRZCoreDataManagerImportAsynchronously;
 //! Main-thread accessible MOC. Saving this MOC does NOT persist to disk. Use saveData: instead.
 @property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
 
-@property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, strong) NSManagedObjectModel         *managedObjectModel;
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
 // If synchronously is true, background import operations will be enqueued on a private dispatch queue and will not run in parallel.
 // If false, background import operations will be performed on a private queue confinement moc, parallel to any other background import operations
-- (void)importInBackgroundSynchronously:(BOOL)synchronously usingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
+- (void)importInBackgroundSynchronously:(BOOL)synchronously
+                             usingBlock:(RZDataManagerImportBlock)importBlock
+                             completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
 
 //! Clears out CoreData stack and posts reset notifications. Will be rebuilt via lazy-load on next access to the MOC.
 - (void)resetDatabase;

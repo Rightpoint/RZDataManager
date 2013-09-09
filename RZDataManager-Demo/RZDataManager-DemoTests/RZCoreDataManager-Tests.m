@@ -198,7 +198,8 @@
          finished = YES;
      }];
     
-    while (!finished){
+    while (!finished)
+    {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
     }
 }
