@@ -256,10 +256,12 @@ NSString * const kRZDataManagerDisableReturningObjectsFromImport = @"RZDataManag
             id (^IdSerializerBlock)(id obj) = ^id(id obj){
                 
                 id otherObjUid = nil;
-                @try {
+                @try
+                {
                     otherObjUid = [obj valueForKey:otherObjMapping.modelIdPropertyName];
                 }
-                @catch (NSException *exception) {
+                @catch (NSException *exception)
+                {
                     NSLog(@"RZDataImporter: Object of type %@ does not respond to key %@", relMapping.relationshipClassName, otherObjMapping.modelIdPropertyName);
                 }
                 
@@ -270,11 +272,12 @@ NSString * const kRZDataManagerDisableReturningObjectsFromImport = @"RZDataManag
             if ([propValue isKindOfClass:[NSArray class]])
             {
                 NSMutableArray * relArray = [NSMutableArray arrayWithCapacity:[propValue count]];
-                [(NSArray*)propValue enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                [(NSArray*)propValue enumerateObjectsUsingBlock:^(id obj, NSUInteger arrIdx, BOOL *arrStop) {
                    
                     id otherObjUid = IdSerializerBlock(obj);
                     
-                    if (otherObjUid){
+                    if (otherObjUid)
+                    {
                         [relArray addObject:@{otherObjMapping.dataIdKey : otherObjUid}];
                     }
                  
@@ -289,7 +292,8 @@ NSString * const kRZDataManagerDisableReturningObjectsFromImport = @"RZDataManag
                     
                     id otherObjUid = IdSerializerBlock(obj);
                     
-                    if (otherObjUid){
+                    if (otherObjUid)
+                    {
                         [relSet addObject:@{otherObjMapping.dataIdKey : otherObjUid}];
                     }
                     

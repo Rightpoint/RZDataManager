@@ -211,17 +211,19 @@
             
             if ([value isKindOfClass:[NSDictionary class]])
             {
-            
                 NSDictionary *subDict = value;
-                for (NSString *subKey in [subDict allKeys]){
+                for (NSString *subKey in [subDict allKeys])
+                {
                     
                     NSString *keyPath = [NSString stringWithFormat:@"%@.%@",key,subKey];
                     
-                    if ([mapping modelPropertyNameForDataKey:keyPath] != nil){
-                        id value = [data validObjectForKeyPath:keyPath decodeHTML:NO];
-                        [self importValue:value toObject:object fromKeyPath:keyPath withMapping:mapping];
+                    if ([mapping modelPropertyNameForDataKey:keyPath] != nil)
+                    {
+                        id subValue = [data validObjectForKeyPath:keyPath decodeHTML:NO];
+                        [self importValue:subValue toObject:object fromKeyPath:keyPath withMapping:mapping];
                     }
-                    else if (![[mapping keysToIgnore] containsObject:keyPath]){
+                    else if (![[mapping keysToIgnore] containsObject:keyPath])
+                    {
                         RZLogDebug(@"Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class]));
                     }
                     
@@ -244,7 +246,6 @@
 
 - (void)importValue:(id)value toObject:(NSObject<RZDataManagerModelObject>*)object fromKeyPath:(NSString *)keyPath withMapping:(RZDataManagerModelObjectMapping *)mapping
 {
-    
     // If value is string and we decode HTML, do it now
     if ([value isKindOfClass:[NSString class]]){
 

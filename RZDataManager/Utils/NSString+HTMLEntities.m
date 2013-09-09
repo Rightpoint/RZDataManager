@@ -28,7 +28,7 @@ NSString* const kRZHTMLStringUtilsItalicFont    = @"ItalicFont";
 	}
 	
 	// Make result string with some extra capacity.
-	NSMutableString *result = [NSMutableString stringWithCapacity:(myLength * 1.25)];
+	NSMutableString *result = [NSMutableString stringWithCapacity:(NSUInteger)(myLength * 1.25)];
 	
 	// First iteration doesn't need to scan to & since we did that already, but for code simplicity's sake we'll do it again with the scanner.
 	NSScanner *scanner = [NSScanner scannerWithString:self];
