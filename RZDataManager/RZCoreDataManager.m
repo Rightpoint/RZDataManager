@@ -115,7 +115,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
 
     NSMutableArray *importedObjectIDs = [NSMutableArray array];
 
-    BOOL synchronousImport = ![[options valueForKey:kRZCoreDataManagerImportAsynchronously] boolValue];
+    BOOL synchronousImport = ![[options objectForKey:kRZCoreDataManagerImportAsynchronously] boolValue];
 
     [self importInBackgroundSynchronously:synchronousImport usingBlock:^
     {
@@ -289,7 +289,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
     }                          completion:^(NSError *error)
     {
 
-        if (![[options objectForKey:kRZDataManagerDisableSaveAfterImport] boolValue])
+        if ([[options objectForKey:kRZDataManagerSaveAfterImport] boolValue])
         {
             [self saveContext:YES];
         }
@@ -299,7 +299,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
 
             // Need to fetch object from main thread moc for completion block
             id result = nil;
-            if (error == nil && ![[options valueForKey:kRZDataManagerDisableReturningObjectsFromImport] boolValue])
+            if (error == nil && [[options objectForKey:kRZDataManagerReturnObjectsFromImport] boolValue])
             {
 
                 if ([data isKindOfClass:[NSDictionary class]])
@@ -351,7 +351,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         return;
     }
 
-    BOOL synchronousImport = ![[options valueForKey:kRZCoreDataManagerImportAsynchronously] boolValue];
+    BOOL synchronousImport = ![[options objectForKey:kRZCoreDataManagerImportAsynchronously] boolValue];
 
     [self importInBackgroundSynchronously:synchronousImport usingBlock:^
     {
@@ -483,7 +483,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     }                          completion:^(NSError *error)
     {
 
-        if (![[options objectForKey:kRZDataManagerDisableSaveAfterImport] boolValue])
+        if ([[options objectForKey:kRZDataManagerSaveAfterImport] boolValue])
         {
             [self saveContext:YES];
         }
@@ -493,7 +493,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
             // Need to fetch object from main thread moc for completion block
             id result = nil;
-            if (!error)
+            if (error == nil && [[options objectForKey:kRZDataManagerReturnObjectsFromImport] boolValue])
             {
                 if ([data isKindOfClass:[NSDictionary class]])
                 {

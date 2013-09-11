@@ -12,8 +12,8 @@
 NSString *const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
 
 NSString *const kRZDataManagerDeleteStaleItemsPredicate         = @"RZDataManagerDeleteStaleItemsPredicate";
-NSString *const kRZDataManagerDisableSaveAfterImport            = @"RZDataManagerDisableSaveAfterImport";
-NSString *const kRZDataManagerDisableReturningObjectsFromImport = @"RZDataManagerDisableReturningObjectsFromImport";
+NSString *const kRZDataManagerSaveAfterImport                   = @"RZDataManagerSaveAfterImport";
+NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManagerReturnObjectsFromImport";
 
 @interface RZDataManager ()
 
@@ -85,6 +85,15 @@ NSString *const kRZDataManagerDisableReturningObjectsFromImport = @"RZDataManage
 {
     RZDataManagerModelObjectMapping *mapping = [self.dataImporter mappingForClassNamed:className];
     [mapping setModelPropertiesForKeyNames:keyMappings];
+    
+    // add default key for save after import (defaults to yes)
+    if ([options objectForKey:kRZDataManagerSaveAfterImport] == nil)
+    {
+        NSMutableDictionary *newOpts = [options mutableCopy];
+        [newOpts setValue:@(YES) forKey:kRZDataManagerSaveAfterImport];
+        options = newOpts;
+    }
+    
     [self importData:data forClassNamed:className usingMapping:mapping options:options completion:completion];
 }
 
@@ -96,6 +105,15 @@ forRelationshipPropertyName:(NSString *)relationshipProperty
 {
     RZDataManagerModelObjectMapping             *objMapping = [self.dataImporter mappingForClassNamed:NSStringFromClass([object class])];
     RZDataManagerModelObjectRelationshipMapping *relMapping = [objMapping relationshipMappingForModelPropertyName:relationshipProperty];
+    
+    // add default key for save after import (defaults to yes)
+    if ([options objectForKey:kRZDataManagerSaveAfterImport] == nil)
+    {
+        NSMutableDictionary *newOpts = [options mutableCopy];
+        [newOpts setValue:@(YES) forKey:kRZDataManagerSaveAfterImport];
+        options = newOpts;
+    }
+    
     [self importData:data forRelationshipWithMapping:relMapping onObject:object options:options completion:completion];
 }
 

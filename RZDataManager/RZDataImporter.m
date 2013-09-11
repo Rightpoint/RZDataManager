@@ -326,7 +326,7 @@
 
                         }
 
-                        [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:@{kRZDataManagerDisableSaveAfterImport : @(YES)} completion:nil];
+                        [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:@{kRZDataManagerSaveAfterImport : @(NO)} completion:nil];
 
                     }
                     else
@@ -338,7 +338,7 @@
 
                         NSDictionary *relData = @{relationshipIDKey : value};
 
-                        [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:@{kRZDataManagerDisableSaveAfterImport : @(YES)} completion:nil];
+                        [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:@{kRZDataManagerSaveAfterImport : @(NO)} completion:nil];
 
                     }
                 }

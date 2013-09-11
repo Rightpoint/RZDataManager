@@ -115,7 +115,7 @@
                                 @"date" : @"2013-07-01T12:00:00Z"};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} completion:^(id result, NSError *error)
     {
         STAssertNotNil(result, @"Result should not be nil");
         STAssertNil(error, @"Error during import: %@", error);
@@ -156,7 +156,7 @@
                                         } };
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData forClassNamed:@"DMCustomEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMCustomEntry" options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -184,7 +184,7 @@
                                 @"createdDate" : [NSNull null]};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -226,7 +226,7 @@
     [self.dataManager saveData:YES];
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -280,7 +280,8 @@
     [self.dataManager saveData:YES];
     
     // predicate = all dates > ref date, effectivly all entries. 
-    NSDictionary *options = @{kRZDataManagerDeleteStaleItemsPredicate: [NSPredicate predicateWithFormat:@"createdDate > %@", [NSDate dateWithTimeIntervalSinceReferenceDate:0]]};
+    NSDictionary *options = @{kRZDataManagerDeleteStaleItemsPredicate: [NSPredicate predicateWithFormat:@"createdDate > %@", [NSDate dateWithTimeIntervalSinceReferenceDate:0]],
+                              kRZDataManagerReturnObjectsFromImport : @(YES)};
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:options completion:^(id result, NSError *error)
      {
@@ -330,7 +331,7 @@
                            ];
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData forClassNamed:@"DMCustomEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMCustomEntry" options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -377,7 +378,7 @@
     
     // Use a custom mapping for the name property    
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData forClassNamed:@"DMEntry" keyMappings:@{ @"mahNameIs" : @"name" } options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" keyMappings:@{ @"mahNameIs" : @"name" } options:@{kRZDataManagerReturnObjectsFromImport : @(YES)}  completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -417,7 +418,7 @@
                                 @"collection" : @"Red"};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{kRZDataManagerReturnObjectsFromImport : @(YES)}  completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -478,7 +479,7 @@
     
     [self.dataManager importData:@[yellowCollection, greenCollection]
                       forClassNamed:@"DMCollection"
-                         options:nil
+                         options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} 
                       completion:^(id result, NSError *error)
     {
         STAssertTrue(error == nil, @"Import error occured: %@", error);
@@ -542,7 +543,7 @@
     
     [self.dataManager importData:redCollection
                       forClassNamed:@"DMCollection"
-                         options:nil
+                         options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} 
                       completion:^(id result, NSError *error)
      {
          STAssertTrue(error == nil, @"Import error occured: %@", error);
@@ -594,7 +595,7 @@
     [self.dataManager importData:redCollection
                       forClassNamed:@"DMCollection"
                     usingMapping:mapping
-                         options:nil
+                         options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} 
                       completion:^(id result, NSError *error)
      {
          STAssertTrue(error == nil, @"Import error occured: %@", error);
@@ -655,7 +656,7 @@
     [self.dataManager importData:redCollection
                       forClassNamed:@"DMCollection"
                     usingMapping:collectionMapping
-                         options:nil
+                         options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} 
                       completion:^(id result, NSError *error)
      {
          STAssertTrue(error == nil, @"Import error occured: %@", error);
@@ -693,7 +694,7 @@
     
     [self.dataManager importData:redCollection
                       forClassNamed:@"DMCollection"
-                         options:nil
+                         options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} 
                       completion:^(id result, NSError *error)
      {
          STAssertTrue(error == nil, @"Import error occured: %@", error);
@@ -730,7 +731,7 @@
     
     [self.dataManager importData:thingData
                       forClassNamed:@"DMThingClass"
-                         options:nil
+                         options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} 
                       completion:^(id result, NSError *error)
      {
          STAssertTrue(error == nil, @"Import error occured: %@", error);
@@ -762,7 +763,7 @@
     
     [self.dataManager importData:thingData
                       forClassNamed:@"DMThingClass"
-                         options:nil
+                         options:@{kRZDataManagerReturnObjectsFromImport : @(YES)} 
                       completion:^(id result, NSError *error)
      {
          STAssertTrue(error == nil, @"Import error occured: %@", error);
@@ -808,7 +809,7 @@
                                 @"collection" : @"Red"};
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{kRZDataManagerReturnObjectsFromImport : @(YES)}  completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -846,7 +847,7 @@
                  @"collection" : @"Red"};
     
     finished = NO;
-    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{kRZDataManagerDisableSaveAfterImport : @(YES)} completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{kRZDataManagerReturnObjectsFromImport : @(YES), kRZDataManagerSaveAfterImport : @(NO)} completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
@@ -891,9 +892,9 @@
     __block BOOL finished = NO;
     NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
     // import and don't return objects
-    [self.dataManager importData:dataToImport forClassNamed:@"DMEntry" options:@{kRZDataManagerDisableReturningObjectsFromImport : @(YES)} completion:^(id result, NSError *error)
+    [self.dataManager importData:dataToImport forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
-         STAssertNil(result, @"Result should be nil - we passed the option not to return objects");
+         STAssertNil(result, @"Result should be nil - we didn't pass the option to return objects");
          STAssertNil(error, @"Error during import: %@", error);
          
          NSTimeInterval executionTime = [NSDate timeIntervalSinceReferenceDate] - startTime;
@@ -919,9 +920,9 @@
     finished = NO;
     startTime = [NSDate timeIntervalSinceReferenceDate];
     // import and don't return objects
-    [self.dataManager importData:dataToImport forClassNamed:@"DMEntry" options:@{kRZDataManagerDisableReturningObjectsFromImport : @(YES)} completion:^(id result, NSError *error)
+    [self.dataManager importData:dataToImport forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
-         STAssertNil(result, @"Result should be nil - we passed the option not to return objects");
+         STAssertNil(result, @"Result should be nil - we did't pass the option to return objects");
          STAssertNil(error, @"Error during import: %@", error);
          
          NSTimeInterval executionTime = [NSDate timeIntervalSinceReferenceDate] - startTime;
@@ -957,7 +958,7 @@
                                 };
     
     __block BOOL finished = NO;
-    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{kRZDataManagerReturnObjectsFromImport : @(YES)}  completion:^(id result, NSError *error)
      {
          STAssertNotNil(result, @"Result should not be nil");
          STAssertNil(error, @"Error during import: %@", error);
