@@ -24,11 +24,14 @@
 @property (nonatomic, strong) NSString *defaultDateFormat;
 
 //! Externally get the mapping for a particular class or entity
-- (RZDataManagerModelObjectMapping*)mappingForClassNamed:(NSString*)className;
+- (RZDataManagerModelObjectMapping *)mappingForClassNamed:(NSString *)className;
 
 //! Import data from a dictionary to an object conforming to RZDataManagerModelObject protocol
-- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataManagerModelObject>*)object;
-- (void)importData:(NSDictionary*)data toObject:(NSObject<RZDataManagerModelObject>*)object usingMapping:(RZDataManagerModelObjectMapping*)mapping;
+- (void)importData:(NSDictionary *)data toObject:(NSObject <RZDataManagerModelObject> *)object;
+
+- (void)importData:(NSDictionary *)data
+          toObject:(NSObject <RZDataManagerModelObject> *)object
+      usingMapping:(RZDataManagerModelObjectMapping *)mapping;
 
 // TODO: Reimplement this
 
@@ -51,12 +54,12 @@
 @interface RZDataImporterDiffInfo : NSObject
 
 // Indices at which new objects are present in data array
-@property (strong, nonatomic) NSMutableArray* insertedObjectIndices;
+@property (strong, nonatomic) NSMutableArray *insertedObjectIndices;
 
 // Indices in the object array of objects that should be removed (not present in data array)
-@property (strong, nonatomic) NSMutableArray* removedObjectIndices;
+@property (strong, nonatomic) NSMutableArray *removedObjectIndices;
 
 // Indices for objects that have moved (the indices in the data array, which represent the final index of the object after the update)
-@property (strong, nonatomic) NSMutableArray* movedObjectIndices;
+@property (strong, nonatomic) NSMutableArray *movedObjectIndices;
 
 @end

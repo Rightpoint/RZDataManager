@@ -29,8 +29,18 @@
  *
  ************************************************************************************/
 
-OBJC_EXTERN NSString * const kRZCoreDataManagerWillResetDatabaseNotification;
-OBJC_EXTERN NSString * const kRZCoreDataManagerDidResetDatabaseNotification;
+
+OBJC_EXTERN NSString *const kRZCoreDataManagerWillResetDatabaseNotification;
+OBJC_EXTERN NSString *const kRZCoreDataManagerDidResetDatabaseNotification;
+
+// ============================================================
+//                KEYS FOR OPTIONS DICTIONARY
+// ============================================================
+
+// If value is YES, will perform background import on its own thread, independent and parallel to other background imports.
+// This is useful when importing large amounts of data that doesn't affect other imports and may otherwise hold up the queue.
+// Default is NO.
+OBJC_EXTERN NSString *const kRZCoreDataManagerImportAsynchronously;
 
 @class RZDataImporter;
 
@@ -44,7 +54,7 @@ OBJC_EXTERN NSString * const kRZCoreDataManagerDidResetDatabaseNotification;
 
 //! Delete the database file if creation of the persistent store coordinator fails. Defaults to YES.
 /*!
- This flag must be set immediately after instance is created, prior to accessing data stack.
+    This flag must be set immediately after instance is created, prior to accessing data stack.
  */
 @property (nonatomic, assign) BOOL deleteDatabaseIfUnreadable;
 
@@ -58,13 +68,19 @@ OBJC_EXTERN NSString * const kRZCoreDataManagerDidResetDatabaseNotification;
 @property (nonatomic, strong) NSURL *persistentStoreURL;
 
 //! Main-thread accessible MOC. Saving this MOC does NOT persist to disk. Use saveData: instead.
-@property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, strong) NSManagedObjectContext       *managedObjectContext;
 
-@property (nonatomic, strong) NSManagedObjectModel *managedObjectModel;
+@property (nonatomic, strong) NSManagedObjectModel         *managedObjectModel;
 
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
-//! Clears out CoreData stack and posts reset notification. Will be rebuilt via lazy-load on next access to the MOC.
+// If "synchronously" is true, background import operations will be enqueued on a private dispatch queue and will not run in parallel.
+// If false, background import operations will be performed on a private queue confinement moc, parallel to any other background import operations
+- (void)importInBackgroundSynchronously:(BOOL)synchronously
+                             usingBlock:(RZDataManagerImportBlock)importBlock
+                             completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
+
+//! Clears out CoreData stack and posts reset notifications. Will be rebuilt via lazy-load on next access to the MOC.
 - (void)resetDatabase;
 
 @end

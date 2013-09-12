@@ -9,12 +9,15 @@
 
 @interface NSDictionary (NonNSNull)
 
--(id) validObjectForKey:(id)aKey;
--(id) validObjectForKey:(id)aKey decodeHTML:(BOOL)shouldDecode;
--(id) validObjectForKeyPath:(id)aKeyPath;
--(id) validObjectForKeyPath:(id)aKeyPath decodeHTML:(BOOL)shouldDecode;
+- (id)validObjectForKey:(id)aKey;
+
+- (id)validObjectForKey:(id)aKey decodeHTML:(BOOL)shouldDecode;
+
+- (id)validObjectForKeyPath:(id)aKeyPath;
+
+- (id)validObjectForKeyPath:(id)aKeyPath decodeHTML:(BOOL)shouldDecode;
 
 // ensure the valuue we return is of NSNumber. We'll convert it if we can.
--(id) numberForKey:(id)aKey;
+- (id)numberForKey:(id)aKey;
 
 @end
