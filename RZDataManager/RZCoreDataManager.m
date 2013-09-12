@@ -61,13 +61,15 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
     self = [super init];
     if (self)
     {
-        _classToEntityMapping = [NSMutableDictionary dictionary];
-
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^
         {
             s_RZCoreDataManagerPrivateImportQueue = dispatch_queue_create(s_RZCoreDataManagerPrivateImportQueueName, NULL);
         });
+        
+        _classToEntityMapping = [NSMutableDictionary dictionary];
+        _attemptAutomaticMigration = YES;
+        _deleteDatabaseIfUnreadable = YES;
     }
     return self;
 }
@@ -853,12 +855,20 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     {
         NSError *error = nil;
         _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
-
-        // TODO: Add auto-migrate capabilities for lightweight database migration
-
-        if (![_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:nil error:&error])
+        
+        NSDictionary *options = nil;
+        
+        if (self.attemptAutomaticMigration && NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
         {
-            if (NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
+            options = @{
+                            NSMigratePersistentStoresAutomaticallyOption : @(YES),
+                            NSInferMappingModelAutomaticallyOption : @(YES)
+                        };
+        }
+        
+        if(![_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:options error:&error])
+        {
+            if (self.deleteDatabaseIfUnreadable && NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
             {
                 NSError *removeFileError = nil;
                 if ([[NSFileManager defaultManager] removeItemAtURL:self.persistentStoreURL error:&removeFileError])

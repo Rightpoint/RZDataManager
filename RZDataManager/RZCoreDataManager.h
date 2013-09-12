@@ -46,6 +46,18 @@ OBJC_EXTERN NSString *const kRZCoreDataManagerImportAsynchronously;
 
 @interface RZCoreDataManager : RZDataManager
 
+//! Attempt automatic lightweight migration when building data stack. Defaults to YES
+/*!
+    This flag must be set immediately after instance is created, prior to accessing data stack.
+*/
+@property (nonatomic, assign) BOOL attemptAutomaticMigration;
+
+//! Delete the database file if creation of the persistent store coordinator fails. Defaults to YES.
+/*!
+    This flag must be set immediately after instance is created, prior to accessing data stack.
+ */
+@property (nonatomic, assign) BOOL deleteDatabaseIfUnreadable;
+
 //! Provide a model file name here without an extension BEFORE ACCESSING THE STACK. If left nil, will default to bundle display name.
 @property (nonatomic, strong) NSString *managedObjectModelName;
 
@@ -56,12 +68,13 @@ OBJC_EXTERN NSString *const kRZCoreDataManagerImportAsynchronously;
 @property (nonatomic, strong) NSURL *persistentStoreURL;
 
 //! Main-thread accessible MOC. Saving this MOC does NOT persist to disk. Use saveData: instead.
-@property (nonatomic, strong) NSManagedObjectContext *managedObjectContext;
+@property (nonatomic, strong) NSManagedObjectContext       *managedObjectContext;
 
 @property (nonatomic, strong) NSManagedObjectModel         *managedObjectModel;
+
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
-// If synchronously is true, background import operations will be enqueued on a private dispatch queue and will not run in parallel.
+// If "synchronously" is true, background import operations will be enqueued on a private dispatch queue and will not run in parallel.
 // If false, background import operations will be performed on a private queue confinement moc, parallel to any other background import operations
 - (void)importInBackgroundSynchronously:(BOOL)synchronously
                              usingBlock:(RZDataManagerImportBlock)importBlock
