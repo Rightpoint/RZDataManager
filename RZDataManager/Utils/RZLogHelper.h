@@ -103,7 +103,7 @@
  * ensure that logging is not accidentally left enabled by accident in release builds.
  */
 #ifndef RZ_LOGGING_ENABLED
-#	define RZ_LOGGING_ENABLED		1
+#	define RZ_LOGGING_ENABLED        1
 #endif
 
 /**
@@ -112,16 +112,16 @@
  * For these settings to be effective, RZ_LOGGING_ENABLED must also be defined and non-zero.
  */
 #ifndef RZ_LOGGING_LEVEL_TRACE
-#	define RZ_LOGGING_LEVEL_TRACE		0
+#	define RZ_LOGGING_LEVEL_TRACE        0
 #endif
 #ifndef RZ_LOGGING_LEVEL_INFO
-#	define RZ_LOGGING_LEVEL_INFO		1
+#	define RZ_LOGGING_LEVEL_INFO        1
 #endif
 #ifndef RZ_LOGGING_LEVEL_ERROR
-#	define RZ_LOGGING_LEVEL_ERROR		1
+#	define RZ_LOGGING_LEVEL_ERROR        1
 #endif
 #ifndef RZ_LOGGING_LEVEL_DEBUG
-#	define RZ_LOGGING_LEVEL_DEBUG		1
+#	define RZ_LOGGING_LEVEL_DEBUG        1
 #endif
 
 /**
@@ -129,7 +129,7 @@
  * in the log entries. This can be set either here or as a compiler build setting.
  */
 #ifndef RZ_LOGGING_INCLUDE_CODE_LOCATION
-    #define RZ_LOGGING_INCLUDE_CODE_LOCATION	0
+#define RZ_LOGGING_INCLUDE_CODE_LOCATION    0
 #endif
 
 // *********** END OF USER SETTINGS  - Do not change anything below this line ***********

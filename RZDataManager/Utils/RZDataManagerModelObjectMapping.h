@@ -18,27 +18,35 @@
 
 - (id)initWithModelClass:(Class)modelClass;
 
-- (BOOL)hasMappingDefinedForDataKey:(NSString*)key;
+- (BOOL)hasMappingDefinedForDataKey:(NSString *)key;
 
-- (NSString*)modelPropertyNameForDataKey:(NSString*)key;
-- (void)setModelPropertyName:(NSString*)propertyName forDataKey:(NSString*)key;
-- (void)setModelPropertiesForKeyNames:(NSDictionary*)mappingDict; // set ovverides all at once
+- (NSString *)modelPropertyNameForDataKey:(NSString *)key;
 
-- (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForDataKey:(NSString*)key;
-- (RZDataManagerModelObjectRelationshipMapping*)relationshipMappingForModelPropertyName:(NSString*)propName;
-- (void)setRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping*)mapping forDataKey:(NSString*)key;
+- (void)setModelPropertyName:(NSString *)propertyName forDataKey:(NSString *)key;
 
-- (NSString*)importSelectorNameForDataKey:(NSString*)key;
-- (void)setImportSelectorName:(NSString*)selName forDataKey:(NSString*)key;
+- (void)setModelPropertiesForKeyNames:(NSDictionary *)mappingDict; // set ovverides all at once
 
-- (NSArray*)keysToIgnore;
-- (void)addKeysToIgnore:(NSArray*)keysToIgnore;
+- (RZDataManagerModelObjectRelationshipMapping *)relationshipMappingForDataKey:(NSString *)key;
+
+- (RZDataManagerModelObjectRelationshipMapping *)relationshipMappingForModelPropertyName:(NSString *)propName;
+
+- (void)setRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)mapping forDataKey:(NSString *)key;
+
+- (NSString *)importSelectorNameForDataKey:(NSString *)key;
+
+- (void)setImportSelectorName:(NSString *)selName forDataKey:(NSString *)key;
+
+- (NSArray *)keysToIgnore;
+
+- (void)addKeysToIgnore:(NSArray *)keysToIgnore;
 
 @end
 
 @interface RZDataManagerModelObjectRelationshipMapping : NSObject <NSCopying>
 
-+ (RZDataManagerModelObjectRelationshipMapping*)mappingWithClassNamed:(NSString*)type propertyName:(NSString*)propertyName inversePropertyName:(NSString*)inverse;
++ (RZDataManagerModelObjectRelationshipMapping *)mappingWithClassNamed:(NSString *)type
+                                                          propertyName:(NSString *)propertyName
+                                                   inversePropertyName:(NSString *)inverse;
 
 @property (nonatomic, copy) NSString *relationshipClassName;
 @property (nonatomic, copy) NSString *relationshipPropertyName;

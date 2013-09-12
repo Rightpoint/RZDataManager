@@ -17,15 +17,30 @@
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
 
-OBJC_EXTERN NSString* const kRZDataManagerUTCDateFormat;
+typedef void (^RZDataManagerImportBlock)();
+
+typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError *error); // result is either object, collection, or nil
+typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError *error);
+
+OBJC_EXTERN NSString *const kRZDataManagerUTCDateFormat;
+
+// ============================================================
+//                KEYS FOR OPTIONS DICTIONARY
+// ============================================================
 
 // Delete any items that are present in the result produced by this predicate and not
 // present in the items to be imported.
-OBJC_EXTERN NSString* const kRZDataManagerDeleteStaleItemsPredicate;
+OBJC_EXTERN NSString *const kRZDataManagerDeleteStaleItemsPredicate;
 
-typedef void (^RZDataManagerImportBlock)();
-typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError * error); // result is either object, collection, or nil
-typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
+// Disable automatic full-stack save of database after each import.
+// Useful when you might want to undo an import.
+// Default value is YES
+OBJC_EXTERN NSString *const kRZDataManagerSaveAfterImport;
+
+// Disable completion block from returning imported items on main thread managed object context.
+// May want to use this to prevent resource usage when importing a large number of objects.
+// Default value is NO
+OBJC_EXTERN NSString *const kRZDataManagerReturnObjectsFromImport;
 
 @interface RZDataManager : NSObject
 
@@ -34,10 +49,10 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
 
 #pragma mark - Utilities
 
-+ (NSURL*)applicationDocumentsDirectory;
++ (NSURL *)applicationDocumentsDirectory;
 
 // pass through to data importer
-- (RZDataManagerModelObjectMapping*)mappingForClassNamed:(NSString*)className;
+- (RZDataManagerModelObjectMapping *)mappingForClassNamed:(NSString *)className;
 
 @property (nonatomic, readonly, strong) RZDataImporter *dataImporter;
 
@@ -52,23 +67,23 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
  ***********************************************************/
 
 // ============================================================
-// -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
+//          SUBCLASSES MUST IMPLEMENT THESE METHODS             
 // ============================================================
 
 // Returns an object with value "value" for keypath "keyPath". If not found, will optionally create a new one.
-- (id)objectOfType:(NSString*)type
+- (id)objectOfType:(NSString *)type
          withValue:(id)value
-        forKeyPath:(NSString*)keyPath
+        forKeyPath:(NSString *)keyPath
          createNew:(BOOL)createNew;
 
 // Limit search to a specific collection (set or array)
-- (id)objectOfType:(NSString*)type
+- (id)objectOfType:(NSString *)type
          withValue:(id)value
-        forKeyPath:(NSString*)keyPath
+        forKeyPath:(NSString *)keyPath
       inCollection:(id)collection
          createNew:(BOOL)createNew;
 
-- (id)objectsOfType:(NSString*)type matchingPredicate:(NSPredicate*)predicate;
+- (id)objectsOfType:(NSString *)type matchingPredicate:(NSPredicate *)predicate;
 
 // -------------------------------------------------------------
 
@@ -81,18 +96,18 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
  *  should be returned in completion block.
  *
  ******************************************************************************/
- 
+
 // Default signature, no overrides
 - (void)importData:(id)data
-        forClassNamed:(NSString*)className
-           options:(NSDictionary*)options
+     forClassNamed:(NSString *)className
+           options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
 // Use key-value pairs in keyMappings to override key->property import mappings
 - (void)importData:(id)data
-        forClassNamed:(NSString*)className
-       keyMappings:(NSDictionary*)keyMappings
-           options:(NSDictionary*)options
+     forClassNamed:(NSString *)className
+       keyMappings:(NSDictionary *)keyMappings
+           options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
 /******************************************************************************
@@ -103,7 +118,11 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
  *
  ******************************************************************************/
 
-- (void)importData:(id)data forRelationshipPropertyName:(NSString*)relationshipProperty onObject:(NSObject*)object options:(NSDictionary*)options completion:(RZDataManagerImportCompletionBlock)completion;
+- (void)         importData:(id)data
+forRelationshipPropertyName:(NSString *)relationshipProperty
+                   onObject:(NSObject *)object
+                    options:(NSDictionary *)options
+                 completion:(RZDataManagerImportCompletionBlock)completion;
 
 // ============================================================
 // -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
@@ -111,14 +130,19 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
 
 // Mapping can be nil, in which case subclass should use default mapping for this object type
 - (void)importData:(id)data
-     forClassNamed:(NSString*)className
-      usingMapping:(RZDataManagerModelObjectMapping*)mapping
-           options:(NSDictionary*)options
+     forClassNamed:(NSString *)className
+      usingMapping:(RZDataManagerModelObjectMapping *)mapping
+           options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion;
-    
-- (void)importData:(id)data forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping*)relationshipMapping onObject:(NSObject*)object options:(NSDictionary*)options completion:(RZDataManagerImportCompletionBlock)completion;
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
+- (void)        importData:(id)data
+forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
+                  onObject:(NSObject *)object
+                   options:(NSDictionary *)options
+                completion:(RZDataManagerImportCompletionBlock)completion;
+
+- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock
+                          completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
 
 // -------------------------------------------------------------
 
@@ -131,8 +155,9 @@ typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError* error);
 
 #pragma mark - Miscellaneous
 
-- (NSDictionary*)dictionaryFromModelObject:(NSObject*)object;
-- (NSDictionary*)dictionaryFromModelObject:(NSObject*)object usingMapping:(RZDataManagerModelObjectMapping*)mapping;
+- (NSDictionary *)dictionaryFromModelObject:(NSObject *)object;
+
+- (NSDictionary *)dictionaryFromModelObject:(NSObject *)object usingMapping:(RZDataManagerModelObjectMapping *)mapping;
 
 @end
 
