@@ -39,6 +39,8 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
     self = [super init];
     if (self){
         _classToEntityMapping = [NSMutableDictionary dictionary];
+        _attemptAutomaticMigration = YES;
+        _deleteDatabaseIfUnreadable = YES;
     }
     return self;
 }
@@ -600,11 +602,19 @@ NSString * const kRZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataMa
         NSError *error = nil;
         _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:self.managedObjectModel];
         
-        // TODO: Add auto-migrate capabilities for lightweight database migration
+        NSDictionary *options = nil;
         
-        if(![_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:nil error:&error])
+        if (self.attemptAutomaticMigration && NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
         {
-            if (NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
+            options = @{
+                            NSMigratePersistentStoresAutomaticallyOption : @(YES),
+                            NSInferMappingModelAutomaticallyOption : @(YES)
+                        };
+        }
+        
+        if(![_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:options error:&error])
+        {
+            if (self.deleteDatabaseIfUnreadable && NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
             {
                 NSError *removeFileError = nil;
                 if([[NSFileManager defaultManager] removeItemAtURL:self.persistentStoreURL error:&removeFileError])
