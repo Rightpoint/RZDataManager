@@ -19,6 +19,8 @@ NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManage
 
 - (NSException *)abstractMethodException:(SEL)selector;
 
+- (NSDictionary*)addDefaultOptions:(NSDictionary*)options;
+
 @end
 
 @implementation RZDataManager
@@ -67,6 +69,18 @@ NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManage
                                  userInfo:nil];
 }
 
+- (NSDictionary*)addDefaultOptions:(NSDictionary *)options
+{
+    // add default key for save after import (defaults to yes)
+    if ([options objectForKey:kRZDataManagerSaveAfterImport] == nil)
+    {
+        NSMutableDictionary *newOpts = [options mutableCopy];
+        [newOpts setValue:@(YES) forKey:kRZDataManagerSaveAfterImport];
+        options = newOpts;
+    }
+    return options;
+}
+
 #pragma mark - Public Methods
 
 - (void)importData:(id)data
@@ -74,6 +88,7 @@ NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManage
            options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion
 {
+    [self addDefaultOptions:options];
     [self importData:data forClassNamed:className usingMapping:nil options:options completion:completion];
 }
 
@@ -86,14 +101,7 @@ NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManage
     RZDataManagerModelObjectMapping *mapping = [self.dataImporter mappingForClassNamed:className];
     [mapping setModelPropertiesForKeyNames:keyMappings];
     
-    // add default key for save after import (defaults to yes)
-    if ([options objectForKey:kRZDataManagerSaveAfterImport] == nil)
-    {
-        NSMutableDictionary *newOpts = [options mutableCopy];
-        [newOpts setValue:@(YES) forKey:kRZDataManagerSaveAfterImport];
-        options = newOpts;
-    }
-    
+    [self addDefaultOptions:options];
     [self importData:data forClassNamed:className usingMapping:mapping options:options completion:completion];
 }
 

@@ -288,7 +288,8 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
         }
 
 
-    }                          completion:^(NSError *error)
+    }
+    completion:^(NSError *error)
     {
 
         if ([[options objectForKey:kRZDataManagerSaveAfterImport] boolValue])
