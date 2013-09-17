@@ -74,7 +74,7 @@ NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManage
     // add default key for save after import (defaults to yes)
     if ([options objectForKey:kRZDataManagerSaveAfterImport] == nil)
     {
-        NSMutableDictionary *newOpts = [options mutableCopy];
+        NSMutableDictionary *newOpts = options == nil ? [NSMutableDictionary dictionary] : [options mutableCopy];
         [newOpts setValue:@(YES) forKey:kRZDataManagerSaveAfterImport];
         options = newOpts;
     }
