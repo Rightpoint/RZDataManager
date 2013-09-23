@@ -150,12 +150,12 @@
         }
     }];
 
-    return [returnMapping copy];
+    return returnMapping;
 }
 
 - (void)setRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)mapping forDataKey:(NSString *)key
 {
-    [self.relationshipKeyMappings setObject:[mapping copy] forKey:key];
+    [self.relationshipKeyMappings setObject:mapping forKey:key];
 }
 
 - (NSString *)importSelectorNameForDataKey:(NSString *)key

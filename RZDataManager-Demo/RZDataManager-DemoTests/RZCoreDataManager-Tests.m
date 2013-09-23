@@ -588,7 +588,7 @@
     
     // This time all other entries should be removed from the "Red" collection
     // The configuration is a bit tedious here, it may be worth trying to streamline if this is a common use case
-    RZDataManagerModelObjectMapping *mapping = [self.dataManager mappingForClassNamed:@"DMCollection"];
+    RZDataManagerModelObjectMapping *mapping = [[self.dataManager mappingForClassNamed:@"DMCollection"] copy];
     RZDataManagerModelObjectRelationshipMapping *relMapping = [mapping relationshipMappingForDataKey:@"entries"];
     relMapping.shouldReplaceExistingRelationships = YES;
     
