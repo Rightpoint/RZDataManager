@@ -9,6 +9,7 @@
 #import "RZDataManagerModelObjectMapping.h"
 #import "RZDataManagerModelObject.h"
 #import "NSObject+RZPropertyUtils.h"
+#import "RZLogHelper.h"
 
 @interface RZDataManagerModelObjectMapping ()
 
@@ -92,7 +93,7 @@
     {
         propName = self.modelIdPropertyName;
     }
-    else
+    else if (![self.ignoreKeys containsObject:key])
     {
         propName = [self.dataKeyMappings objectForKey:key];
 
@@ -106,6 +107,11 @@
             {
                 propName = [matches objectAtIndex:0];
                 [self.dataKeyMappings setObject:propName forKey:key];
+            }
+            else
+            {
+                RZLogDebug(@"Could not find matching property for key %@ on object of type %@", key, NSStringFromClass([self modelClass]));
+                [self.ignoreKeys addObject:key];
             }
 
         }
