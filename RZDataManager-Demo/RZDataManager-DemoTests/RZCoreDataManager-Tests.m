@@ -588,9 +588,10 @@
     
     // This time all other entries should be removed from the "Red" collection
     // The configuration is a bit tedious here, it may be worth trying to streamline if this is a common use case
-    RZDataManagerModelObjectMapping *mapping = [[self.dataManager mappingForClassNamed:@"DMCollection"] copy];
-    RZDataManagerModelObjectRelationshipMapping *relMapping = [mapping relationshipMappingForDataKey:@"entries"];
+    RZDataManagerMutableModelObjectMapping *mapping = [[self.dataManager mappingForClassNamed:@"DMCollection"] mutableCopy];
+    RZDataManagerMutableModelObjectRelationshipMapping *relMapping = [[mapping relationshipMappingForDataKey:@"entries"] mutableCopy];
     relMapping.shouldReplaceExistingRelationships = YES;
+    [mapping setRelationshipMapping:relMapping forDataKey:@"entries"];
     
     [self.dataManager importData:redCollection
                       forClassNamed:@"DMCollection"
@@ -636,16 +637,16 @@
     // The configuration is a bit tedious here, it may be worth trying to streamline if this is a common use case
     
     // Get default mapping for "DMCollection"
-    RZDataManagerModelObjectMapping *collectionMapping = [self.dataManager mappingForClassNamed:@"DMCollection"];
+    RZDataManagerMutableModelObjectMapping *collectionMapping = [[self.dataManager mappingForClassNamed:@"DMCollection"] mutableCopy];
     
     // Get default mapping for "DMEntry"
-    RZDataManagerModelObjectMapping *entryMapping = [self.dataManager mappingForClassNamed:@"DMEntry"];
+    RZDataManagerMutableModelObjectMapping *entryMapping = [[self.dataManager mappingForClassNamed:@"DMEntry"] mutableCopy];
     
     // Set custom mapping for whatsmyname -> name on "DMEntry"
     [entryMapping setModelPropertyName:@"name" forDataKey:@"whatsmyname"];
     
     // Get relationship mapping for entries on "DMCollection"
-    RZDataManagerModelObjectRelationshipMapping *entryRelMapping = [collectionMapping relationshipMappingForDataKey:@"entries"];
+    RZDataManagerMutableModelObjectRelationshipMapping *entryRelMapping = [[collectionMapping relationshipMappingForDataKey:@"entries"] mutableCopy];
     
     // Set the overridden "DMEntry" mapping
     entryRelMapping.relatedObjectMapping = entryMapping;
