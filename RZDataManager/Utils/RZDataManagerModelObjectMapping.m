@@ -14,7 +14,6 @@
 @interface RZDataManagerModelObjectMapping ()
 
 @property (nonatomic, assign) Class modelClass;
-
 @property (nonatomic, strong) NSArray             *classPropertyNames;
 @property (nonatomic, strong) NSMutableArray      *ignoreKeys;
 @property (nonatomic, strong) NSMutableDictionary *dataKeyMappings;
@@ -193,21 +192,8 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    RZDataManagerModelObjectMapping *mapping = [[RZDataManagerModelObjectMapping allocWithZone:zone] init];
-    
-    mapping->_dataIdKey                 = self.dataIdKey;
-    mapping->_modelIdPropertyName       = self.modelIdPropertyName;
-    mapping->_dateFormat                = self.dateFormat;
-    mapping.ignoreKeys                  = [self.ignoreKeys mutableCopy];
-    mapping.modelClass                  = self.modelClass;
-    mapping.classPropertyNames          = [self.classPropertyNames copy];
-    mapping.dataKeyMappings             = [self.dataKeyMappings mutableCopy];
-    mapping.customSelectorKeyMappings   = [self.customSelectorKeyMappings mutableCopy];
-
-    // deep copy relationship key mappings
-    mapping.relationshipKeyMappings = [[NSMutableDictionary alloc] initWithDictionary:self.relationshipKeyMappings copyItems:YES];
-
-    return mapping;
+    // It's immutable, so we can just return the same object
+    return self;
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
@@ -263,6 +249,9 @@
 
 @end
 
+#pragma mark - Relationship Mappings
+
+
 @implementation RZDataManagerModelObjectRelationshipMapping
 
 + (instancetype)mappingWithClassNamed:(NSString *)type
@@ -287,13 +276,8 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    RZDataManagerModelObjectRelationshipMapping *copy = [[RZDataManagerModelObjectRelationshipMapping allocWithZone:zone] initWithClassNamed:self.relationshipClassName
-                                                                                                                                propertyName:self.relationshipPropertyName
-                                                                                                                         inversePropertyName:self.relationshipInversePropertyName];
-    copy->_shouldReplaceExistingRelationships = self.shouldReplaceExistingRelationships;
-    copy->_relatedObjectMapping               = [self.relatedObjectMapping copy];
-    
-    return copy;
+    // It's immutable, so we can just return the same object
+    return self;
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone
@@ -305,6 +289,7 @@
     copy.relatedObjectMapping               = [self.relatedObjectMapping copy];
     return copy;
 }
+
 
 @end
 

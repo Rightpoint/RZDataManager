@@ -72,7 +72,6 @@
 @property (nonatomic, readonly, copy) NSString *relationshipInversePropertyName;
 
 @property (nonatomic, readonly, copy) RZDataManagerModelObjectMapping *relatedObjectMapping;
-
 @property (nonatomic, readonly, assign) BOOL shouldReplaceExistingRelationships;
 
 @end
