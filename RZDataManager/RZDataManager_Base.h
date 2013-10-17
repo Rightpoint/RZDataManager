@@ -17,7 +17,8 @@
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
 
-typedef void (^RZDataManagerImportBlock)();
+// context object depends on particular subclass
+typedef void (^RZDataManagerImportBlock)(id context);
 
 typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError *error); // result is either object, collection, or nil
 typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError *error);

@@ -13,6 +13,8 @@
  *
  * Concrete RZDataManager subclass for working with a CoreData stack.
  *
+ * RZDataManagerImportBlock provides an NSManagedObjectContext as its "context" object
+ *
  * Things to know:
  *
  * 1) If you do not explicitly set the context, model, or store coordinator, they will

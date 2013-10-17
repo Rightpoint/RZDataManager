@@ -119,7 +119,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
 
     BOOL synchronousImport = ![[options objectForKey:kRZCoreDataManagerImportAsynchronously] boolValue];
 
-    [self importInBackgroundSynchronously:synchronousImport usingBlock:^
+    [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
     {
 
         if ([data isKindOfClass:[NSDictionary class]])
@@ -171,7 +171,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
                 [uidFetch setPropertiesToFetch:@[modelIdProp, objectIdDesc]];
 
                 NSError *err          = nil;
-                NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
+                NSArray *existingObjs = [moc executeFetchRequest:uidFetch error:&err];
 
                 if (err == nil)
                 {
@@ -204,7 +204,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
                                     if (importedObjId != nil)
                                     {
                                         NSError *existingObjErr = nil;
-                                        importedObj = [self.currentMoc existingObjectWithID:importedObjId error:&existingObjErr];
+                                        importedObj = [moc existingObjectWithID:importedObjId error:&existingObjErr];
                                         if (existingObjErr != nil)
                                         {
                                             RZLogError(@"Error fetching existing object. %@", existingObjErr);
@@ -217,11 +217,11 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
 
                                     if (importedObj == nil)
                                     {
-                                        importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+                                        importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:moc];
 
                                         // If we are creating a new object, obtain a permanent ID for it
                                         NSError *permIdErr = nil;
-                                        if (![self.currentMoc obtainPermanentIDsForObjects:@[importedObj] error:&permIdErr])
+                                        if (![moc obtainPermanentIDsForObjects:@[importedObj] error:&permIdErr])
                                         {
                                             RZLogError(@"Error obtaining permanent id for new object. %@", permIdErr);
                                         }
@@ -253,7 +253,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
                         staleFetch.predicate = stalePred;
 
                         NSError *stFetchErr     = nil;
-                        NSArray *objectsToCheck = [self.currentMoc executeFetchRequest:staleFetch error:&stFetchErr];
+                        NSArray *objectsToCheck = [moc executeFetchRequest:staleFetch error:&stFetchErr];
                         if (stFetchErr != nil)
                         {
                             RZLogError(@"Error executing fetch for stale objects. %@", stFetchErr);
@@ -266,7 +266,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
                             // if this model object is not present in the list of objects to import, delete it.
                             if (![dataObjsUuids containsObject:[obj valueForKey:modelIdKey]])
                             {
-                                [self.currentMoc deleteObject:obj];
+                                [moc deleteObject:obj];
                             }
                         }];
                     }
@@ -356,7 +356,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
     BOOL synchronousImport = ![[options objectForKey:kRZCoreDataManagerImportAsynchronously] boolValue];
 
-    [self importInBackgroundSynchronously:synchronousImport usingBlock:^
+    [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
     {
 
         NSEntityDescription       *entityDesc       = [(NSManagedObject *)object entity];
@@ -440,7 +440,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
                             if (!importedObj)
                             {
-                                importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+                                importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:moc];
                             }
 
                             [self.dataImporter importData:objData toObject:importedObj usingMapping:objMapping];
@@ -542,7 +542,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     void (^internalImportBlock)(BOOL, NSManagedObjectContext *) = ^(BOOL fromMainThread, NSManagedObjectContext *privateMoc)
     {
 
-        importBlock();
+        importBlock(privateMoc);
 
         NSError *error = nil;
         if (![privateMoc save:&error])
@@ -559,7 +559,6 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         {
             dispatch_sync(dispatch_get_main_queue(), ^
             {
-
                 if (completionBlock)
                 {
                     completionBlock(error);
