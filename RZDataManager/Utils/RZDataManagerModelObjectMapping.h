@@ -10,11 +10,13 @@
 
 @class RZDataManagerModelObjectRelationshipMapping;
 
-@interface RZDataManagerModelObjectMapping : NSObject <NSCopying>
 
-@property (nonatomic, copy) NSString *dataIdKey;
-@property (nonatomic, copy) NSString *modelIdPropertyName;
-@property (nonatomic, copy) NSString *dateFormat;
+
+@interface RZDataManagerModelObjectMapping : NSObject <NSCopying, NSMutableCopying>
+
+@property (nonatomic, readonly, copy) NSString *dataIdKey;
+@property (nonatomic, readonly, copy) NSString *modelIdPropertyName;
+@property (nonatomic, readonly, copy) NSString *dateFormat;
 
 - (id)initWithModelClass:(Class)modelClass;
 
@@ -22,38 +24,63 @@
 
 - (NSString *)modelPropertyNameForDataKey:(NSString *)key;
 
-- (void)setModelPropertyName:(NSString *)propertyName forDataKey:(NSString *)key;
-
-- (void)setModelPropertiesForKeyNames:(NSDictionary *)mappingDict; // set ovverides all at once
-
 - (RZDataManagerModelObjectRelationshipMapping *)relationshipMappingForDataKey:(NSString *)key;
 
 - (RZDataManagerModelObjectRelationshipMapping *)relationshipMappingForModelPropertyName:(NSString *)propName;
 
-- (void)setRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)mapping forDataKey:(NSString *)key;
-
 - (NSString *)importSelectorNameForDataKey:(NSString *)key;
 
-- (void)setImportSelectorName:(NSString *)selName forDataKey:(NSString *)key;
-
 - (NSArray *)keysToIgnore;
+
+
+@end
+
+// -----------
+
+@interface RZDataManagerMutableModelObjectMapping : RZDataManagerModelObjectMapping
+
+@property (nonatomic, readwrite, copy) NSString *dataIdKey;
+@property (nonatomic, readwrite, copy) NSString *modelIdPropertyName;
+@property (nonatomic, readwrite, copy) NSString *dateFormat;
+
+- (void)setModelPropertyName:(NSString *)propertyName forDataKey:(NSString *)key;
+
+- (void)setModelPropertiesForKeyNames:(NSDictionary *)mappingDict; // set ovverides all at once
+
+- (void)setRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)mapping forDataKey:(NSString *)key;
+
+- (void)setImportSelectorName:(NSString *)selName forDataKey:(NSString *)key;
 
 - (void)addKeysToIgnore:(NSArray *)keysToIgnore;
 
 @end
 
-@interface RZDataManagerModelObjectRelationshipMapping : NSObject <NSCopying>
+// -----------
 
-+ (RZDataManagerModelObjectRelationshipMapping *)mappingWithClassNamed:(NSString *)type
-                                                          propertyName:(NSString *)propertyName
-                                                   inversePropertyName:(NSString *)inverse;
+@interface RZDataManagerModelObjectRelationshipMapping : NSObject <NSCopying, NSMutableCopying>
 
-@property (nonatomic, copy) NSString *relationshipClassName;
-@property (nonatomic, copy) NSString *relationshipPropertyName;
-@property (nonatomic, copy) NSString *relationshipInversePropertyName;
++ (instancetype)mappingWithClassNamed:(NSString *)type
+                         propertyName:(NSString *)propertyName
+                  inversePropertyName:(NSString *)inverse;
 
-@property (nonatomic, copy) RZDataManagerModelObjectMapping *relatedObjectMapping;
+- (id)initWithClassNamed:(NSString *)type
+            propertyName:(NSString *)propertyName
+     inversePropertyName:(NSString *)inverse;
 
-@property (nonatomic, assign) BOOL shouldReplaceExistingRelationships;
+@property (nonatomic, readonly, copy) NSString *relationshipClassName;
+@property (nonatomic, readonly, copy) NSString *relationshipPropertyName;
+@property (nonatomic, readonly, copy) NSString *relationshipInversePropertyName;
+
+@property (nonatomic, readonly, copy) RZDataManagerModelObjectMapping *relatedObjectMapping;
+@property (nonatomic, readonly, assign) BOOL shouldReplaceExistingRelationships;
+
+@end
+
+// ----------
+
+@interface RZDataManagerMutableModelObjectRelationshipMapping : RZDataManagerModelObjectRelationshipMapping
+
+@property (nonatomic, readwrite, copy)   RZDataManagerModelObjectMapping *relatedObjectMapping;
+@property (nonatomic, readwrite, assign) BOOL shouldReplaceExistingRelationships;
 
 @end

@@ -9,6 +9,7 @@
 #import "RZDataManagerModelObjectMapping.h"
 #import "RZDataManagerModelObject.h"
 #import "NSObject+RZPropertyUtils.h"
+#import "RZLogHelper.h"
 
 @interface RZDataManagerModelObjectMapping ()
 
@@ -92,7 +93,7 @@
     {
         propName = self.modelIdPropertyName;
     }
-    else
+    else if (![self.ignoreKeys containsObject:key])
     {
         propName = [self.dataKeyMappings objectForKey:key];
 
@@ -107,6 +108,11 @@
                 propName = [matches objectAtIndex:0];
                 [self.dataKeyMappings setObject:propName forKey:key];
             }
+            else
+            {
+                RZLogDebug(@"Could not find matching property for key %@ on object of type %@", key, NSStringFromClass([self modelClass]));
+                [self.ignoreKeys addObject:key];
+            }
 
         }
     }
@@ -115,15 +121,6 @@
     return propName;
 }
 
-- (void)setModelPropertyName:(NSString *)propertyName forDataKey:(NSString *)key
-{
-    [self.dataKeyMappings setObject:propertyName forKey:key];
-}
-
-- (void)setModelPropertiesForKeyNames:(NSDictionary *)mappingDict
-{
-    [self.dataKeyMappings addEntriesFromDictionary:mappingDict];
-}
 
 - (RZDataManagerModelObjectRelationshipMapping *)relationshipMappingForDataKey:(NSString *)key
 {
@@ -144,12 +141,7 @@
         }
     }];
 
-    return [returnMapping copy];
-}
-
-- (void)setRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)mapping forDataKey:(NSString *)key
-{
-    [self.relationshipKeyMappings setObject:[mapping copy] forKey:key];
+    return returnMapping;
 }
 
 - (NSString *)importSelectorNameForDataKey:(NSString *)key
@@ -157,32 +149,22 @@
     return [self.customSelectorKeyMappings objectForKey:key];
 }
 
-- (void)setImportSelectorName:(NSString *)selName forDataKey:(NSString *)key
-{
-    [self.customSelectorKeyMappings setObject:selName forKey:key];
-}
-
 - (NSArray *)keysToIgnore
 {
     return [self.ignoreKeys copy];
-}
-
-- (void)addKeysToIgnore:(NSArray *)keysToIgnore
-{
-    [self.ignoreKeys addObjectsFromArray:keysToIgnore];
 }
 
 #pragma mark - Private
 
 - (void)buildMappingCache
 {
-    self.classPropertyNames  = [[self.modelClass class] rz_getPropertyNames];
-    self.dataIdKey           = [[self.modelClass class] dataImportDefaultDataIdKey];
-    self.modelIdPropertyName = [[self.modelClass class] dataImportModelIdPropertyName];
+    _classPropertyNames  = [[[self.modelClass class] rz_getPropertyNames] copy];
+    _dataIdKey           = [[[self.modelClass class] dataImportDefaultDataIdKey] copy];
+    _modelIdPropertyName = [[[self.modelClass class] dataImportModelIdPropertyName] copy];
 
     if ([[self.modelClass class] respondsToSelector:@selector(dataImportDateFormat)])
     {
-        self.dateFormat = [[self.modelClass class] dataImportDateFormat];
+        _dateFormat = [[self.modelClass class] dataImportDateFormat];
     }
 
     if ([[self.modelClass class] respondsToSelector:@selector(dataImportIgnoreKeys)])
@@ -210,7 +192,14 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    RZDataManagerModelObjectMapping *mapping = [[RZDataManagerModelObjectMapping alloc] init];
+    // It's immutable, so we can just return the same object
+    return self;
+}
+
+- (id)mutableCopyWithZone:(NSZone *)zone
+{
+    RZDataManagerMutableModelObjectMapping *mapping = [[RZDataManagerMutableModelObjectMapping allocWithZone:zone] init];
+    
     mapping.dataIdKey                 = self.dataIdKey;
     mapping.modelIdPropertyName       = self.modelIdPropertyName;
     mapping.dateFormat                = self.dateFormat;
@@ -219,36 +208,94 @@
     mapping.classPropertyNames        = [self.classPropertyNames copy];
     mapping.dataKeyMappings           = [self.dataKeyMappings mutableCopy];
     mapping.customSelectorKeyMappings = [self.customSelectorKeyMappings mutableCopy];
-
+    
     // deep copy relationship key mappings
     mapping.relationshipKeyMappings = [[NSMutableDictionary alloc] initWithDictionary:self.relationshipKeyMappings copyItems:YES];
-
+    
     return mapping;
 }
 
 @end
 
+@implementation RZDataManagerMutableModelObjectMapping
+
+@synthesize dataIdKey;
+@synthesize modelIdPropertyName;
+@synthesize dateFormat;
+
+- (void)setModelPropertyName:(NSString *)propertyName forDataKey:(NSString *)key
+{
+    [self.dataKeyMappings setObject:propertyName forKey:key];
+}
+
+- (void)setModelPropertiesForKeyNames:(NSDictionary *)mappingDict
+{
+    [self.dataKeyMappings addEntriesFromDictionary:mappingDict];
+}
+
+- (void)setRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)mapping forDataKey:(NSString *)key
+{
+    [self.relationshipKeyMappings setObject:mapping forKey:key];
+}
+
+- (void)setImportSelectorName:(NSString *)selName forDataKey:(NSString *)key
+{
+    [self.customSelectorKeyMappings setObject:selName forKey:key];
+}
+- (void)addKeysToIgnore:(NSArray *)keysToIgnore
+{
+    [self.ignoreKeys addObjectsFromArray:keysToIgnore];
+}
+
+@end
+
+#pragma mark - Relationship Mappings
+
+
 @implementation RZDataManagerModelObjectRelationshipMapping
 
-+ (RZDataManagerModelObjectRelationshipMapping *)mappingWithClassNamed:(NSString *)type
-                                                          propertyName:(NSString *)propertyName
-                                                   inversePropertyName:(NSString *)inverse
++ (instancetype)mappingWithClassNamed:(NSString *)type
+                         propertyName:(NSString *)propertyName
+                  inversePropertyName:(NSString *)inverse
 {
-    RZDataManagerModelObjectRelationshipMapping *mapping = [[RZDataManagerModelObjectRelationshipMapping alloc] init];
-    mapping.relationshipClassName           = type;
-    mapping.relationshipPropertyName        = propertyName;
-    mapping.relationshipInversePropertyName = inverse;
-    return mapping;
+   return [[self alloc] initWithClassNamed:type
+                              propertyName:propertyName
+                       inversePropertyName:inverse];
+}
+
+- (id)initWithClassNamed:(NSString *)type propertyName:(NSString *)propertyName inversePropertyName:(NSString *)inverse
+{
+    if ((self = [super init]))
+    {
+        _relationshipClassName           = [type copy];
+        _relationshipPropertyName        = [propertyName copy];
+        _relationshipInversePropertyName = [inverse copy];
+    }
+    return self;
 }
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    RZDataManagerModelObjectRelationshipMapping *copy = [RZDataManagerModelObjectRelationshipMapping mappingWithClassNamed:self.relationshipClassName
-                                                                                                              propertyName:self.relationshipPropertyName
-                                                                                                       inversePropertyName:self.relationshipInversePropertyName];
+    // It's immutable, so we can just return the same object
+    return self;
+}
+
+- (id)mutableCopyWithZone:(NSZone *)zone
+{
+    RZDataManagerMutableModelObjectRelationshipMapping *copy = [[RZDataManagerMutableModelObjectRelationshipMapping allocWithZone:zone] initWithClassNamed:self.relationshipClassName
+                                                                                                                                              propertyName:self.relationshipPropertyName
+                                                                                                                                       inversePropertyName:self.relationshipInversePropertyName];
     copy.shouldReplaceExistingRelationships = self.shouldReplaceExistingRelationships;
     copy.relatedObjectMapping               = [self.relatedObjectMapping copy];
     return copy;
 }
+
+
+@end
+
+@implementation RZDataManagerMutableModelObjectRelationshipMapping
+
+@synthesize shouldReplaceExistingRelationships;
+@synthesize relatedObjectMapping;
 
 @end

@@ -100,7 +100,7 @@ NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManage
            options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion
 {
-    RZDataManagerModelObjectMapping *mapping = [self.dataImporter mappingForClassNamed:className];
+    RZDataManagerMutableModelObjectMapping *mapping = [[self.dataImporter mappingForClassNamed:className] mutableCopy];
     [mapping setModelPropertiesForKeyNames:keyMappings];
     
     [self addDefaultOptions:&options];
