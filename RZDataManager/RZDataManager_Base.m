@@ -9,6 +9,7 @@
 #import "RZDataManager_Base.h"
 #import "NSObject+RZPropertyUtils.h"
 
+NSString *const kRZDataManagerException     = @"RZDataManagerException";
 NSString *const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
 
 NSString *const kRZDataManagerDeleteStaleItemsPredicate         = @"RZDataManagerDeleteStaleItemsPredicate";

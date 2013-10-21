@@ -50,7 +50,8 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
 
 - (NSURL *)applicationDocumentsDirectory;
 
-- (NSString *)entityNameForClassNamed:(NSString *)className;
+- (NSString *)classNameForEntityOrClassNamed:(NSString *)name;
+- (NSString *)entityNameForClassOrEntityNamed:(NSString *)name;
 
 @end
 
@@ -101,6 +102,9 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
            options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion
 {
+    // make sure it's a class name, not an entity name
+    className = [self classNameForEntityOrClassNamed:className];
+    
     if (nil == mapping)
     {
         mapping = [self.dataImporter mappingForClassNamed:className];
@@ -108,12 +112,6 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
 
     NSString *dataIdKey  = mapping.dataIdKey;
     NSString *modelIdKey = mapping.modelIdPropertyName;
-
-    if (!dataIdKey || !modelIdKey)
-    {
-        RZLogDebug(@"Missing data and/or model ID keys for object of type %@", className);
-        return;
-    }
 
     NSMutableArray *importedObjectIDs = [NSMutableArray array];
 
@@ -148,7 +146,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
         {
 
             // optimize lookup for existing objects
-            NSString            *entityName  = [self entityNameForClassNamed:className];
+            NSString            *entityName  = [self entityNameForClassOrEntityNamed:className];
             NSEntityDescription *entityDesc  = [NSEntityDescription entityForName:entityName inManagedObjectContext:self.managedObjectContext];
             NSDictionary        *entityProps = [entityDesc propertiesByName];
 
@@ -337,7 +335,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 completion:(RZDataManagerImportCompletionBlock)completion
 {
     NSString *objectClassName = NSStringFromClass([object class]);
-
+    
     // use mapping attached to relationship mapping, otherwise get it from the importer
     RZDataManagerModelObjectMapping *objMapping = [relationshipMapping relatedObjectMapping];
     if (nil == objMapping)
@@ -424,7 +422,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 if (relationshipDesc.isToMany)
                 {
                     // optimize lookup for existing objects
-                    NSString     *entityName        = [self entityNameForClassNamed:relationshipMapping.relationshipClassName];
+                    NSString     *entityName        = [self entityNameForClassOrEntityNamed:relationshipMapping.relationshipClassName];
                     NSArray      *existingObjs      = [(NSSet *)[object valueForKey:relationshipMapping.relationshipPropertyName] allObjects];
                     NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
 
@@ -671,26 +669,25 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
 #pragma mark - Utilities
 
-- (NSString *)entityNameForClassNamed:(NSString *)type
+- (NSString *)entityNameForClassOrEntityNamed:(NSString *)name
 {
-    __block NSString *entityName = [self.classToEntityMapping objectForKey:type];
+    __block NSString *entityName = [self.classToEntityMapping objectForKey:name];
     if (nil == entityName)
     {
-
         NSDictionary *entities = [self.managedObjectModel entitiesByName];
 
-        if ([[entities allKeys] containsObject:type])
+        if ([[entities allKeys] containsObject:name])
         {
-            entityName = type;
-            [self.classToEntityMapping setObject:entityName forKey:type];
+            // if it's an entity name, don't update the cache
+            entityName = name;
         }
         else
         {
-
+            // if it's a class name, update the cache
             [entities enumerateKeysAndObjectsUsingBlock:^(NSString *eName, NSEntityDescription *eDesc, BOOL *stop)
             {
 
-                if ([eDesc.managedObjectClassName isEqualToString:type])
+                if ([eDesc.managedObjectClassName isEqualToString:name])
                 {
                     entityName = eName;
                     *stop = YES;
@@ -700,7 +697,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
             if (nil != entityName)
             {
-                [self.classToEntityMapping setObject:entityName forKey:type];
+                [self.classToEntityMapping setObject:entityName forKey:name];
             }
 
         }
@@ -708,12 +705,50 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
     if (nil == entityName)
     {
-        @throw [NSException exceptionWithName:NSInvalidArgumentException
-                                       reason:[NSString stringWithFormat:@"CoreData model does not contain entity or managed object class named %@", type]
+        @throw [NSException exceptionWithName:kRZDataManagerException
+                                       reason:[NSString stringWithFormat:@"CoreData model does not contain entity or managed object class named %@", name]
                                      userInfo:nil];
     }
 
     return entityName;
+}
+
+- (NSString *)classNameForEntityOrClassNamed:(NSString *)name
+{
+    __block NSString *className = [[self.classToEntityMapping allKeysForObject:name] lastObject];
+    if (nil == className)
+    {
+        NSDictionary *entities = [self.managedObjectModel entitiesByName];
+        
+        if ([[entities allKeys] containsObject:name])
+        {
+            // if it's an entity name, update the cache
+            className = [[entities objectForKey:name] managedObjectClassName];
+            [self.classToEntityMapping setObject:name forKey:className];
+        }
+        else
+        {
+            // if it's a class name, don't update the cache
+            [entities enumerateKeysAndObjectsUsingBlock:^(NSString *eName, NSEntityDescription *eDesc, BOOL *stop)
+             {
+                 
+                 if ([eDesc.managedObjectClassName isEqualToString:name])
+                 {
+                     className = name;
+                     *stop = YES;
+                 }
+                 
+             }];
+        }
+    }
+    
+    if (nil == className)
+    {
+        @throw [NSException exceptionWithName:kRZDataManagerException
+                                       reason:[NSString stringWithFormat:@"CoreData model does not contain entity or managed object class named %@", name]
+                                     userInfo:nil];
+    }
+    return className;
 }
 
 #pragma mark - Retrieval Methods
@@ -725,7 +760,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                create:(BOOL)create
 {
     // ensure this is an entity type, not the class name
-    entity = [self entityNameForClassNamed:entity];
+    entity = [self entityNameForClassOrEntityNamed:entity];
 
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entity];
     request.predicate = [NSPredicate predicateWithFormat:@"%K == %@", keyPath, value];
@@ -752,7 +787,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                create:(BOOL)create
 {
     // ensure this is an entity type, not the class name
-    entity = [self entityNameForClassNamed:entity];
+    entity = [self entityNameForClassOrEntityNamed:entity];
 
     id fetchedObject = nil;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%K == %@", keyPath, value];
@@ -786,7 +821,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                      usingMOC:(NSManagedObjectContext *)moc
 {
     // ensure this is an entity type, not the class name
-    entity = [self entityNameForClassNamed:entity];
+    entity = [self entityNameForClassOrEntityNamed:entity];
 
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:entity];
     request.predicate = predicate;

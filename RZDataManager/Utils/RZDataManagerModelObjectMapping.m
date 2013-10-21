@@ -8,6 +8,7 @@
 
 #import "RZDataManagerModelObjectMapping.h"
 #import "RZDataManagerModelObject.h"
+#import "RZDataManager_Base.h"
 #import "NSObject+RZPropertyUtils.h"
 #import "RZLogHelper.h"
 
@@ -158,6 +159,11 @@
 
 - (void)buildMappingCache
 {
+    if (![self.modelClass conformsToProtocol:@protocol(RZDataManagerModelObject)])
+    {
+        @throw [NSException exceptionWithName:kRZDataManagerException reason:@"Object does not conform to RZDataManagerModelObject protocol" userInfo:nil];
+    }
+    
     _classPropertyNames  = [[[self.modelClass class] rz_getPropertyNames] copy];
     _dataIdKey           = [[[self.modelClass class] dataImportDefaultDataIdKey] copy];
     _modelIdPropertyName = [[[self.modelClass class] dataImportModelIdPropertyName] copy];

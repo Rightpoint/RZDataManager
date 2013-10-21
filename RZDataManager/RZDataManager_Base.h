@@ -23,6 +23,10 @@ typedef void (^RZDataManagerImportBlock)(id context);
 typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError *error); // result is either object, collection, or nil
 typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError *error);
 
+// Exception domain
+OBJC_EXTERN NSString *const kRZDataManagerException;
+
+// Standard ISO 8601 UTC string date formate
 OBJC_EXTERN NSString *const kRZDataManagerUTCDateFormat;
 
 // ============================================================
