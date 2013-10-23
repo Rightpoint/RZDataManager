@@ -13,7 +13,7 @@
  *
  * Concrete RZDataManager subclass for working with a CoreData stack.
  *
- * RZDataManagerImportBlock provides an NSManagedObjectContext as its "context" object
+ * RZDataManagerOperationBlock provides an NSManagedObjectContext as its "context" object
  *
  * Things to know:
  *
@@ -79,8 +79,8 @@ OBJC_EXTERN NSString *const kRZCoreDataManagerImportAsynchronously;
 // If "synchronously" is true, background import operations will be enqueued on a private dispatch queue and will not run in parallel.
 // If false, background import operations will be performed on a private queue confinement moc, parallel to any other background import operations
 - (void)importInBackgroundSynchronously:(BOOL)synchronously
-                             usingBlock:(RZDataManagerImportBlock)importBlock
-                             completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
+                             usingBlock:(RZDataManagerOperationBlock)importBlock
+                             completion:(RZDataManagerBackgroundOperationCompletionBlock)completionBlock;
 
 //! Clears out CoreData stack and posts reset notifications. Will be rebuilt via lazy-load on next access to the MOC.
 - (void)resetDatabase;

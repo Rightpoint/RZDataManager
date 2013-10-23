@@ -89,7 +89,7 @@ NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManage
 - (void)importData:(id)data
      forClassNamed:(NSString *)className
            options:(NSDictionary *)options
-        completion:(RZDataManagerImportCompletionBlock)completion
+        completion:(RZDataManagerOperationCompletionBlock)completion
 {
     [self addDefaultOptions:&options];
     [self importData:data forClassNamed:className usingMapping:nil options:options completion:completion];
@@ -99,7 +99,7 @@ NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManage
      forClassNamed:(NSString *)className
        keyMappings:(NSDictionary *)keyMappings
            options:(NSDictionary *)options
-        completion:(RZDataManagerImportCompletionBlock)completion
+        completion:(RZDataManagerOperationCompletionBlock)completion
 {
     RZDataManagerMutableModelObjectMapping *mapping = [[self.dataImporter mappingForClassNamed:className] mutableCopy];
     [mapping setModelPropertiesForKeyNames:keyMappings];
@@ -112,7 +112,7 @@ NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManage
 forRelationshipPropertyName:(NSString *)relationshipProperty
                    onObject:(NSObject *)object
                     options:(NSDictionary *)options
-                 completion:(RZDataManagerImportCompletionBlock)completion
+                 completion:(RZDataManagerOperationCompletionBlock)completion
 {
     RZDataManagerModelObjectMapping             *objMapping = [self.dataImporter mappingForClassNamed:NSStringFromClass([object class])];
     RZDataManagerModelObjectRelationshipMapping *relMapping = [objMapping relationshipMappingForModelPropertyName:relationshipProperty];
@@ -146,7 +146,7 @@ forRelationshipPropertyName:(NSString *)relationshipProperty
      forClassNamed:(NSString *)className
       usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
-        completion:(RZDataManagerImportCompletionBlock)completion
+        completion:(RZDataManagerOperationCompletionBlock)completion
 {
     @throw [self abstractMethodException:_cmd];
 }
@@ -156,14 +156,14 @@ forRelationshipPropertyName:(NSString *)relationshipProperty
 forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
                   onObject:(NSObject *)object
                    options:(NSDictionary *)options
-                completion:(RZDataManagerImportCompletionBlock)completion
+                completion:(RZDataManagerOperationCompletionBlock)completion
 {
     @throw [self abstractMethodException:_cmd];
 }
 
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock
-                          completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock
+- (void)performDataOperationInBackgroundUsingBlock:(RZDataManagerOperationBlock)importBlock
+                                        completion:(RZDataManagerBackgroundOperationCompletionBlock)completionBlock
 {
     @throw [self abstractMethodException:_cmd];
 }

@@ -30,7 +30,10 @@
 
 - (void)dataImportPerformImportWithData:(NSDictionary *)importData;
 
-//! Date format string for string-date conversions
+//! Date format string for string-date conversions.
+/*!
+    It is assumed that all dates are UTC or include a time zone code. If not, you must use a custom import selector.
+ */
 + (NSString *)dataImportDateFormat;
 
 //! Return a dictionary of data keys mapped to property names, if keys/names differ for a particular mapping.

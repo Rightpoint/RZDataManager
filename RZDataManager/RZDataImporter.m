@@ -54,7 +54,11 @@
 
         self.modelMappings = [NSMutableDictionary dictionaryWithCapacity:16];
 
+        // Assume all dates are UTC
         self.dateFormatter               = [[NSDateFormatter alloc] init];
+        [self.dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
+        [self.dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
+        
         self.numberFormatter             = [[NSNumberFormatter alloc] init];
         self.numberFormatter.numberStyle = NSNumberFormatterDecimalStyle;
         self.defaultDateFormat           = kRZDataManagerUTCDateFormat;
@@ -497,13 +501,10 @@
             {
                 if (format)
                 {
-                    [self.dateFormatter setLocale:[NSLocale currentLocale]];
                     [self.dateFormatter setDateFormat:format];
                 }
                 else
                 {
-                    [self.dateFormatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
-                    [self.dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
                     [self.dateFormatter setDateFormat:self.defaultDateFormat];
                 }
 

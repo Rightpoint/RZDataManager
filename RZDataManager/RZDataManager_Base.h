@@ -17,11 +17,10 @@
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
 
-// context object depends on particular subclass
-typedef void (^RZDataManagerImportBlock)(id context);
 
-typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError *error); // result is either object, collection, or nil
-typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError *error);
+typedef void (^RZDataManagerOperationBlock)(id context); // context object depends on particular subclass
+typedef void (^RZDataManagerOperationCompletionBlock)(id result, NSError *error); // result is either object, collection, or nil
+typedef void (^RZDataManagerBackgroundOperationCompletionBlock)(NSError *error);
 
 // Exception domain
 OBJC_EXTERN NSString *const kRZDataManagerException;
@@ -106,14 +105,14 @@ OBJC_EXTERN NSString *const kRZDataManagerReturnObjectsFromImport;
 - (void)importData:(id)data
      forClassNamed:(NSString *)className
            options:(NSDictionary *)options
-        completion:(RZDataManagerImportCompletionBlock)completion;
+        completion:(RZDataManagerOperationCompletionBlock)completion;
 
 // Use key-value pairs in keyMappings to override key->property import mappings
 - (void)importData:(id)data
      forClassNamed:(NSString *)className
        keyMappings:(NSDictionary *)keyMappings
            options:(NSDictionary *)options
-        completion:(RZDataManagerImportCompletionBlock)completion;
+        completion:(RZDataManagerOperationCompletionBlock)completion;
 
 /******************************************************************************
  *
@@ -127,7 +126,7 @@ OBJC_EXTERN NSString *const kRZDataManagerReturnObjectsFromImport;
 forRelationshipPropertyName:(NSString *)relationshipProperty
                    onObject:(NSObject *)object
                     options:(NSDictionary *)options
-                 completion:(RZDataManagerImportCompletionBlock)completion;
+                 completion:(RZDataManagerOperationCompletionBlock)completion;
 
 // ============================================================
 // -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
@@ -138,16 +137,16 @@ forRelationshipPropertyName:(NSString *)relationshipProperty
      forClassNamed:(NSString *)className
       usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
-        completion:(RZDataManagerImportCompletionBlock)completion;
+        completion:(RZDataManagerOperationCompletionBlock)completion;
 
 - (void)        importData:(id)data
 forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
                   onObject:(NSObject *)object
                    options:(NSDictionary *)options
-                completion:(RZDataManagerImportCompletionBlock)completion;
+                completion:(RZDataManagerOperationCompletionBlock)completion;
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock
-                          completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
+- (void)performDataOperationInBackgroundUsingBlock:(RZDataManagerOperationBlock)importBlock
+                                        completion:(RZDataManagerBackgroundOperationCompletionBlock)completionBlock;
 
 // -------------------------------------------------------------
 

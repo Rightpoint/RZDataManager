@@ -100,7 +100,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
      forClassNamed:(NSString *)className
       usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
-        completion:(RZDataManagerImportCompletionBlock)completion
+        completion:(RZDataManagerOperationCompletionBlock)completion
 {
     // make sure it's a class name, not an entity name
     className = [self classNameForEntityOrClassNamed:className];
@@ -332,7 +332,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
 forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
                   onObject:(NSObject *)object
                    options:(NSDictionary *)options
-                completion:(RZDataManagerImportCompletionBlock)completion
+                completion:(RZDataManagerOperationCompletionBlock)completion
 {
     NSString *objectClassName = NSStringFromClass([object class]);
     
@@ -524,15 +524,15 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     }];
 }
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock
-                          completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock
+- (void)performDataOperationInBackgroundUsingBlock:(RZDataManagerOperationBlock)importBlock
+                                        completion:(RZDataManagerBackgroundOperationCompletionBlock)completionBlock
 {
     [self importInBackgroundSynchronously:YES usingBlock:importBlock completion:completionBlock];
 }
 
 - (void)importInBackgroundSynchronously:(BOOL)synchronously
-                             usingBlock:(RZDataManagerImportBlock)importBlock
-                             completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
+                             usingBlock:(RZDataManagerOperationBlock)importBlock
+                             completion:(RZDataManagerBackgroundOperationCompletionBlock)completionBlock;
 {
     // only setup new moc if on main thread, otherwise assume we are on a background thread with associated moc
 
