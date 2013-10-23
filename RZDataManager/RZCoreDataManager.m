@@ -340,7 +340,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     RZDataManagerModelObjectMapping *objMapping = [relationshipMapping relatedObjectMapping];
     if (nil == objMapping)
     {
-        objMapping = [self.dataImporter mappingForClassNamed:relationshipMapping.relationshipClassName];
+        objMapping = [self.dataImporter mappingForClassNamed:[self classNameForEntityOrClassNamed:relationshipMapping.relationshipClassName]];
     }
 
     NSString *dataIdKey  = objMapping.dataIdKey;
