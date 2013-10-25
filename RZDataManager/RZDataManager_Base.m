@@ -15,12 +15,14 @@ NSString *const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'
 NSString *const RZDataManagerDeleteStaleItemsPredicate = @"RZDataManagerDeleteStaleItemsPredicate";
 NSString *const RZDataManagerSaveAfterImport           = @"RZDataManagerSaveAfterImport";
 NSString *const RZDataManagerReturnObjectsFromImport   = @"RZDataManagerReturnObjectsFromImport";
+NSString *const RZDataManagerAdditionalImportData      = @"RZDataManagerAdditionalImportData";
 
 @interface RZDataManager ()
 
 - (NSException *)abstractMethodException:(SEL)selector;
 
 - (void)addDefaultOptions:(NSDictionary* __autoreleasing *)options;
+- (id)importDataByAddingAttributes:(id)additionalDataDict toImportData:(id)dataDictOrArray;
 
 @end
 
@@ -84,18 +86,53 @@ NSString *const RZDataManagerReturnObjectsFromImport   = @"RZDataManagerReturnOb
     }
 }
 
+- (id)importDataByAddingAttributes:(id)additionalDataDict toImportData:(id)dataDictOrArray
+{
+    id newDictOrArray = dataDictOrArray;
+    
+    // this will catch nil
+    if ([additionalDataDict isKindOfClass:[NSDictionary class]])
+    {
+        if ([dataDictOrArray isKindOfClass:[NSArray class]])
+        {
+            // add to each item
+            NSMutableArray *newItems = [NSMutableArray arrayWithCapacity:[(NSArray*)dataDictOrArray count]];
+            [(NSArray*)dataDictOrArray enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+            {
+                if ([obj isKindOfClass:[NSDictionary class]])
+                {
+                    NSMutableDictionary *newItem = [NSMutableDictionary dictionaryWithDictionary:obj];
+                    [newItem addEntriesFromDictionary:additionalDataDict];
+                    [newItems addObject:newItem];
+                }
+
+            }];
+            newDictOrArray = newItems;
+        }
+        else if ([dataDictOrArray isKindOfClass:[NSDictionary class]])
+        {
+            NSMutableDictionary *newItem = [NSMutableDictionary dictionaryWithDictionary:dataDictOrArray];
+            [dataDictOrArray addEntriesFromDictionary:additionalDataDict];
+            newDictOrArray = newItem;
+        }
+    }
+    
+    return newDictOrArray;
+}
+
 #pragma mark - Public Methods
 
-- (void)importData:(id)data
+- (void)importData:(id)dictionaryOrArray
      forClassNamed:(NSString *)className
            options:(NSDictionary *)options
         completion:(RZDataManagerOperationCompletionBlock)completion
 {
     [self addDefaultOptions:&options];
-    [self importData:data forClassNamed:className usingMapping:nil options:options completion:completion];
+    dictionaryOrArray = [self importDataByAddingAttributes:[options objectForKey:RZDataManagerAdditionalImportData] toImportData:dictionaryOrArray];
+    [self importData:dictionaryOrArray forClassNamed:className usingMapping:nil options:options completion:completion];
 }
 
-- (void)importData:(id)data
+- (void)importData:(id)dictionaryOrArray
      forClassNamed:(NSString *)className
        keyMappings:(NSDictionary *)keyMappings
            options:(NSDictionary *)options
@@ -105,10 +142,11 @@ NSString *const RZDataManagerReturnObjectsFromImport   = @"RZDataManagerReturnOb
     [mapping setModelPropertiesForKeyNames:keyMappings];
     
     [self addDefaultOptions:&options];
-    [self importData:data forClassNamed:className usingMapping:mapping options:options completion:completion];
+    dictionaryOrArray = [self importDataByAddingAttributes:[options objectForKey:RZDataManagerAdditionalImportData] toImportData:dictionaryOrArray];
+    [self importData:dictionaryOrArray forClassNamed:className usingMapping:mapping options:options completion:completion];
 }
 
-- (void)         importData:(id)data
+- (void)         importData:(id)dictionaryOrArray
 forRelationshipPropertyName:(NSString *)relationshipProperty
                    onObject:(NSObject *)object
                     options:(NSDictionary *)options
@@ -118,7 +156,8 @@ forRelationshipPropertyName:(NSString *)relationshipProperty
     RZDataManagerModelObjectRelationshipMapping *relMapping = [objMapping relationshipMappingForModelPropertyName:relationshipProperty];
     
     [self addDefaultOptions:&options];
-    [self importData:data forRelationshipWithMapping:relMapping onObject:object options:options completion:completion];
+    dictionaryOrArray = [self importDataByAddingAttributes:[options objectForKey:RZDataManagerAdditionalImportData] toImportData:dictionaryOrArray];
+    [self importData:dictionaryOrArray forRelationshipWithMapping:relMapping onObject:object options:options completion:completion];
 }
 
 #pragma mark - Abstract Public Methods (MUST IMPLEMENT IN SUBCLASS)
@@ -142,7 +181,7 @@ forRelationshipPropertyName:(NSString *)relationshipProperty
     @throw [self abstractMethodException:_cmd];
 }
 
-- (void)importData:(id)data
+- (void)importData:(id)dictionaryOrArray
      forClassNamed:(NSString *)className
       usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
@@ -152,7 +191,7 @@ forRelationshipPropertyName:(NSString *)relationshipProperty
 }
 
 
-- (void)        importData:(id)data
+- (void)        importData:(id)dictionaryOrArray
 forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
                   onObject:(NSObject *)object
                    options:(NSDictionary *)options

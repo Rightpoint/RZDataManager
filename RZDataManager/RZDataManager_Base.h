@@ -46,6 +46,11 @@ OBJC_EXTERN NSString *const RZDataManagerSaveAfterImport;
 // Default value is NO
 OBJC_EXTERN NSString *const RZDataManagerReturnObjectsFromImport;
 
+// If specified, adds extra attributes provided in NSDictionary value to be imported along with the
+// "dictionaryOrArray" argument (if array, adds to each dictionary in the array). If the imported item
+// already contains any of the keys in the additional data, they will be overwritten.
+OBJC_EXTERN NSString *const RZDataManagerAdditionalImportData;
+
 @interface RZDataManager : NSObject
 
 // Singleton accessor will correctly cast return type for subclasses.
@@ -102,13 +107,13 @@ OBJC_EXTERN NSString *const RZDataManagerReturnObjectsFromImport;
  ******************************************************************************/
 
 // Default signature, no overrides
-- (void)importData:(id)data
+- (void)importData:(id)dictionaryOrArray
      forClassNamed:(NSString *)className
            options:(NSDictionary *)options
         completion:(RZDataManagerOperationCompletionBlock)completion;
 
 // Use key-value pairs in keyMappings to override key->property import mappings
-- (void)importData:(id)data
+- (void)importData:(id)dictionaryOrArray
      forClassNamed:(NSString *)className
        keyMappings:(NSDictionary *)keyMappings
            options:(NSDictionary *)options
@@ -122,7 +127,7 @@ OBJC_EXTERN NSString *const RZDataManagerReturnObjectsFromImport;
  *
  ******************************************************************************/
 
-- (void)         importData:(id)data
+- (void)         importData:(id)dictionaryOrArray
 forRelationshipPropertyName:(NSString *)relationshipProperty
                    onObject:(NSObject *)object
                     options:(NSDictionary *)options
@@ -133,13 +138,13 @@ forRelationshipPropertyName:(NSString *)relationshipProperty
 // ============================================================
 
 // Mapping can be nil, in which case subclass should use default mapping for this object type
-- (void)importData:(id)data
+- (void)importData:(id)dictionaryOrArray
      forClassNamed:(NSString *)className
       usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
         completion:(RZDataManagerOperationCompletionBlock)completion;
 
-- (void)        importData:(id)data
+- (void)        importData:(id)dictionaryOrArray
 forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
                   onObject:(NSObject *)object
                    options:(NSDictionary *)options

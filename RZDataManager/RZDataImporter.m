@@ -229,7 +229,6 @@
                 // If value is a dictionary and there's no key mapping, attempt to flatten and look for keypath mappings
         else
         {
-
             if ([value isKindOfClass:[NSDictionary class]])
             {
                 NSDictionary  *subDict = value;

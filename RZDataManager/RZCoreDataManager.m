@@ -471,7 +471,8 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             RZLogDebug(@"Could not find relationship %@ on entity named %@", relationshipMapping.relationshipPropertyName, entityDesc.name);
         }
 
-    }                          completion:^(NSError *error)
+    }
+    completion:^(NSError *error)
     {
 
         if ([[options objectForKey:RZDataManagerSaveAfterImport] boolValue])
@@ -894,7 +895,6 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
             if (self.deleteDatabaseIfUnreadable && NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
             {
-                
                 RZLogDebug(@"Deleting database file");
                 
                 [[NSNotificationCenter defaultCenter] postNotificationName:RZCoreDataManagerWillDeleteInvalidDatabaseFile object:self];
