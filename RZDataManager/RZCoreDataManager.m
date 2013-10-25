@@ -131,7 +131,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
 
     [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
     {
-        [self handleDataImportWithEntityName:className
+        [self handleDataImportWithEntityName:[self entityNameForClassOrEntityNamed:className]
                                      mapping:mapping
                                      options:options
                                      andData:data
