@@ -32,8 +32,8 @@
  ************************************************************************************/
 
 
-OBJC_EXTERN NSString *const kRZCoreDataManagerWillResetDatabaseNotification;
-OBJC_EXTERN NSString *const kRZCoreDataManagerDidResetDatabaseNotification;
+OBJC_EXTERN NSString *const RZCoreDataManagerWillResetDatabaseNotification;
+OBJC_EXTERN NSString *const RZCoreDataManagerDidResetDatabaseNotification;
 
 // ============================================================
 //                KEYS FOR OPTIONS DICTIONARY
@@ -42,7 +42,7 @@ OBJC_EXTERN NSString *const kRZCoreDataManagerDidResetDatabaseNotification;
 // If value is YES, will perform background import on its own thread, independent and parallel to other background imports.
 // This is useful when importing large amounts of data that doesn't affect other imports and may otherwise hold up the queue.
 // Default is NO.
-OBJC_EXTERN NSString *const kRZCoreDataManagerImportAsynchronously;
+OBJC_EXTERN NSString *const RZCoreDataManagerImportAsynchronously;
 
 @class RZDataImporter;
 

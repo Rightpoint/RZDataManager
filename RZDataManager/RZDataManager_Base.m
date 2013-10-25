@@ -12,9 +12,10 @@
 NSString *const kRZDataManagerException     = @"RZDataManagerException";
 NSString *const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
 
-NSString *const kRZDataManagerDeleteStaleItemsPredicate         = @"RZDataManagerDeleteStaleItemsPredicate";
-NSString *const kRZDataManagerSaveAfterImport                   = @"RZDataManagerSaveAfterImport";
-NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManagerReturnObjectsFromImport";
+NSString *const RZDataManagerDeleteStaleItemsPredicate = @"RZDataManagerDeleteStaleItemsPredicate";
+NSString *const RZDataManagerSaveAfterImport           = @"RZDataManagerSaveAfterImport";
+NSString *const RZDataManagerReturnObjectsFromImport   = @"RZDataManagerReturnObjectsFromImport";
+NSString *const RZDataManagerAdditionalImportData      = @"RZDataManagerAdditionalImportData";
 
 @interface RZDataManager ()
 
@@ -75,10 +76,10 @@ NSString *const kRZDataManagerReturnObjectsFromImport           = @"RZDataManage
     // add default key for save after import (defaults to yes)
     if (options)
     {
-        if ([*options objectForKey:kRZDataManagerSaveAfterImport] == nil)
+        if ([*options objectForKey:RZDataManagerSaveAfterImport] == nil)
         {
             NSMutableDictionary *newOpts = *options == nil ? [NSMutableDictionary dictionary] : [*options mutableCopy];
-            [newOpts setValue:@(YES) forKey:kRZDataManagerSaveAfterImport];
+            [newOpts setValue:@(YES) forKey:RZDataManagerSaveAfterImport];
             *options = newOpts;
         }
     }

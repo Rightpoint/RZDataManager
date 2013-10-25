@@ -34,17 +34,21 @@ OBJC_EXTERN NSString *const kRZDataManagerUTCDateFormat;
 
 // Delete any items that are present in the result produced by this predicate and not
 // present in the items to be imported.
-OBJC_EXTERN NSString *const kRZDataManagerDeleteStaleItemsPredicate;
+OBJC_EXTERN NSString *const RZDataManagerDeleteStaleItemsPredicate;
 
 // Disable automatic full-stack save of database after each import.
 // Useful when you might want to undo an import.
 // Default value is YES
-OBJC_EXTERN NSString *const kRZDataManagerSaveAfterImport;
+OBJC_EXTERN NSString *const RZDataManagerSaveAfterImport;
 
 // Disable completion block from returning imported items on main thread managed object context.
 // May want to use this to prevent resource usage when importing a large number of objects.
 // Default value is NO
-OBJC_EXTERN NSString *const kRZDataManagerReturnObjectsFromImport;
+OBJC_EXTERN NSString *const RZDataManagerReturnObjectsFromImport;
+
+// If specified, adds extra attributes provided in NSDictionary value to be imported along with the
+// "data" argument (if "data" is array, adds to each item in array).
+OBJC_EXTERN NSString *const RZDataManagerAdditionalImportData;
 
 @interface RZDataManager : NSObject
 

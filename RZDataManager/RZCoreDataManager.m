@@ -15,13 +15,13 @@
 // For storing moc reference in thread dictionary
 static NSString *const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
 
-NSString *const kRZCoreDataManagerImportAsynchronously = @"RZCoreDataManagerImportAsynhcronously";
+NSString *const RZCoreDataManagerImportAsynchronously = @"RZCoreDataManagerImportAsynhcronously";
 
 static dispatch_queue_t s_RZCoreDataManagerPrivateImportQueue = nil;
 static char *const s_RZCoreDataManagerPrivateImportQueueName = "com.raizlabs.RZCoreDataManagerImport";
 
-NSString *const kRZCoreDataManagerWillResetDatabaseNotification = @"RZCoreDataManagerWillResetDatabase";
-NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataManagerDidResetDatabase";
+NSString *const RZCoreDataManagerWillResetDatabaseNotification = @"RZCoreDataManagerWillResetDatabase";
+NSString *const RZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataManagerDidResetDatabase";
 
 @interface RZCoreDataManager ()
 
@@ -103,7 +103,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
 
     NSMutableArray *importedObjectIDs = [NSMutableArray array];
 
-    BOOL synchronousImport = ![[options objectForKey:kRZCoreDataManagerImportAsynchronously] boolValue];
+    BOOL synchronousImport = ![[options objectForKey:RZCoreDataManagerImportAsynchronously] boolValue];
 
     [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
     {
@@ -229,7 +229,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
 
                     }
 
-                    NSPredicate *stalePred = options[kRZDataManagerDeleteStaleItemsPredicate];
+                    NSPredicate *stalePred = options[RZDataManagerDeleteStaleItemsPredicate];
 
                     if (stalePred != nil)
                     {
@@ -278,7 +278,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
     completion:^(NSError *error)
     {
 
-        if ([[options objectForKey:kRZDataManagerSaveAfterImport] boolValue])
+        if ([[options objectForKey:RZDataManagerSaveAfterImport] boolValue])
         {
             [self saveContext:YES];
         }
@@ -288,7 +288,7 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
 
             // Need to fetch object from main thread moc for completion block
             id result = nil;
-            if (error == nil && [[options objectForKey:kRZDataManagerReturnObjectsFromImport] boolValue])
+            if (error == nil && [[options objectForKey:RZDataManagerReturnObjectsFromImport] boolValue])
             {
 
                 if ([data isKindOfClass:[NSDictionary class]])
@@ -340,7 +340,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         return;
     }
 
-    BOOL synchronousImport = ![[options objectForKey:kRZCoreDataManagerImportAsynchronously] boolValue];
+    BOOL synchronousImport = ![[options objectForKey:RZCoreDataManagerImportAsynchronously] boolValue];
 
     [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
     {
@@ -472,7 +472,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     }                          completion:^(NSError *error)
     {
 
-        if ([[options objectForKey:kRZDataManagerSaveAfterImport] boolValue])
+        if ([[options objectForKey:RZDataManagerSaveAfterImport] boolValue])
         {
             [self saveContext:YES];
         }
@@ -482,7 +482,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
             // Need to fetch object from main thread moc for completion block
             id result = nil;
-            if (error == nil && [[options objectForKey:kRZDataManagerReturnObjectsFromImport] boolValue])
+            if (error == nil && [[options objectForKey:RZDataManagerReturnObjectsFromImport] boolValue])
             {
                 if ([data isKindOfClass:[NSDictionary class]])
                 {
@@ -1006,7 +1006,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
 - (void)resetDatabase
 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:kRZCoreDataManagerWillResetDatabaseNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:RZCoreDataManagerWillResetDatabaseNotification object:self];
 
     self.backgroundMoc              = nil;
     self.managedObjectContext       = nil;
@@ -1024,7 +1024,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         }
     }
 
-    [[NSNotificationCenter defaultCenter] postNotificationName:kRZCoreDataManagerDidResetDatabaseNotification object:self];
+    [[NSNotificationCenter defaultCenter] postNotificationName:RZCoreDataManagerDidResetDatabaseNotification object:self];
 }
 
 #pragma mark - Application's Documents directory
