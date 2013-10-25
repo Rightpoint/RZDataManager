@@ -216,7 +216,6 @@
     // Do the import
     for (NSString *key in [data allKeys])
     {
-
         if ([[mapping keysToIgnore] containsObject:key]) continue;
 
         id value = [data validObjectForKey:key decodeHTML:NO];
@@ -226,36 +225,30 @@
         {
             [self importValue:value toObject:object fromKeyPath:key withMapping:mapping];
         }
-                // If value is a dictionary and there's no key mapping, attempt to flatten and look for keypath mappings
+        // If value is a dictionary and there's no key mapping, attempt to flatten and look for keypath mappings
+        else if ([value isKindOfClass:[NSDictionary class]])
+        {
+            NSDictionary  *subDict = value;
+            for (NSString *subKey in [subDict allKeys])
+            {
+                NSString *keyPath = [NSString stringWithFormat:@"%@.%@", key, subKey];
+
+                if ([mapping modelPropertyNameForDataKey:keyPath] != nil)
+                {
+                    id subValue = [data validObjectForKeyPath:keyPath decodeHTML:NO];
+                    [self importValue:subValue toObject:object fromKeyPath:keyPath withMapping:mapping];
+                }
+                else if (![[mapping keysToIgnore] containsObject:keyPath])
+                {
+                    RZLogDebug(@"Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class]));
+                }
+
+            }
+        }
         else
         {
-            if ([value isKindOfClass:[NSDictionary class]])
-            {
-                NSDictionary  *subDict = value;
-                for (NSString *subKey in [subDict allKeys])
-                {
-
-                    NSString *keyPath = [NSString stringWithFormat:@"%@.%@", key, subKey];
-
-                    if ([mapping modelPropertyNameForDataKey:keyPath] != nil)
-                    {
-                        id subValue = [data validObjectForKeyPath:keyPath decodeHTML:NO];
-                        [self importValue:subValue toObject:object fromKeyPath:keyPath withMapping:mapping];
-                    }
-                    else if (![[mapping keysToIgnore] containsObject:keyPath])
-                    {
-                        RZLogDebug(@"Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class]));
-                    }
-
-                }
-            }
-            else
-            {
-                RZLogDebug(@"Could not find mapping for key %@ in object of class %@", key, NSStringFromClass([object class]));
-            }
-
+            RZLogDebug(@"Could not find mapping for key %@ in object of class %@", key, NSStringFromClass([object class]));
         }
-
     }
 
     // Finalize the import
@@ -338,98 +331,6 @@
             [self setPropertyValue:value onObject:object fromKeyPath:keyPath withMapping:mapping];
         }
     }
-//
-//        RZDataManagerModelObjectMapping *relatedObjectMapping = [self mappingForClassNamed:relationshipMapping.relationshipClassName];
-//
-//        if (relatedObjectMapping != nil)
-//        {
-//
-//            // If value is non-nil, import related object. Otherwise use invocation to nil it out.
-//            if (value != nil)
-//            {
-//
-//                NSString *relationshipIDKey      = relatedObjectMapping.dataIdKey;
-//                NSString *relationshipModelIDKey = relatedObjectMapping.modelIdPropertyName;
-//
-//                if (relationshipIDKey && relationshipModelIDKey)
-//                {
-//
-//                    if ([value isKindOfClass:[NSDictionary class]] || [value isKindOfClass:[NSArray class]])
-//                    {
-//                        id relData = value;
-//
-//                        if ([value isKindOfClass:[NSArray class]])
-//                        {
-//
-//                            // if array does not contain dictionaries, assume each value is a unique id value, wrap in dictionary
-//                            if (![[(NSArray *)value objectAtIndex:0] isKindOfClass:[NSDictionary class]])
-//                            {
-//                                NSMutableArray *dataKeyPairs = [NSMutableArray arrayWithCapacity:[(NSArray *)value count]];
-//
-//                                [(NSArray *)value enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
-//                                {
-//                                    [dataKeyPairs addObject:@{relationshipIDKey : obj}];
-//                                }];
-//
-//                                relData = dataKeyPairs;
-//                            }
-//
-//                        }
-//
-//                        [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:@{RZDataManagerSaveAfterImport : @(NO)} completion:nil];
-//
-//                    }
-//                    else
-//                    {
-//
-//                        // wrap in a dictionary - we will assume it's the unique identifier
-//                        // this is for cases when the relationship is specified by one key-value pair instead of fully-qualified
-//                        // data for the other object
-//
-//                        NSDictionary *relData = @{relationshipIDKey : value};
-//
-//                        [self.dataManager importData:relData forRelationshipWithMapping:relationshipMapping onObject:object options:@{RZDataManagerSaveAfterImport : @(NO)} completion:nil];
-//
-//                    }
-//                }
-//                else
-//                {
-//                    RZLogDebug(@"Missing relationship id key and/or model id key for relationship object type %@", relationshipMapping.relationshipClassName);
-//                }
-//            }
-//            else
-//            {
-//
-//                SEL setter = [[object class] rz_setterForPropertyNamed:relationshipMapping.relationshipPropertyName];
-//                if (setter)
-//                {
-//
-//                    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:setter]];
-//                    [invocation setTarget:object];
-//                    [invocation setSelector:setter];
-//                    [invocation setArgument:&value atIndex:2];
-//
-//                    @try
-//                    {
-//                        [invocation invoke];
-//                    }
-//                    @catch (NSException *exception)
-//                    {
-//                        RZLogError(@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(setter), NSStringFromClass([object class]), exception);
-//                    }
-//
-//                }
-//                else
-//                {
-//                    RZLogError(@"Setter not found for property %@ on class %@", relationshipMapping.relationshipPropertyName, NSStringFromClass([object class]));
-//                }
-//
-//            }
-//        }
-//        else
-//        {
-//            RZLogDebug(@"could not find mapping for relationship object type %@ from object type %@", relationshipMapping.relationshipClassName, NSStringFromClass([object class]));
-//        }
 
 }
 
