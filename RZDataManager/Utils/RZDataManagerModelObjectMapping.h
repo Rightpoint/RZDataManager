@@ -24,6 +24,8 @@
 
 - (NSString *)modelPropertyNameForDataKey:(NSString *)key;
 
+- (NSDictionary *)allRelationshipMappings;
+
 - (RZDataManagerModelObjectRelationshipMapping *)relationshipMappingForDataKey:(NSString *)key;
 
 - (RZDataManagerModelObjectRelationshipMapping *)relationshipMappingForModelPropertyName:(NSString *)propName;
@@ -72,7 +74,8 @@
 @property (nonatomic, readonly, copy) NSString *relationshipInversePropertyName;
 
 @property (nonatomic, readonly, copy) RZDataManagerModelObjectMapping *relatedObjectMapping;
-@property (nonatomic, readonly, assign) BOOL shouldReplaceExistingRelationships;
+
+@property (nonatomic, readonly, assign) BOOL shouldReplaceExistingRelationships; // If YES, will overwrite existing relationship array. Default NO
 
 @end
 

@@ -695,8 +695,8 @@
     
     [self.dataManager importData:redCollection
                       forClassNamed:@"DMCollection"
-                         options:@{RZDataManagerReturnObjectsFromImport : @(YES)}
-                      completion:^(id result, NSError *error)
+                            options:@{RZDataManagerReturnObjectsFromImport : @(YES)}
+                        completion:^(id result, NSError *error)
      {
          STAssertTrue(error == nil, @"Import error occured: %@", error);
          

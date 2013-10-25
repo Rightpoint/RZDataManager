@@ -122,6 +122,10 @@
     return propName;
 }
 
+- (NSDictionary *)allRelationshipMappings
+{
+    return [self.relationshipKeyMappings copy];
+}
 
 - (RZDataManagerModelObjectRelationshipMapping *)relationshipMappingForDataKey:(NSString *)key
 {

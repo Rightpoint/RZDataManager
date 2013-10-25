@@ -7,6 +7,7 @@
 
 #import "RZCoreDataManager.h"
 #import "NSDictionary+NonNSNull.h"
+#import "NSObject+RZPropertyUtils.h"
 #import "RZLogHelper.h"
 
 // Number of items to import in a single batch when importing a lot of items
@@ -40,7 +41,11 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
                                mapping:(RZDataManagerModelObjectMapping *)mapping
                                options:(NSDictionary *)options
                                andData:(id)dictionaryOrArray
-                        importedObjIds:(NSMutableArray *__strong*)importedObjIds;
+                        importedObjIds:(NSMutableArray *const __autoreleasing*)importedObjIds;
+
+- (void)performRelationshipImportsOnObject:(NSObject *)obj
+                               withMapping:(RZDataManagerModelObjectMapping *)mapping
+                                  fromData:(id)dictionaryOrArray;
 
 - (void)handleRelationshipImportOnObject:(NSObject *)object
                  withRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
@@ -120,7 +125,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
         return;
     }
 
-    NSMutableArray *importedObjectIDs = [NSMutableArray array];
+    __block NSMutableArray *importedObjectIDs = [NSMutableArray array];
 
     BOOL synchronousImport = ![[options objectForKey:RZCoreDataManagerImportAsynchronously] boolValue];
 
@@ -201,7 +206,10 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
     [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
     {
-        [self handleRelationshipImportOnObject:object withRelationshipMapping:relationshipMapping objectMapping:objMapping andData:data];
+        [self handleRelationshipImportOnObject:object
+                       withRelationshipMapping:relationshipMapping
+                                 objectMapping:objMapping
+                                       andData:data];
     }
     completion:^(NSError *error)
     {
@@ -560,11 +568,11 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                                mapping:(RZDataManagerModelObjectMapping *)mapping
                                options:(NSDictionary *)options
                                andData:(id)dictionaryOrArray
-                        importedObjIds:(NSMutableArray * __strong *)importedObjIds
+                        importedObjIds:(NSMutableArray * const __autoreleasing *)importedObjIds
 {
     NSString *dataIdKey  = mapping.dataIdKey;
     NSString *modelIdKey = mapping.modelIdPropertyName;
-    
+
     if ([dictionaryOrArray isKindOfClass:[NSDictionary class]])
     {
         id obj = nil;
@@ -581,6 +589,10 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             {
                 [self.dataImporter importData:dictionaryOrArray toObject:obj usingMapping:mapping];
             }
+            
+            // check for relationships
+            [self performRelationshipImportsOnObject:obj withMapping:mapping fromData:dictionaryOrArray];
+            
         }
         else
         {
@@ -677,6 +689,9 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                                  {
                                      [self.dataImporter importData:objData toObject:importedObj];
                                  }
+                                 
+                                 // Check for relationships
+                                 [self performRelationshipImportsOnObject:importedObj withMapping:mapping fromData:objData];
 
                                  if (importedObjIds)
                                  {
@@ -734,6 +749,70 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
 }
 
+- (void)performRelationshipImportsOnObject:(NSObject *)obj withMapping:(RZDataManagerModelObjectMapping *)mapping fromData:(id)dictionaryOrArray
+{
+    // Check for relationships
+    NSDictionary *relationshipMappings = mapping.allRelationshipMappings;
+    NSSet *relationshipKeys = [NSSet setWithArray:relationshipMappings.allKeys];
+    
+    if (relationshipKeys.count)
+    {
+        NSMutableSet *commonKeys = [NSMutableSet setWithArray:[dictionaryOrArray allKeys]];
+        [commonKeys intersectSet:relationshipKeys];
+        
+        [commonKeys enumerateObjectsUsingBlock:^(NSString *key, BOOL *stop) {
+            
+            RZDataManagerModelObjectRelationshipMapping *relMapping = [relationshipMappings objectForKey:key];
+            
+            // use mapping attached to relationship mapping, otherwise get it from the importer
+            RZDataManagerModelObjectMapping *objMapping = [relMapping relatedObjectMapping];
+            if (nil == objMapping)
+            {
+                objMapping = [self.dataImporter mappingForClassNamed:[self classNameForEntityOrClassNamed:relMapping.relationshipClassName]];
+            }
+            
+            
+            id relData = [dictionaryOrArray validObjectForKey:key];
+            
+            // nil is OK
+            if (relData != nil)
+            {
+                // multiple relationships
+                if ([relData isKindOfClass:[NSArray class]])
+                {
+                    [(NSArray *)relData enumerateObjectsUsingBlock:^(id rd, NSUInteger idx, BOOL *stop) {
+                        
+                        id rid = rd;
+                        if (![rd isKindOfClass:[NSDictionary class]])
+                        {
+                            // assume it's the unique ID value
+                            rid = @{ objMapping.dataIdKey : rd };
+                        }
+                        
+                        [self handleRelationshipImportOnObject:obj
+                                       withRelationshipMapping:relMapping
+                                                 objectMapping:objMapping
+                                                       andData:relData];
+                        
+                    }];
+                }
+                else if (![relData isKindOfClass:[NSDictionary class]])
+                {
+                    // assume it's the unique ID value
+                    relData = @{ objMapping.dataIdKey : relData };
+                }
+            }
+            
+            [self handleRelationshipImportOnObject:obj
+                           withRelationshipMapping:relMapping
+                                     objectMapping:objMapping
+                                           andData:relData];
+            
+        }];
+        
+    }
+}
+
 - (void)handleRelationshipImportOnObject:(NSObject *)object
                  withRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
                            objectMapping:(RZDataManagerModelObjectMapping *)objectMapping
@@ -747,7 +826,34 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
     if (relationshipDesc != nil)
     {
-        if ([dictionaryOrArray isKindOfClass:[NSDictionary class]])
+        if (dictionaryOrArray == nil)
+        {
+            // break the relationship
+            SEL setter = [[object class] rz_setterForPropertyNamed:relationshipMapping.relationshipPropertyName];
+            if (setter)
+            {
+                id value = nil;
+                NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[object methodSignatureForSelector:setter]];
+                [invocation setTarget:object];
+                [invocation setSelector:setter];
+                [invocation setArgument:&value atIndex:2];
+
+                @try
+                {
+                    [invocation invoke];
+                }
+                @catch (NSException *exception)
+                {
+                    RZLogError(@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(setter), NSStringFromClass([object class]), exception);
+                }
+
+            }
+            else
+            {
+                RZLogError(@"Setter not found for property %@ on class %@", relationshipMapping.relationshipPropertyName, NSStringFromClass([object class]));
+            }
+        }
+        else if ([dictionaryOrArray isKindOfClass:[NSDictionary class]])
         {
             id importedObj = nil;
             id uid         = [dictionaryOrArray validObjectForKey:dataIdKey decodeHTML:NO];
@@ -783,7 +889,6 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                         [relObjs addObject:importedObj];
                         [object setValue:relObjs forKey:relationshipMapping.relationshipPropertyName];
                     }
-                    
                     
                 }
                 else
