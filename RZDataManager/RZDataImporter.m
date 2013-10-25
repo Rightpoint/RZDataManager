@@ -274,9 +274,7 @@
     // If value is string and we decode HTML, do it now
     if ([value isKindOfClass:[NSString class]])
     {
-
         // TODO: check mapping
-
         BOOL decodesHTML = self.shouldDecodeHTML;
 
         if (decodesHTML)

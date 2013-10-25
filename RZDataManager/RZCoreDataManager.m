@@ -29,18 +29,6 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
 @property (nonatomic, strong) NSManagedObjectContext   *backgroundMoc;
 @property (nonatomic, strong) NSMutableDictionary      *classToEntityMapping;
 
-- (id)objectForEntity:(NSString *)entity
-            withValue:(id)value
-           forKeyPath:(NSString *)keyPath
-             usingMOC:(NSManagedObjectContext *)moc
-               create:(BOOL)create;
-
-- (id)objectForEntity:(NSString *)entity
-            withValue:(id)value
-           forKeyPath:(NSString *)keyPath
-         inCollection:(id)objects
-             usingMOC:(NSManagedObjectContext *)moc
-               create:(BOOL)create;
 
 - (NSArray *)objectsForEntity:(NSString *)entity
             matchingPredicate:(NSPredicate *)predicate
@@ -68,8 +56,8 @@ NSString *const kRZCoreDataManagerDidResetDatabaseNotification  = @"RZCoreDataMa
             s_RZCoreDataManagerPrivateImportQueue = dispatch_queue_create(s_RZCoreDataManagerPrivateImportQueueName, NULL);
         });
         
-        _classToEntityMapping = [NSMutableDictionary dictionary];
-        _attemptAutomaticMigration = YES;
+        _classToEntityMapping       = [NSMutableDictionary dictionary];
+        _attemptAutomaticMigration  = YES;
         _deleteDatabaseIfUnreadable = YES;
     }
     return self;
@@ -895,16 +883,18 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         
         if (self.attemptAutomaticMigration && NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
         {
-            options = @{
-                            NSMigratePersistentStoresAutomaticallyOption : @(YES),
-                            NSInferMappingModelAutomaticallyOption : @(YES)
-                        };
+            options = @{ NSMigratePersistentStoresAutomaticallyOption : @(YES), NSInferMappingModelAutomaticallyOption : @(YES) };
         }
         
         if(![_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:options error:&error])
         {
+            RZLogError(@"Database file is not readable with current model.");
+
             if (self.deleteDatabaseIfUnreadable && NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
             {
+                
+                RZLogDebug(@"Deleting database file");
+                
                 NSError *removeFileError = nil;
                 if ([[NSFileManager defaultManager] removeItemAtURL:self.persistentStoreURL error:&removeFileError])
                 {
