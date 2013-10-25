@@ -32,6 +32,19 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
 @property (nonatomic, strong) NSManagedObjectContext   *backgroundMoc;
 @property (nonatomic, strong) NSMutableDictionary      *classToEntityMapping;
 
+- (id)objectForEntity:(NSString *)entity
+            withValue:(id)value
+           forKeyPath:(NSString *)keyPath
+             usingMOC:(NSManagedObjectContext *)moc
+               create:(BOOL)create;
+
+- (id)objectForEntity:(NSString *)entity
+            withValue:(id)value
+           forKeyPath:(NSString *)keyPath
+         inCollection:(id)objects
+             usingMOC:(NSManagedObjectContext *)moc
+               create:(BOOL)create;
+
 
 - (NSArray *)objectsForEntity:(NSString *)entity
             matchingPredicate:(NSPredicate *)predicate
@@ -83,9 +96,9 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
 
 #pragma mark - RZDataManager Subclass
 
-- (id)objectOfType:(NSString *)className withValue:(id)value forKeyPath:(NSString *)keyPath createNew:(BOOL)createNew
+- (id)objectOfType:(NSString *)type withValue:(id)value forKeyPath:(NSString *)keyPath createNew:(BOOL)createNew
 {
-    return [self objectForEntity:className withValue:value forKeyPath:keyPath usingMOC:self.currentMoc create:createNew];
+    return [self objectForEntity:type withValue:value forKeyPath:keyPath usingMOC:self.currentMoc create:createNew];
 }
 
 - (id)objectOfType:(NSString *)className

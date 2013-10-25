@@ -79,20 +79,6 @@ OBJC_EXTERN NSString *const RZCoreDataManagerImportAsynchronously;
 
 @property (nonatomic, strong) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 
-
-- (id)objectForEntity:(NSString *)entity
-            withValue:(id)value
-           forKeyPath:(NSString *)keyPath
-             usingMOC:(NSManagedObjectContext *)moc
-               create:(BOOL)create;
-
-- (id)objectForEntity:(NSString *)entity
-            withValue:(id)value
-           forKeyPath:(NSString *)keyPath
-         inCollection:(id)objects
-             usingMOC:(NSManagedObjectContext *)moc
-               create:(BOOL)create;
-
 // If "synchronously" is true, background import operations will be enqueued on a private dispatch queue and will not run in parallel.
 // If false, background import operations will be performed on a private queue confinement moc, parallel to any other background import operations
 - (void)importInBackgroundSynchronously:(BOOL)synchronously
