@@ -20,8 +20,10 @@ NSString *const RZCoreDataManagerImportAsynchronously = @"RZCoreDataManagerImpor
 static dispatch_queue_t s_RZCoreDataManagerPrivateImportQueue = nil;
 static char *const s_RZCoreDataManagerPrivateImportQueueName = "com.raizlabs.RZCoreDataManagerImport";
 
-NSString *const RZCoreDataManagerWillResetDatabaseNotification = @"RZCoreDataManagerWillResetDatabase";
-NSString *const RZCoreDataManagerDidResetDatabaseNotification = @"RZCoreDataManagerDidResetDatabase";
+NSString *const RZCoreDataManagerWillDeleteInvalidDatabaseFile  = @"RZCoreDataManagerWillDeleteInvalidDatabaseFile";
+NSString *const RZCoreDataManagerDidDeleteInvalidDatabaseFile   = @"RZCoreDataManagerDidDeleteInvalidDatabaseFile";
+NSString *const RZCoreDataManagerWillResetDatabaseNotification  = @"RZCoreDataManagerWillResetDatabase";
+NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataManagerDidResetDatabase";
 
 @interface RZCoreDataManager ()
 
@@ -895,12 +897,16 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 
                 RZLogDebug(@"Deleting database file");
                 
+                [[NSNotificationCenter defaultCenter] postNotificationName:RZCoreDataManagerWillDeleteInvalidDatabaseFile object:self];
+                
                 NSError *removeFileError = nil;
+                
                 if ([[NSFileManager defaultManager] removeItemAtURL:self.persistentStoreURL error:&removeFileError])
                 {
                     if ([_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:nil error:&error])
                     {
                         // Succeeded! - Nil out previous error to avoid abort
+                        [[NSNotificationCenter defaultCenter] postNotificationName:RZCoreDataManagerDidDeleteInvalidDatabaseFile object:self];
                         error = nil;
                     }
                 }

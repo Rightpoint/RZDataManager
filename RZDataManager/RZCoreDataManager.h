@@ -32,6 +32,9 @@
  ************************************************************************************/
 
 
+OBJC_EXTERN NSString *const RZCoreDataManagerWillDeleteInvalidDatabaseFile;
+OBJC_EXTERN NSString *const RZCoreDataManagerDidDeleteInvalidDatabaseFile;
+
 OBJC_EXTERN NSString *const RZCoreDataManagerWillResetDatabaseNotification;
 OBJC_EXTERN NSString *const RZCoreDataManagerDidResetDatabaseNotification;
 

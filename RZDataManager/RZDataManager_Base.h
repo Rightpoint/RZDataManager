@@ -46,10 +46,6 @@ OBJC_EXTERN NSString *const RZDataManagerSaveAfterImport;
 // Default value is NO
 OBJC_EXTERN NSString *const RZDataManagerReturnObjectsFromImport;
 
-// If specified, adds extra attributes provided in NSDictionary value to be imported along with the
-// "data" argument (if "data" is array, adds to each item in array).
-OBJC_EXTERN NSString *const RZDataManagerAdditionalImportData;
-
 @interface RZDataManager : NSObject
 
 // Singleton accessor will correctly cast return type for subclasses.
