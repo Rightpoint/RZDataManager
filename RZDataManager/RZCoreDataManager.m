@@ -36,6 +36,17 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
             matchingPredicate:(NSPredicate *)predicate
                      usingMOC:(NSManagedObjectContext *)moc;
 
+- (void)handleDataImportWithEntityName:(NSString *)entityName
+                               mapping:(RZDataManagerModelObjectMapping *)mapping
+                               options:(NSDictionary *)options
+                               andData:(id)dictionaryOrArray
+                        importedObjIds:(NSMutableArray *__strong*)importedObjIds;
+
+- (void)handleRelationshipImportOnObject:(NSObject *)object
+                 withRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
+                           objectMapping:(RZDataManagerModelObjectMapping *)objectMapping
+                                 andData:(id)dictionaryOrArray;
+
 - (void)saveContext:(BOOL)wait;
 
 - (NSURL *)applicationDocumentsDirectory;
@@ -103,179 +114,23 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
     NSString *dataIdKey  = mapping.dataIdKey;
     NSString *modelIdKey = mapping.modelIdPropertyName;
 
+    if (!dataIdKey || !modelIdKey)
+    {
+        RZLogError(@"Missing data and/or model ID keys for object of type %@", className);
+        return;
+    }
+
     NSMutableArray *importedObjectIDs = [NSMutableArray array];
 
     BOOL synchronousImport = ![[options objectForKey:RZCoreDataManagerImportAsynchronously] boolValue];
 
     [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
     {
-
-        if ([data isKindOfClass:[NSDictionary class]])
-        {
-            id obj = nil;
-            id uid = [data validObjectForKey:dataIdKey decodeHTML:NO];
-
-            if (uid)
-            {
-                obj = [self objectOfType:className withValue:uid forKeyPath:modelIdKey createNew:YES];
-                if ([obj respondsToSelector:@selector(dataImportPerformImportWithData:)])
-                {
-                    [obj dataImportPerformImportWithData:data];
-                }
-                else
-                {
-                    [self.dataImporter importData:data toObject:obj usingMapping:mapping];
-                }
-            }
-            else
-            {
-                RZLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, className);
-            }
-        }
-        else if ([data isKindOfClass:[NSArray class]])
-        {
-
-            // optimize lookup for existing objects
-            NSString            *entityName  = [self entityNameForClassOrEntityNamed:className];
-            NSEntityDescription *entityDesc  = [NSEntityDescription entityForName:entityName inManagedObjectContext:self.managedObjectContext];
-            NSDictionary        *entityProps = [entityDesc propertiesByName];
-
-            NSPropertyDescription *modelIdProp = [entityProps objectForKey:modelIdKey];
-
-            if (modelIdProp != nil)
-            {
-
-                // Fetch only uid and object ID
-                // Expression description solution from http://stackoverflow.com/a/4792331/1128820
-
-                NSExpressionDescription *objectIdDesc = [[NSExpressionDescription alloc] init];
-                objectIdDesc.name                 = @"objectID";
-                objectIdDesc.expression           = [NSExpression expressionForEvaluatedObject];
-                objectIdDesc.expressionResultType = NSObjectIDAttributeType;
-
-                NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
-                [uidFetch setResultType:NSDictionaryResultType];
-                [uidFetch setIncludesPendingChanges:YES];
-                [uidFetch setPropertiesToFetch:@[modelIdProp, objectIdDesc]];
-
-                NSError *err          = nil;
-                NSArray *existingObjs = [moc executeFetchRequest:uidFetch error:&err];
-
-                if (err == nil)
-                {
-
-                    NSDictionary *existingObjIdsByUid = [NSDictionary dictionaryWithObjects:[existingObjs valueForKey:@"objectID"] forKeys:[existingObjs valueForKey:modelIdKey]];
-
-                    NSInteger  objectsRemaining = [data count];
-                    NSUInteger objectOffset     = 0;
-
-                    while (objectsRemaining > 0)
-                    {
-
-                        NSUInteger blockSize = MIN(objectsRemaining, kRZCoreDataManagerImportBatchBlockSize);
-                        NSIndexSet *objectsToEnumerate = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(objectOffset, blockSize)];
-
-                        objectsRemaining -= blockSize;
-                        objectOffset += blockSize;
-
-                        // Avoid bloating memory - only import a few objects at a time
-                        @autoreleasepool
-                        {
-                            [(NSArray *)data enumerateObjectsAtIndexes:objectsToEnumerate options:0 usingBlock:^(id objData, NSUInteger idx, BOOL *stop)
-                            {
-                                id uid = [objData valueForKey:dataIdKey];
-                                if (uid != nil)
-                                {
-                                    id importedObj = nil;
-                                    NSManagedObjectID *importedObjId = [existingObjIdsByUid objectForKey:uid];
-
-                                    if (importedObjId != nil)
-                                    {
-                                        NSError *existingObjErr = nil;
-                                        importedObj = [moc existingObjectWithID:importedObjId error:&existingObjErr];
-                                        if (existingObjErr != nil)
-                                        {
-                                            RZLogError(@"Error fetching existing object. %@", existingObjErr);
-                                        }
-                                        else if (importedObj == nil)
-                                        {
-                                            RZLogError(@"Error: Existing object expected but not found for %@ : %@", dataIdKey, uid);
-                                        }
-                                    }
-
-                                    if (importedObj == nil)
-                                    {
-                                        importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:moc];
-
-                                        // If we are creating a new object, obtain a permanent ID for it
-                                        NSError *permIdErr = nil;
-                                        if (![moc obtainPermanentIDsForObjects:@[importedObj] error:&permIdErr])
-                                        {
-                                            RZLogError(@"Error obtaining permanent id for new object. %@", permIdErr);
-                                        }
-                                    }
-
-                                    if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)])
-                                    {
-                                        [importedObj dataImportPerformImportWithData:objData];
-                                    }
-                                    else
-                                    {
-                                        [self.dataImporter importData:objData toObject:importedObj];
-                                    }
-
-                                    [importedObjectIDs addObject:[importedObj objectID]];
-                                }
-                            }];
-                        }
-
-                    }
-
-                    NSPredicate *stalePred = options[RZDataManagerDeleteStaleItemsPredicate];
-
-                    if (stalePred != nil)
-                    {
-
-                        // Fetch objects to check for staleness
-                        NSFetchRequest *staleFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
-                        staleFetch.predicate = stalePred;
-
-                        NSError *stFetchErr     = nil;
-                        NSArray *objectsToCheck = [moc executeFetchRequest:staleFetch error:&stFetchErr];
-                        if (stFetchErr != nil)
-                        {
-                            RZLogError(@"Error executing fetch for stale objects. %@", stFetchErr);
-                        }
-
-                        NSSet *dataObjsUuids = [NSSet setWithArray:[(NSArray *)data valueForKey:dataIdKey]];
-
-                        [objectsToCheck enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
-                        {
-                            // if this model object is not present in the list of objects to import, delete it.
-                            if (![dataObjsUuids containsObject:[obj valueForKey:modelIdKey]])
-                            {
-                                [moc deleteObject:obj];
-                            }
-                        }];
-                    }
-                }
-                else
-                {
-                    RZLogError(@"Error fetching existing objects of type %@: %@", entityName, err);
-                }
-            }
-            else
-            {
-                RZLogError(@"No property named %@ found on entity named %@", modelIdKey, entityName);
-            }
-
-        }
-        else
-        {
-            RZLogError(@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class]));
-        }
-
-
+        [self handleDataImportWithEntityName:className
+                                     mapping:mapping
+                                     options:options
+                                     andData:data
+                              importedObjIds:&importedObjectIDs];
     }
     completion:^(NSError *error)
     {
@@ -325,7 +180,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 completion:(RZDataManagerOperationCompletionBlock)completion
 {
     NSString *objectClassName = NSStringFromClass([object class]);
-    
+
     // use mapping attached to relationship mapping, otherwise get it from the importer
     RZDataManagerModelObjectMapping *objMapping = [relationshipMapping relatedObjectMapping];
     if (nil == objMapping)
@@ -346,131 +201,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
     [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
     {
-
-        NSEntityDescription       *entityDesc       = [(NSManagedObject *)object entity];
-        NSRelationshipDescription *relationshipDesc = [[entityDesc relationshipsByName] objectForKey:relationshipMapping.relationshipPropertyName];
-        if (relationshipDesc != nil)
-        {
-            if ([data isKindOfClass:[NSDictionary class]])
-            {
-                id importedObj = nil;
-                id uid         = [data validObjectForKey:dataIdKey decodeHTML:NO];
-                if (uid)
-                {
-                    // need to be able to handle many-to-many
-                    if (relationshipDesc.isToMany)
-                    {
-                        // find object within other object's relationship set
-                        NSSet *existingObjs = [object valueForKey:relationshipMapping.relationshipPropertyName];
-                        importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey inCollection:existingObjs createNew:NO];
-
-                        // if not found in set, find globally
-                        if (nil == importedObj)
-                        {
-                            importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey createNew:YES];
-                        }
-
-                        [self.dataImporter importData:data toObject:importedObj usingMapping:objMapping];
-
-                        if (relationshipMapping.shouldReplaceExistingRelationships)
-                        {
-                            NSSet *importedRelObjs = [NSSet setWithObject:importedObj];
-                            [object setValue:importedRelObjs forKey:relationshipMapping.relationshipPropertyName];
-                        }
-                        else
-                        {
-                            NSMutableSet *relObjs = [[object valueForKey:relationshipMapping.relationshipPropertyName] mutableCopy];
-                            if (relObjs == nil)
-                            {
-                                relObjs = [NSMutableSet set];
-                            }
-                            [relObjs addObject:importedObj];
-                            [object setValue:relObjs forKey:relationshipMapping.relationshipPropertyName];
-                        }
-
-
-                    }
-                    else
-                    {
-                        // create or update object
-                        importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey createNew:YES];
-                        [self.dataImporter importData:data toObject:importedObj usingMapping:objMapping];
-
-                        // set relationship on other object
-                        [object setValue:importedObj forKey:relationshipMapping.relationshipPropertyName];
-                    }
-
-                }
-                else
-                {
-                    RZLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, relationshipMapping.relationshipClassName);
-                }
-            }
-            else if ([data isKindOfClass:[NSArray class]])
-            {
-                // need to be able to handle many-to-many
-                if (relationshipDesc.isToMany)
-                {
-                    // optimize lookup for existing objects
-                    NSString     *entityName        = [self entityNameForClassOrEntityNamed:relationshipMapping.relationshipClassName];
-                    NSArray      *existingObjs      = [(NSSet *)[object valueForKey:relationshipMapping.relationshipPropertyName] allObjects];
-                    NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
-
-                    NSMutableArray *importedRelObjs = [NSMutableArray arrayWithCapacity:[(NSArray *)data count]];
-
-                    [(NSArray *)data enumerateObjectsUsingBlock:^(id objData, NSUInteger idx, BOOL *stop)
-                    {
-
-                        id uid = [objData valueForKey:dataIdKey];
-                        if (uid)
-                        {
-                            id importedObj = [existingObjsByUid objectForKey:uid];
-
-                            if (!importedObj)
-                            {
-                                importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:moc];
-                            }
-
-                            [self.dataImporter importData:objData toObject:importedObj usingMapping:objMapping];
-
-                            [importedRelObjs addObject:importedObj];
-                        }
-
-                    }];
-
-                    if (relationshipMapping.shouldReplaceExistingRelationships)
-                    {
-                        [object setValue:[NSSet setWithArray:importedRelObjs] forKey:relationshipMapping.relationshipPropertyName];
-                    }
-                    else
-                    {
-                        NSMutableSet *relObjs = [[object valueForKey:relationshipMapping.relationshipPropertyName] mutableCopy];
-                        if (relObjs == nil)
-                        {
-                            relObjs = [NSMutableSet set];
-                        }
-                        [relObjs addObjectsFromArray:importedRelObjs];
-                        [object setValue:relObjs forKey:relationshipMapping.relationshipPropertyName];
-                    }
-
-
-                }
-                else
-                {
-                    RZLogError(@"Cannot import multiple objects for to-one relationship.");
-                }
-
-            }
-            else
-            {
-                RZLogError(@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([data class]));
-            }
-        }
-        else
-        {
-            RZLogDebug(@"Could not find relationship %@ on entity named %@", relationshipMapping.relationshipPropertyName, entityDesc.name);
-        }
-
+        [self handleRelationshipImportOnObject:object withRelationshipMapping:relationshipMapping objectMapping:objMapping andData:data];
     }
     completion:^(NSError *error)
     {
@@ -821,6 +552,321 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     NSArray *arr   = [moc executeFetchRequest:request error:&error];
 
     return arr;
+}
+
+#pragma mark - Private import methods
+
+- (void)handleDataImportWithEntityName:(NSString *)entityName
+                               mapping:(RZDataManagerModelObjectMapping *)mapping
+                               options:(NSDictionary *)options
+                               andData:(id)dictionaryOrArray
+                        importedObjIds:(NSMutableArray * __strong *)importedObjIds
+{
+    NSString *dataIdKey  = mapping.dataIdKey;
+    NSString *modelIdKey = mapping.modelIdPropertyName;
+    
+    if ([dictionaryOrArray isKindOfClass:[NSDictionary class]])
+    {
+        id obj = nil;
+        id uid = [dictionaryOrArray validObjectForKey:dataIdKey decodeHTML:NO];
+        
+        if (uid)
+        {
+            obj = [self objectOfType:entityName withValue:uid forKeyPath:modelIdKey createNew:YES];
+            if ([obj respondsToSelector:@selector(dataImportPerformImportWithData:)])
+            {
+                [obj dataImportPerformImportWithData:dictionaryOrArray];
+            }
+            else
+            {
+                [self.dataImporter importData:dictionaryOrArray toObject:obj usingMapping:mapping];
+            }
+        }
+        else
+        {
+            RZLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, entityName);
+        }
+    }
+    else if ([dictionaryOrArray isKindOfClass:[NSArray class]])
+    {
+        
+        // optimize lookup for existing objects
+        NSEntityDescription *entityDesc  = [NSEntityDescription entityForName:entityName inManagedObjectContext:self.managedObjectContext];
+        NSDictionary        *entityProps = [entityDesc propertiesByName];
+        
+        NSPropertyDescription *modelIdProp = [entityProps objectForKey:modelIdKey];
+        
+        if (modelIdProp != nil)
+        {
+            
+            // Fetch only uid and object ID
+            // Expression description solution from http://stackoverflow.com/a/4792331/1128820
+            
+            NSExpressionDescription *objectIdDesc = [[NSExpressionDescription alloc] init];
+            objectIdDesc.name                 = @"objectID";
+            objectIdDesc.expression           = [NSExpression expressionForEvaluatedObject];
+            objectIdDesc.expressionResultType = NSObjectIDAttributeType;
+            
+            NSFetchRequest *uidFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
+            [uidFetch setResultType:NSDictionaryResultType];
+            [uidFetch setIncludesPendingChanges:YES];
+            [uidFetch setPropertiesToFetch:@[modelIdProp, objectIdDesc]];
+            
+            NSError *err          = nil;
+            NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
+            
+            if (err == nil)
+            {
+                
+                NSDictionary *existingObjIdsByUid = [NSDictionary dictionaryWithObjects:[existingObjs valueForKey:@"objectID"] forKeys:[existingObjs valueForKey:modelIdKey]];
+                
+                NSInteger  objectsRemaining = [dictionaryOrArray count];
+                NSUInteger objectOffset     = 0;
+                
+                while (objectsRemaining > 0)
+                {
+                    
+                    NSUInteger blockSize = MIN(objectsRemaining, kRZCoreDataManagerImportBatchBlockSize);
+                    NSIndexSet *objectsToEnumerate = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(objectOffset, blockSize)];
+                    
+                    objectsRemaining -= blockSize;
+                    objectOffset += blockSize;
+                    
+                    // Avoid bloating memory - only import a few objects at a time
+                    @autoreleasepool
+                    {
+                        [(NSArray *)dictionaryOrArray enumerateObjectsAtIndexes:objectsToEnumerate options:0 usingBlock:^(id objData, NSUInteger idx, BOOL *stop)
+                         {
+                             id uid = [objData valueForKey:dataIdKey];
+                             if (uid != nil)
+                             {
+                                 id importedObj = nil;
+                                 NSManagedObjectID *importedObjId = [existingObjIdsByUid objectForKey:uid];
+                                 
+                                 if (importedObjId != nil)
+                                 {
+                                     NSError *existingObjErr = nil;
+                                     importedObj = [self.currentMoc existingObjectWithID:importedObjId error:&existingObjErr];
+                                     if (existingObjErr != nil)
+                                     {
+                                         RZLogError(@"Error fetching existing object. %@", existingObjErr);
+                                     }
+                                     else if (importedObj == nil)
+                                     {
+                                         RZLogError(@"Error: Existing object expected but not found for %@ : %@", dataIdKey, uid);
+                                     }
+                                 }
+                                 
+                                 if (importedObj == nil)
+                                 {
+                                     importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+                                     
+                                     // If we are creating a new object, obtain a permanent ID for it
+                                     NSError *permIdErr = nil;
+                                     if (![self.currentMoc obtainPermanentIDsForObjects:@[importedObj] error:&permIdErr])
+                                     {
+                                         RZLogError(@"Error obtaining permanent id for new object. %@", permIdErr);
+                                     }
+                                 }
+                                 
+                                 if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)])
+                                 {
+                                     [importedObj dataImportPerformImportWithData:objData];
+                                 }
+                                 else
+                                 {
+                                     [self.dataImporter importData:objData toObject:importedObj];
+                                 }
+
+                                 if (importedObjIds)
+                                 {
+                                    [*importedObjIds addObject:[importedObj objectID]];
+                                 }
+                             }
+                         }];
+                    }
+                    
+                }
+                
+                NSPredicate *stalePred = options[RZDataManagerDeleteStaleItemsPredicate];
+                
+                if (stalePred != nil)
+                {
+                    
+                    // Fetch objects to check for staleness
+                    NSFetchRequest *staleFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
+                    staleFetch.predicate = stalePred;
+                    
+                    NSError *stFetchErr     = nil;
+                    NSArray *objectsToCheck = [self.currentMoc executeFetchRequest:staleFetch error:&stFetchErr];
+                    if (stFetchErr != nil)
+                    {
+                        RZLogError(@"Error executing fetch for stale objects. %@", stFetchErr);
+                    }
+                    
+                    NSSet *dataObjsUuids = [NSSet setWithArray:[(NSArray *)dictionaryOrArray valueForKey:dataIdKey]];
+                    
+                    [objectsToCheck enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop)
+                     {
+                         // if this model object is not present in the list of objects to import, delete it.
+                         if (![dataObjsUuids containsObject:[obj valueForKey:modelIdKey]])
+                         {
+                             [self.currentMoc deleteObject:obj];
+                         }
+                     }];
+                }
+            }
+            else
+            {
+                RZLogError(@"Error fetching existing objects of type %@: %@", entityName, err);
+            }
+        }
+        else
+        {
+            RZLogError(@"No property named %@ found on entity named %@", modelIdKey, entityName);
+        }
+        
+    }
+    else
+    {
+        RZLogError(@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([dictionaryOrArray class]));
+    }
+
+}
+
+- (void)handleRelationshipImportOnObject:(NSObject *)object
+                 withRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
+                           objectMapping:(RZDataManagerModelObjectMapping *)objectMapping
+                                 andData:(id)dictionaryOrArray
+{
+
+    NSString *dataIdKey  = objectMapping.dataIdKey;
+    NSString *modelIdKey = objectMapping.modelIdPropertyName;
+    NSEntityDescription       *entityDesc       = [(NSManagedObject *)object entity];
+    NSRelationshipDescription *relationshipDesc = [[entityDesc relationshipsByName] objectForKey:relationshipMapping.relationshipPropertyName];
+
+    if (relationshipDesc != nil)
+    {
+        if ([dictionaryOrArray isKindOfClass:[NSDictionary class]])
+        {
+            id importedObj = nil;
+            id uid         = [dictionaryOrArray validObjectForKey:dataIdKey decodeHTML:NO];
+            if (uid)
+            {
+                // need to be able to handle many-to-many
+                if (relationshipDesc.isToMany)
+                {
+                    // find object within other object's relationship set
+                    NSSet *existingObjs = [object valueForKey:relationshipMapping.relationshipPropertyName];
+                    importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey inCollection:existingObjs createNew:NO];
+                    
+                    // if not found in set, find globally
+                    if (nil == importedObj)
+                    {
+                        importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey createNew:YES];
+                    }
+                    
+                    [self.dataImporter importData:dictionaryOrArray toObject:importedObj usingMapping:objectMapping];
+                    
+                    if (relationshipMapping.shouldReplaceExistingRelationships)
+                    {
+                        NSSet *importedRelObjs = [NSSet setWithObject:importedObj];
+                        [object setValue:importedRelObjs forKey:relationshipMapping.relationshipPropertyName];
+                    }
+                    else
+                    {
+                        NSMutableSet *relObjs = [[object valueForKey:relationshipMapping.relationshipPropertyName] mutableCopy];
+                        if (relObjs == nil)
+                        {
+                            relObjs = [NSMutableSet set];
+                        }
+                        [relObjs addObject:importedObj];
+                        [object setValue:relObjs forKey:relationshipMapping.relationshipPropertyName];
+                    }
+                    
+                    
+                }
+                else
+                {
+                    // create or update object
+                    importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey createNew:YES];
+                    [self.dataImporter importData:dictionaryOrArray toObject:importedObj usingMapping:objectMapping];
+                    
+                    // set relationship on other object
+                    [object setValue:importedObj forKey:relationshipMapping.relationshipPropertyName];
+                }
+                
+            }
+            else
+            {
+                RZLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, relationshipMapping.relationshipClassName);
+            }
+        }
+        else if ([dictionaryOrArray isKindOfClass:[NSArray class]])
+        {
+            // need to be able to handle many-to-many
+            if (relationshipDesc.isToMany)
+            {
+                // optimize lookup for existing objects
+                NSString     *entityName        = [self entityNameForClassOrEntityNamed:relationshipMapping.relationshipClassName];
+                NSArray      *existingObjs      = [(NSSet *)[object valueForKey:relationshipMapping.relationshipPropertyName] allObjects];
+                NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
+                
+                NSMutableArray *importedRelObjs = [NSMutableArray arrayWithCapacity:[(NSArray *)dictionaryOrArray count]];
+                
+                [(NSArray *)dictionaryOrArray enumerateObjectsUsingBlock:^(id objData, NSUInteger idx, BOOL *stop)
+                 {
+                     
+                     id uid = [objData valueForKey:dataIdKey];
+                     if (uid)
+                     {
+                         id importedObj = [existingObjsByUid objectForKey:uid];
+                         
+                         if (!importedObj)
+                         {
+                             importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
+                         }
+                         
+                         [self.dataImporter importData:objData toObject:importedObj usingMapping:objectMapping];
+                         
+                         [importedRelObjs addObject:importedObj];
+                     }
+                     
+                 }];
+                
+                if (relationshipMapping.shouldReplaceExistingRelationships)
+                {
+                    [object setValue:[NSSet setWithArray:importedRelObjs] forKey:relationshipMapping.relationshipPropertyName];
+                }
+                else
+                {
+                    NSMutableSet *relObjs = [[object valueForKey:relationshipMapping.relationshipPropertyName] mutableCopy];
+                    if (relObjs == nil)
+                    {
+                        relObjs = [NSMutableSet set];
+                    }
+                    [relObjs addObjectsFromArray:importedRelObjs];
+                    [object setValue:relObjs forKey:relationshipMapping.relationshipPropertyName];
+                }
+                
+                
+            }
+            else
+            {
+                RZLogError(@"Cannot import multiple objects for to-one relationship.");
+            }
+            
+        }
+        else
+        {
+            RZLogError(@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([dictionaryOrArray class]));
+        }
+    }
+    else
+    {
+        RZLogDebug(@"Could not find relationship %@ on entity named %@", relationshipMapping.relationshipPropertyName, entityDesc.name);
+    }
+
 }
 
 #pragma mark - Core Data Stack

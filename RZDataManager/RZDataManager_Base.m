@@ -48,7 +48,6 @@ NSString *const RZDataManagerAdditionalImportData      = @"RZDataManagerAddition
     if (nil == _dataImporter)
     {
         _dataImporter = [[RZDataImporter alloc] init];
-        _dataImporter.dataManager = self;
     }
     return _dataImporter;
 }

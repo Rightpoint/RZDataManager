@@ -14,9 +14,6 @@
 
 @interface RZDataImporter : NSObject
 
-//! Weak reference to parent Data Manager
-@property (nonatomic, weak) RZDataManager *dataManager;
-
 //! Set to override on importer-level whether should decode HTML entities from strings (defaults to NO)
 @property (nonatomic, assign) BOOL shouldDecodeHTML;
 
