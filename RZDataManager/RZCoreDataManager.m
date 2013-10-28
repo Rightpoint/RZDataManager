@@ -119,7 +119,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
      forClassNamed:(NSString *)className
       usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
-        completion:(RZDataManagerOperationCompletionBlock)completion
+        completion:(RZDataManagerImportCompletionBlock)completion
 {
     // make sure it's a class name, not an entity name
     className = [self classNameForEntityOrClassNamed:className];
@@ -195,7 +195,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
 forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
                   onObject:(NSObject *)object
                    options:(NSDictionary *)options
-                completion:(RZDataManagerOperationCompletionBlock)completion
+                completion:(RZDataManagerImportCompletionBlock)completion
 {
     NSString *objectClassName = NSStringFromClass([object class]);
 

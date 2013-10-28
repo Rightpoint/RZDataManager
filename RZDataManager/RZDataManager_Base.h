@@ -19,7 +19,7 @@
 
 
 typedef void (^RZDataManagerOperationBlock)(id context); // context object depends on particular subclass
-typedef void (^RZDataManagerOperationCompletionBlock)(id result, NSError *error); // result is either object, collection, or nil
+typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError *error); // result is either object, collection, or nil
 typedef void (^RZDataManagerBackgroundOperationCompletionBlock)(NSError *error);
 
 // Exception domain
@@ -110,14 +110,14 @@ OBJC_EXTERN NSString *const RZDataManagerAdditionalImportData;
 - (void)importData:(id)dictionaryOrArray
      forClassNamed:(NSString *)className
            options:(NSDictionary *)options
-        completion:(RZDataManagerOperationCompletionBlock)completion;
+        completion:(RZDataManagerImportCompletionBlock)completion;
 
 // Use key-value pairs in keyMappings to override key->property import mappings
 - (void)importData:(id)dictionaryOrArray
      forClassNamed:(NSString *)className
        keyMappings:(NSDictionary *)keyMappings
            options:(NSDictionary *)options
-        completion:(RZDataManagerOperationCompletionBlock)completion;
+        completion:(RZDataManagerImportCompletionBlock)completion;
 
 /******************************************************************************
  *
@@ -131,7 +131,7 @@ OBJC_EXTERN NSString *const RZDataManagerAdditionalImportData;
 forRelationshipPropertyName:(NSString *)relationshipProperty
                    onObject:(NSObject *)object
                     options:(NSDictionary *)options
-                 completion:(RZDataManagerOperationCompletionBlock)completion;
+                 completion:(RZDataManagerImportCompletionBlock)completion;
 
 // ============================================================
 // -------- SUBCLASSES MUST IMPLEMENT THESE METHODS -----------
@@ -142,13 +142,13 @@ forRelationshipPropertyName:(NSString *)relationshipProperty
      forClassNamed:(NSString *)className
       usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
-        completion:(RZDataManagerOperationCompletionBlock)completion;
+        completion:(RZDataManagerImportCompletionBlock)completion;
 
 - (void)        importData:(id)dictionaryOrArray
 forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
                   onObject:(NSObject *)object
                    options:(NSDictionary *)options
-                completion:(RZDataManagerOperationCompletionBlock)completion;
+                completion:(RZDataManagerImportCompletionBlock)completion;
 
 - (void)performDataOperationInBackgroundUsingBlock:(RZDataManagerOperationBlock)importBlock
                                         completion:(RZDataManagerBackgroundOperationCompletionBlock)completionBlock;
