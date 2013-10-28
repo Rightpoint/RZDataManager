@@ -17,11 +17,15 @@
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
 
-typedef void (^RZDataManagerImportBlock)();
 
+typedef void (^RZDataManagerOperationBlock)(id context); // context object depends on particular subclass
 typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError *error); // result is either object, collection, or nil
-typedef void (^RZDataManagerBackgroundImportCompletionBlock)(NSError *error);
+typedef void (^RZDataManagerBackgroundOperationCompletionBlock)(NSError *error);
 
+// Exception domain
+OBJC_EXTERN NSString *const kRZDataManagerException;
+
+// Standard ISO 8601 UTC string date formate
 OBJC_EXTERN NSString *const kRZDataManagerUTCDateFormat;
 
 // ============================================================
@@ -30,17 +34,22 @@ OBJC_EXTERN NSString *const kRZDataManagerUTCDateFormat;
 
 // Delete any items that are present in the result produced by this predicate and not
 // present in the items to be imported.
-OBJC_EXTERN NSString *const kRZDataManagerDeleteStaleItemsPredicate;
+OBJC_EXTERN NSString *const RZDataManagerDeleteStaleItemsPredicateOptionKey;
 
 // Disable automatic full-stack save of database after each import.
 // Useful when you might want to undo an import.
 // Default value is YES
-OBJC_EXTERN NSString *const kRZDataManagerSaveAfterImport;
+OBJC_EXTERN NSString *const RZDataManagerSaveAfterImportOptionKey;
 
 // Disable completion block from returning imported items on main thread managed object context.
 // May want to use this to prevent resource usage when importing a large number of objects.
 // Default value is NO
-OBJC_EXTERN NSString *const kRZDataManagerReturnObjectsFromImport;
+OBJC_EXTERN NSString *const RZDataManagerReturnObjectsFromImportOptionKey;
+
+// If specified, adds extra attributes provided in NSDictionary value to be imported along with the
+// "dictionaryOrArray" argument (if array, adds to each dictionary in the array). If the imported item
+// already contains any of the keys in the additional data, they will be overwritten.
+OBJC_EXTERN NSString *const RZDataManagerAdditionalImportDataOptionKey;
 
 @interface RZDataManager : NSObject
 
@@ -98,13 +107,13 @@ OBJC_EXTERN NSString *const kRZDataManagerReturnObjectsFromImport;
  ******************************************************************************/
 
 // Default signature, no overrides
-- (void)importData:(id)data
+- (void)importData:(id)dictionaryOrArray
      forClassNamed:(NSString *)className
            options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
 // Use key-value pairs in keyMappings to override key->property import mappings
-- (void)importData:(id)data
+- (void)importData:(id)dictionaryOrArray
      forClassNamed:(NSString *)className
        keyMappings:(NSDictionary *)keyMappings
            options:(NSDictionary *)options
@@ -118,7 +127,7 @@ OBJC_EXTERN NSString *const kRZDataManagerReturnObjectsFromImport;
  *
  ******************************************************************************/
 
-- (void)         importData:(id)data
+- (void)         importData:(id)dictionaryOrArray
 forRelationshipPropertyName:(NSString *)relationshipProperty
                    onObject:(NSObject *)object
                     options:(NSDictionary *)options
@@ -129,20 +138,20 @@ forRelationshipPropertyName:(NSString *)relationshipProperty
 // ============================================================
 
 // Mapping can be nil, in which case subclass should use default mapping for this object type
-- (void)importData:(id)data
+- (void)importData:(id)dictionaryOrArray
      forClassNamed:(NSString *)className
       usingMapping:(RZDataManagerModelObjectMapping *)mapping
            options:(NSDictionary *)options
         completion:(RZDataManagerImportCompletionBlock)completion;
 
-- (void)        importData:(id)data
+- (void)        importData:(id)dictionaryOrArray
 forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
                   onObject:(NSObject *)object
                    options:(NSDictionary *)options
                 completion:(RZDataManagerImportCompletionBlock)completion;
 
-- (void)importInBackgroundUsingBlock:(RZDataManagerImportBlock)importBlock
-                          completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
+- (void)performDataOperationInBackgroundUsingBlock:(RZDataManagerOperationBlock)importBlock
+                                        completion:(RZDataManagerBackgroundOperationCompletionBlock)completionBlock;
 
 // -------------------------------------------------------------
 

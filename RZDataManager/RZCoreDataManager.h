@@ -13,6 +13,8 @@
  *
  * Concrete RZDataManager subclass for working with a CoreData stack.
  *
+ * RZDataManagerOperationBlock provides an NSManagedObjectContext as its "context" object
+ *
  * Things to know:
  *
  * 1) If you do not explicitly set the context, model, or store coordinator, they will
@@ -30,8 +32,11 @@
  ************************************************************************************/
 
 
-OBJC_EXTERN NSString *const kRZCoreDataManagerWillResetDatabaseNotification;
-OBJC_EXTERN NSString *const kRZCoreDataManagerDidResetDatabaseNotification;
+OBJC_EXTERN NSString *const RZCoreDataManagerWillDeleteInvalidDatabaseFile;
+OBJC_EXTERN NSString *const RZCoreDataManagerDidDeleteInvalidDatabaseFile;
+
+OBJC_EXTERN NSString *const RZCoreDataManagerWillResetDatabaseNotification;
+OBJC_EXTERN NSString *const RZCoreDataManagerDidResetDatabaseNotification;
 
 // ============================================================
 //                KEYS FOR OPTIONS DICTIONARY
@@ -40,7 +45,7 @@ OBJC_EXTERN NSString *const kRZCoreDataManagerDidResetDatabaseNotification;
 // If value is YES, will perform background import on its own thread, independent and parallel to other background imports.
 // This is useful when importing large amounts of data that doesn't affect other imports and may otherwise hold up the queue.
 // Default is NO.
-OBJC_EXTERN NSString *const kRZCoreDataManagerImportAsynchronously;
+OBJC_EXTERN NSString *const RZCoreDataManagerImportAsynchronouslyOptionKey;
 
 @class RZDataImporter;
 
@@ -77,8 +82,8 @@ OBJC_EXTERN NSString *const kRZCoreDataManagerImportAsynchronously;
 // If "synchronously" is true, background import operations will be enqueued on a private dispatch queue and will not run in parallel.
 // If false, background import operations will be performed on a private queue confinement moc, parallel to any other background import operations
 - (void)importInBackgroundSynchronously:(BOOL)synchronously
-                             usingBlock:(RZDataManagerImportBlock)importBlock
-                             completion:(RZDataManagerBackgroundImportCompletionBlock)completionBlock;
+                             usingBlock:(RZDataManagerOperationBlock)importBlock
+                             completion:(RZDataManagerBackgroundOperationCompletionBlock)completionBlock;
 
 //! Clears out CoreData stack and posts reset notifications. Will be rebuilt via lazy-load on next access to the MOC.
 - (void)resetDatabase;

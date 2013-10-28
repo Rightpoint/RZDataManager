@@ -8,6 +8,7 @@
 
 #import "RZDataManagerModelObjectMapping.h"
 #import "RZDataManagerModelObject.h"
+#import "RZDataManager_Base.h"
 #import "NSObject+RZPropertyUtils.h"
 #import "RZLogHelper.h"
 
@@ -16,6 +17,7 @@
 @property (nonatomic, assign) Class modelClass;
 @property (nonatomic, strong) NSArray             *classPropertyNames;
 @property (nonatomic, strong) NSMutableArray      *ignoreKeys;
+@property (nonatomic, strong) NSMutableArray      *unmatchedKeys;
 @property (nonatomic, strong) NSMutableDictionary *dataKeyMappings;
 @property (nonatomic, strong) NSMutableDictionary *relationshipKeyMappings;
 @property (nonatomic, strong) NSMutableDictionary *customSelectorKeyMappings;
@@ -77,13 +79,32 @@
     return _ignoreKeys;
 }
 
+- (NSMutableArray *)unmatchedKeys
+{
+    if (nil == _unmatchedKeys)
+    {
+        _unmatchedKeys = [NSMutableArray array];
+    }
+    return _unmatchedKeys;
+}
+
 #pragma mark - Public
 
 - (BOOL)hasMappingDefinedForDataKey:(NSString *)key
 {
-    return ([self modelPropertyNameForDataKey:key] != nil ||
-            [self relationshipMappingForDataKey:key] != nil ||
-            [self importSelectorNameForDataKey:key] != nil);
+    if (![self.unmatchedKeys containsObject:key])
+    {
+        BOOL hasMapping =  ([self modelPropertyNameForDataKey:key] != nil ||
+                            [self relationshipMappingForDataKey:key] != nil ||
+                            [self importSelectorNameForDataKey:key] != nil);
+        if (!hasMapping)
+        {
+            [self.unmatchedKeys addObject:key];
+        }
+        
+        return hasMapping;
+    }
+    return NO;
 }
 
 - (NSString *)modelPropertyNameForDataKey:(NSString *)key
@@ -99,7 +120,6 @@
 
         if (nil == propName)
         {
-
             // look for property name similar to key/keypath, if found, cache it
             NSPredicate *propnamePred = [NSPredicate predicateWithFormat:@"SELF LIKE[cd] %@", key];
             NSArray     *matches      = [self.classPropertyNames filteredArrayUsingPredicate:propnamePred];
@@ -108,12 +128,6 @@
                 propName = [matches objectAtIndex:0];
                 [self.dataKeyMappings setObject:propName forKey:key];
             }
-            else
-            {
-                RZLogDebug(@"Could not find matching property for key %@ on object of type %@", key, NSStringFromClass([self modelClass]));
-                [self.ignoreKeys addObject:key];
-            }
-
         }
     }
 
@@ -121,6 +135,10 @@
     return propName;
 }
 
+- (NSDictionary *)allRelationshipMappings
+{
+    return [self.relationshipKeyMappings copy];
+}
 
 - (RZDataManagerModelObjectRelationshipMapping *)relationshipMappingForDataKey:(NSString *)key
 {
@@ -158,6 +176,11 @@
 
 - (void)buildMappingCache
 {
+    if (![self.modelClass conformsToProtocol:@protocol(RZDataManagerModelObject)])
+    {
+        @throw [NSException exceptionWithName:kRZDataManagerException reason:@"Object does not conform to RZDataManagerModelObject protocol" userInfo:nil];
+    }
+    
     _classPropertyNames  = [[[self.modelClass class] rz_getPropertyNames] copy];
     _dataIdKey           = [[[self.modelClass class] dataImportDefaultDataIdKey] copy];
     _modelIdPropertyName = [[[self.modelClass class] dataImportModelIdPropertyName] copy];
