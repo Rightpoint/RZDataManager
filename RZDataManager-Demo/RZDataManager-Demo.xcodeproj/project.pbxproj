@@ -63,7 +63,6 @@
 		728A1903178EF1C900A04E9F /* DMCustomEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DMCustomEntry.m; sourceTree = "<group>"; };
 		728A1905178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DMCustomEntry+RZDataManagerModelObject.h"; sourceTree = "<group>"; };
 		728A1906178EF23400A04E9F /* DMCustomEntry+RZDataManagerModelObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "DMCustomEntry+RZDataManagerModelObject.m"; sourceTree = "<group>"; };
-		9A18D01317AAE8C400F006D0 /* RZLogHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZLogHelper.h; sourceTree = "<group>"; };
 		9A3366571755378800FCF766 /* RZDataManager_Base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = RZDataManager_Base.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		9A3366581755378800FCF766 /* RZDataManager_Base.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = RZDataManager_Base.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		9A33665A17553CFC00FCF766 /* RZCoreDataManager-Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RZCoreDataManager-Tests.h"; sourceTree = "<group>"; };
@@ -259,7 +258,6 @@
 		FEA82B021742CC1B00FA206C /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				9A18D01317AAE8C400F006D0 /* RZLogHelper.h */,
 				FEA82B031742CC1B00FA206C /* NSDictionary+NonNSNull.h */,
 				FEA82B041742CC1B00FA206C /* NSDictionary+NonNSNull.m */,
 				9A58B79F17578D070065D1EA /* NSObject+RZPropertyUtils.h */,

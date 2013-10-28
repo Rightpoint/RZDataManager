@@ -17,6 +17,13 @@
 #import <Foundation/Foundation.h>
 #import "RZDataImporter.h"
 
+#define RZDataManagerLogError(x, ...) NSLog((@"[RZDataManager] ERROR: " x), ##__VA_ARGS__)
+
+#if (DEBUG)
+    #define RZDataManagerLogDebug(x, ...) NSLog((@"[RZDataManager] DEBUG: " x), ##__VA_ARGS__)
+#else
+    #define RZDataManagerLogDebug(x, ...)
+#endif
 
 typedef void (^RZDataManagerOperationBlock)(id context); // context object depends on particular subclass
 typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError *error); // result is either object, collection, or nil
@@ -25,7 +32,7 @@ typedef void (^RZDataManagerBackgroundOperationCompletionBlock)(NSError *error);
 // Exception domain
 OBJC_EXTERN NSString *const kRZDataManagerException;
 
-// Standard ISO 8601 UTC string date formate
+// Standard ISO 8601 UTC string date format
 OBJC_EXTERN NSString *const kRZDataManagerUTCDateFormat;
 
 // ============================================================
