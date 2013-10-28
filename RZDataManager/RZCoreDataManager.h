@@ -45,7 +45,7 @@ OBJC_EXTERN NSString *const RZCoreDataManagerDidResetDatabaseNotification;
 // If value is YES, will perform background import on its own thread, independent and parallel to other background imports.
 // This is useful when importing large amounts of data that doesn't affect other imports and may otherwise hold up the queue.
 // Default is NO.
-OBJC_EXTERN NSString *const RZCoreDataManagerImportAsynchronously;
+OBJC_EXTERN NSString *const RZCoreDataManagerImportAsynchronouslyOptionKey;
 
 @class RZDataImporter;
 

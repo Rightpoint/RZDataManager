@@ -12,10 +12,10 @@
 NSString *const kRZDataManagerException     = @"RZDataManagerException";
 NSString *const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
 
-NSString *const RZDataManagerDeleteStaleItemsPredicate = @"RZDataManagerDeleteStaleItemsPredicate";
-NSString *const RZDataManagerSaveAfterImport           = @"RZDataManagerSaveAfterImport";
-NSString *const RZDataManagerReturnObjectsFromImport   = @"RZDataManagerReturnObjectsFromImport";
-NSString *const RZDataManagerAdditionalImportData      = @"RZDataManagerAdditionalImportData";
+NSString *const RZDataManagerDeleteStaleItemsPredicateOptionKey = @"RZDataManagerDeleteStaleItemsPredicateOptionKey";
+NSString *const RZDataManagerSaveAfterImportOptionKey = @"RZDataManagerSaveAfterImportOptionKey";
+NSString *const RZDataManagerReturnObjectsFromImportOptionKey = @"RZDataManagerReturnObjectsFromImportOptionKey";
+NSString *const RZDataManagerAdditionalImportDataOptionKey = @"RZDataManagerAdditionalImportDataOptionKey";
 
 @interface RZDataManager ()
 
@@ -76,10 +76,10 @@ NSString *const RZDataManagerAdditionalImportData      = @"RZDataManagerAddition
     // add default key for save after import (defaults to yes)
     if (options)
     {
-        if ([*options objectForKey:RZDataManagerSaveAfterImport] == nil)
+        if ([*options objectForKey:RZDataManagerSaveAfterImportOptionKey] == nil)
         {
             NSMutableDictionary *newOpts = *options == nil ? [NSMutableDictionary dictionary] : [*options mutableCopy];
-            [newOpts setValue:@(YES) forKey:RZDataManagerSaveAfterImport];
+            [newOpts setValue:@(YES) forKey:RZDataManagerSaveAfterImportOptionKey];
             *options = newOpts;
         }
     }
@@ -127,7 +127,7 @@ NSString *const RZDataManagerAdditionalImportData      = @"RZDataManagerAddition
         completion:(RZDataManagerImportCompletionBlock)completion
 {
     [self addDefaultOptions:&options];
-    dictionaryOrArray = [self importDataByAddingAttributes:[options objectForKey:RZDataManagerAdditionalImportData] toImportData:dictionaryOrArray];
+    dictionaryOrArray = [self importDataByAddingAttributes:[options objectForKey:RZDataManagerAdditionalImportDataOptionKey] toImportData:dictionaryOrArray];
     [self importData:dictionaryOrArray forClassNamed:className usingMapping:nil options:options completion:completion];
 }
 
@@ -141,7 +141,7 @@ NSString *const RZDataManagerAdditionalImportData      = @"RZDataManagerAddition
     [mapping setModelPropertiesForKeyNames:keyMappings];
     
     [self addDefaultOptions:&options];
-    dictionaryOrArray = [self importDataByAddingAttributes:[options objectForKey:RZDataManagerAdditionalImportData] toImportData:dictionaryOrArray];
+    dictionaryOrArray = [self importDataByAddingAttributes:[options objectForKey:RZDataManagerAdditionalImportDataOptionKey] toImportData:dictionaryOrArray];
     [self importData:dictionaryOrArray forClassNamed:className usingMapping:mapping options:options completion:completion];
 }
 
@@ -155,7 +155,7 @@ forRelationshipPropertyName:(NSString *)relationshipProperty
     RZDataManagerModelObjectRelationshipMapping *relMapping = [objMapping relationshipMappingForModelPropertyName:relationshipProperty];
     
     [self addDefaultOptions:&options];
-    dictionaryOrArray = [self importDataByAddingAttributes:[options objectForKey:RZDataManagerAdditionalImportData] toImportData:dictionaryOrArray];
+    dictionaryOrArray = [self importDataByAddingAttributes:[options objectForKey:RZDataManagerAdditionalImportDataOptionKey] toImportData:dictionaryOrArray];
     [self importData:dictionaryOrArray forRelationshipWithMapping:relMapping onObject:object options:options completion:completion];
 }
 

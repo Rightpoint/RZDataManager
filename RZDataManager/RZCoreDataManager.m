@@ -16,7 +16,7 @@
 // For storing moc reference in thread dictionary
 static NSString *const kRZCoreDataManagerConfinedMocKey = @"RZCoreDataManagerConfinedMoc";
 
-NSString *const RZCoreDataManagerImportAsynchronously = @"RZCoreDataManagerImportAsynhcronously";
+NSString *const RZCoreDataManagerImportAsynchronouslyOptionKey = @"RZCoreDataManagerImportAsynhcronously";
 
 static dispatch_queue_t s_RZCoreDataManagerPrivateImportQueue = nil;
 static char *const s_RZCoreDataManagerPrivateImportQueueName = "com.raizlabs.RZCoreDataManagerImport";
@@ -140,7 +140,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
 
     __block NSMutableArray *importedObjectIDs = [NSMutableArray array];
 
-    BOOL synchronousImport = ![[options objectForKey:RZCoreDataManagerImportAsynchronously] boolValue];
+    BOOL synchronousImport = ![[options objectForKey:RZCoreDataManagerImportAsynchronouslyOptionKey] boolValue];
 
     [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
     {
@@ -153,7 +153,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
     completion:^(NSError *error)
     {
 
-        if ([[options objectForKey:RZDataManagerSaveAfterImport] boolValue])
+        if ([[options objectForKey:RZDataManagerSaveAfterImportOptionKey] boolValue])
         {
             [self saveContext:YES];
         }
@@ -163,7 +163,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
 
             // Need to fetch object from main thread moc for completion block
             id result = nil;
-            if (error == nil && [[options objectForKey:RZDataManagerReturnObjectsFromImport] boolValue])
+            if (error == nil && [[options objectForKey:RZDataManagerReturnObjectsFromImportOptionKey] boolValue])
             {
 
                 if ([data isKindOfClass:[NSDictionary class]])
@@ -215,7 +215,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         return;
     }
 
-    BOOL synchronousImport = ![[options objectForKey:RZCoreDataManagerImportAsynchronously] boolValue];
+    BOOL synchronousImport = ![[options objectForKey:RZCoreDataManagerImportAsynchronouslyOptionKey] boolValue];
 
     [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
     {
@@ -227,7 +227,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     completion:^(NSError *error)
     {
 
-        if ([[options objectForKey:RZDataManagerSaveAfterImport] boolValue])
+        if ([[options objectForKey:RZDataManagerSaveAfterImportOptionKey] boolValue])
         {
             [self saveContext:YES];
         }
@@ -237,7 +237,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
             // Need to fetch object from main thread moc for completion block
             id result = nil;
-            if (error == nil && [[options objectForKey:RZDataManagerReturnObjectsFromImport] boolValue])
+            if (error == nil && [[options objectForKey:RZDataManagerReturnObjectsFromImportOptionKey] boolValue])
             {
                 if ([data isKindOfClass:[NSDictionary class]])
                 {
@@ -716,7 +716,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                     
                 }
                 
-                NSPredicate *stalePred = options[RZDataManagerDeleteStaleItemsPredicate];
+                NSPredicate *stalePred = options[RZDataManagerDeleteStaleItemsPredicateOptionKey];
                 
                 if (stalePred != nil)
                 {
