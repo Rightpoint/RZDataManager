@@ -13,7 +13,6 @@
 #import "NSDictionary+NonNSNull.h"
 #import "NSString+HTMLEntities.h"
 #import "NSObject+RZPropertyUtils.h"
-#import "RZLogHelper.h"
 
 @interface RZDataImporter ()
 
@@ -240,14 +239,14 @@
                 }
                 else if (![[mapping keysToIgnore] containsObject:keyPath])
                 {
-                    RZLogDebug(@"Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class]));
+                    RZDataManagerLogDebug(@"Could not find mapping for key path %@ in object of class %@", keyPath, NSStringFromClass([object class]));
                 }
 
             }
         }
         else
         {
-            RZLogDebug(@"Could not find mapping for key %@ in object of class %@", key, NSStringFromClass([object class]));
+            RZDataManagerLogDebug(@"Could not find mapping for key %@ in object of class %@", key, NSStringFromClass([object class]));
         }
     }
 
@@ -310,18 +309,18 @@
                     }
                     @catch (NSException *exception)
                     {
-                        RZLogError(@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(importSelector), NSStringFromClass([object class]), exception);
+                        RZDataManagerLogError(@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(importSelector), NSStringFromClass([object class]), exception);
                     }
                     
                 }
                 else
                 {
-                    RZLogDebug(@"Too few arguments for import selector %@ on object of class %@", selectorName, NSStringFromClass([object class]));
+                    RZDataManagerLogDebug(@"Too few arguments for import selector %@ on object of class %@", selectorName, NSStringFromClass([object class]));
                 }
             }
             else
             {
-                RZLogDebug(@"Unable to perform custom import selector %@ on object of class %@", selectorName, NSStringFromClass([object class]));
+                RZDataManagerLogDebug(@"Unable to perform custom import selector %@ on object of class %@", selectorName, NSStringFromClass([object class]));
             }
             
         }
@@ -383,7 +382,7 @@
     }
     @catch (NSException *exception)
     {
-        RZLogError(@"Error setting value for key %@ on object of class %@: %@", propertyName, NSStringFromClass([object class]), exception);
+        RZDataManagerLogError(@"Error setting value for key %@ on object of class %@: %@", propertyName, NSStringFromClass([object class]), exception);
     }
 
 }
@@ -419,7 +418,7 @@
         }
         else if (![value isKindOfClass:[NSDate class]])
         {
-            RZLogDebug(@"Object of class %@ cannot be converted to NSDate", NSStringFromClass([value class]));
+            RZDataManagerLogDebug(@"Object of class %@ cannot be converted to NSDate", NSStringFromClass([value class]));
         }
     }
     else if ([conversionType isEqualToString:kRZDataTypeNSNumber])
@@ -433,7 +432,7 @@
         }
         else if (![value isKindOfClass:[NSNumber class]])
         {
-            RZLogDebug(@"Object of class %@ cannot be converted to NSNumber", NSStringFromClass([value class]));
+            RZDataManagerLogDebug(@"Object of class %@ cannot be converted to NSNumber", NSStringFromClass([value class]));
         }
     }
     else if ([conversionType isEqualToString:kRZDataTypeNSString])

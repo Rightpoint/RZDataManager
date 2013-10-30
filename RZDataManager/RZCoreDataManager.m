@@ -8,7 +8,6 @@
 #import "RZCoreDataManager.h"
 #import "NSDictionary+NonNSNull.h"
 #import "NSObject+RZPropertyUtils.h"
-#import "RZLogHelper.h"
 
 // Number of items to import in a single batch when importing a lot of items
 #define kRZCoreDataManagerImportBatchBlockSize 50
@@ -134,7 +133,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
 
     if (!dataIdKey || !modelIdKey)
     {
-        RZLogError(@"Missing data and/or model ID keys for object of type %@", className);
+        RZDataManagerLogError(@"Missing data and/or model ID keys for object of type %@", className);
         return;
     }
 
@@ -211,7 +210,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
     if (!dataIdKey || !modelIdKey)
     {
-        RZLogError(@"Missing data and/or model ID keys for object of type %@", objectClassName);
+        RZDataManagerLogError(@"Missing data and/or model ID keys for object of type %@", objectClassName);
         return;
     }
 
@@ -288,7 +287,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         NSError *error = nil;
         if (![privateMoc save:&error])
         {
-            RZLogError(@"Error saving import in background: %@", error);
+            RZDataManagerLogError(@"Error saving import in background: %@", error);
         }
 
         [self.managedObjectContext performBlockAndWait:^
@@ -609,7 +608,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         }
         else
         {
-            RZLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, entityName);
+            RZDataManagerLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, entityName);
         }
     }
     else if ([dictionaryOrArray isKindOfClass:[NSArray class]])
@@ -674,11 +673,11 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                                      importedObj = [self.currentMoc existingObjectWithID:importedObjId error:&existingObjErr];
                                      if (existingObjErr != nil)
                                      {
-                                         RZLogError(@"Error fetching existing object. %@", existingObjErr);
+                                         RZDataManagerLogError(@"Error fetching existing object. %@", existingObjErr);
                                      }
                                      else if (importedObj == nil)
                                      {
-                                         RZLogError(@"Error: Existing object expected but not found for %@ : %@", dataIdKey, uid);
+                                         RZDataManagerLogError(@"Error: Existing object expected but not found for %@ : %@", dataIdKey, uid);
                                      }
                                  }
                                  
@@ -690,7 +689,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                                      NSError *permIdErr = nil;
                                      if (![self.currentMoc obtainPermanentIDsForObjects:@[importedObj] error:&permIdErr])
                                      {
-                                         RZLogError(@"Error obtaining permanent id for new object. %@", permIdErr);
+                                         RZDataManagerLogError(@"Error obtaining permanent id for new object. %@", permIdErr);
                                      }
                                  }
                                  
@@ -729,7 +728,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                     NSArray *objectsToCheck = [self.currentMoc executeFetchRequest:staleFetch error:&stFetchErr];
                     if (stFetchErr != nil)
                     {
-                        RZLogError(@"Error executing fetch for stale objects. %@", stFetchErr);
+                        RZDataManagerLogError(@"Error executing fetch for stale objects. %@", stFetchErr);
                     }
                     
                     NSSet *dataObjsUuids = [NSSet setWithArray:[(NSArray *)dictionaryOrArray valueForKey:dataIdKey]];
@@ -746,18 +745,18 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             }
             else
             {
-                RZLogError(@"Error fetching existing objects of type %@: %@", entityName, err);
+                RZDataManagerLogError(@"Error fetching existing objects of type %@: %@", entityName, err);
             }
         }
         else
         {
-            RZLogError(@"No property named %@ found on entity named %@", modelIdKey, entityName);
+            RZDataManagerLogError(@"No property named %@ found on entity named %@", modelIdKey, entityName);
         }
         
     }
     else
     {
-        RZLogError(@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([dictionaryOrArray class]));
+        RZDataManagerLogError(@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([dictionaryOrArray class]));
     }
 
 }
@@ -857,13 +856,13 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 }
                 @catch (NSException *exception)
                 {
-                    RZLogError(@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(setter), NSStringFromClass([object class]), exception);
+                    RZDataManagerLogError(@"Error invoking setter %@ on object of class %@: %@", NSStringFromSelector(setter), NSStringFromClass([object class]), exception);
                 }
 
             }
             else
             {
-                RZLogError(@"Setter not found for property %@ on class %@", relationshipMapping.relationshipPropertyName, NSStringFromClass([object class]));
+                RZDataManagerLogError(@"Setter not found for property %@ on class %@", relationshipMapping.relationshipPropertyName, NSStringFromClass([object class]));
             }
         }
         else if ([dictionaryOrArray isKindOfClass:[NSDictionary class]])
@@ -917,7 +916,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             }
             else
             {
-                RZLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, relationshipMapping.relationshipClassName);
+                RZDataManagerLogError(@"Unique value for key %@ on entity named %@ is nil.", dataIdKey, relationshipMapping.relationshipClassName);
             }
         }
         else if ([dictionaryOrArray isKindOfClass:[NSArray class]])
@@ -971,18 +970,18 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             }
             else
             {
-                RZLogError(@"Cannot import multiple objects for to-one relationship.");
+                RZDataManagerLogError(@"Cannot import multiple objects for to-one relationship.");
             }
             
         }
         else
         {
-            RZLogError(@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([dictionaryOrArray class]));
+            RZDataManagerLogError(@"Cannot import data of type %@. Expected NSDictionary or NSArray", NSStringFromClass([dictionaryOrArray class]));
         }
     }
     else
     {
-        RZLogDebug(@"Could not find relationship %@ on entity named %@", relationshipMapping.relationshipPropertyName, entityDesc.name);
+        RZDataManagerLogDebug(@"Could not find relationship %@ on entity named %@", relationshipMapping.relationshipPropertyName, entityDesc.name);
     }
 
 }
@@ -1055,11 +1054,11 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         
         if(![_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:options error:&error])
         {
-            RZLogError(@"Database file is not readable with current model.");
+            RZDataManagerLogError(@"Database file is not readable with current model.");
 
             if (self.deleteDatabaseIfUnreadable && NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
             {
-                RZLogDebug(@"Deleting database file");
+                RZDataManagerLogDebug(@"Deleting database file");
                 
                 [[NSNotificationCenter defaultCenter] postNotificationName:RZCoreDataManagerWillDeleteInvalidDatabaseFile object:self];
                 
@@ -1147,7 +1146,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             NSError *error = nil;
             if (![moc save:&error])
             {
-                RZLogError(@"Error saving changes for main MOC: %@", error);
+                RZDataManagerLogError(@"Error saving changes for main MOC: %@", error);
             }
         }];
     }
@@ -1157,7 +1156,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         NSError *error = nil;
         if (![backgroundMoc save:&error])
         {
-            RZLogError(@"Error saving changes to disk: %@", error);
+            RZDataManagerLogError(@"Error saving changes to disk: %@", error);
         }
     };
 

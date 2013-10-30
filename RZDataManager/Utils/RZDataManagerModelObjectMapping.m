@@ -10,7 +10,6 @@
 #import "RZDataManagerModelObject.h"
 #import "RZDataManager_Base.h"
 #import "NSObject+RZPropertyUtils.h"
-#import "RZLogHelper.h"
 
 @interface RZDataManagerModelObjectMapping ()
 
