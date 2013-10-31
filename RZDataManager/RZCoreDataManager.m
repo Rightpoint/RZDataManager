@@ -792,19 +792,19 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 // multiple relationships
                 if ([relData isKindOfClass:[NSArray class]])
                 {
-                    [(NSArray *)relData enumerateObjectsUsingBlock:^(id rd, NSUInteger idx, BOOL *stop) {
+                    [(NSArray *)relData enumerateObjectsUsingBlock:^(id thisRelData, NSUInteger idx, BOOL *stop) {
                         
-                        id rid = rd;
-                        if (![rd isKindOfClass:[NSDictionary class]])
+                        id theData = thisRelData;
+                        if (![thisRelData isKindOfClass:[NSDictionary class]])
                         {
                             // assume it's the unique ID value
-                            rid = @{ objMapping.dataIdKey : rd };
+                            theData = @{ objMapping.dataIdKey : thisRelData };
                         }
                         
                         [self handleRelationshipImportOnObject:obj
                                        withRelationshipMapping:relMapping
                                                  objectMapping:objMapping
-                                                       andData:relData];
+                                                       andData:theData];
                         
                     }];
                 }
