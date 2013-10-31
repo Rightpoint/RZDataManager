@@ -605,6 +605,22 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             // check for relationships
             [self performRelationshipImportsOnObject:obj withMapping:mapping fromData:dictionaryOrArray];
             
+            
+            // delete other items if necessary
+            if ([[options valueForKey:RZDataManagerReplaceItemsOptionKey] boolValue])
+            {
+                // fetch items that aren't this item
+                NSFetchRequest *otherItemsFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
+                otherItemsFetch.predicate = [NSPredicate predicateWithFormat:@"SELF != %@", obj];
+                otherItemsFetch.includesPropertyValues = NO;
+                
+                NSArray *otherItems = [self.currentMoc executeFetchRequest:otherItemsFetch error:NULL];
+                
+                for (NSManagedObject *item in otherItems)
+                {
+                    [self.currentMoc deleteObject:item];
+                }
+            }
         }
         else
         {
@@ -715,6 +731,23 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                     
                 }
                 
+                // delete other items if necessary
+                if ([[options valueForKey:RZDataManagerReplaceItemsOptionKey] boolValue])
+                {
+                    // fetch items that aren't this item
+                    NSFetchRequest *otherItemsFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
+                    otherItemsFetch.predicate = [NSPredicate predicateWithFormat:@"!(%K IN %@)", modelIdKey, [dictionaryOrArray valueForKey:modelIdKey]];
+                    otherItemsFetch.includesPropertyValues = NO;
+                    
+                    NSArray *otherItems = [self.currentMoc executeFetchRequest:otherItemsFetch error:NULL];
+                    
+                    for (NSManagedObject *item in otherItems)
+                    {
+                        [self.currentMoc deleteObject:item];
+                    }
+                }
+                
+                // Delete stale items
                 NSPredicate *stalePred = options[RZDataManagerDeleteStaleItemsPredicateOptionKey];
                 
                 if (stalePred != nil)

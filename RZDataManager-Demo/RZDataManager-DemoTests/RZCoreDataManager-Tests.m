@@ -937,6 +937,36 @@
     }
 }
 
+- (void)test_replaceItems
+{
+    NSFetchRequest *allItemFetch = [NSFetchRequest fetchRequestWithEntityName:@"DMEntry"];
+    NSArray *results = [self.dataManager.managedObjectContext executeFetchRequest:allItemFetch error:NULL];
+    
+    STAssertTrue(results.count == 10, @"Should be multiple items in DB at start");
+    
+    
+    NSArray * mockData = @[ @{@"name" : @"Omicron",
+                              @"uid" : @"1000"},
+                            @{@"name" : @"Pi",
+                              @"uid" : @"1001"} ];
+                            
+    
+    __block BOOL finished = NO;
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{RZDataManagerReplaceItemsOptionKey : @(YES)} completion:^(id result, NSError *error)
+     {
+         NSFetchRequest *postImportItemFetch = [NSFetchRequest fetchRequestWithEntityName:@"DMEntry"];
+         NSArray *postImportResults = [self.dataManager.managedObjectContext executeFetchRequest:postImportItemFetch error:NULL];
+
+         STAssertTrue(postImportResults.count == 2, @"Should only two items in database post import");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
 #pragma mark - Dictionary conversion test
 
 - (void)test300ConvertToDictionary

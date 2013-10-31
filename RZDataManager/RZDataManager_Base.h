@@ -39,11 +39,16 @@ OBJC_EXTERN NSString *const kRZDataManagerUTCDateFormat;
 //                KEYS FOR OPTIONS DICTIONARY
 // ============================================================
 
+// Delete any items from the database of that are not present in the import data.
+// Effectively "replaces" all existing items of the type being imported with the items being imported.
+// Default value is NO
+OBJC_EXTERN NSString *const RZDataManagerReplaceItemsOptionKey;
+
 // Delete any items that are present in the result produced by this predicate and not
 // present in the items to be imported.
 OBJC_EXTERN NSString *const RZDataManagerDeleteStaleItemsPredicateOptionKey;
 
-// Disable automatic full-stack save of database after each import.
+// Perform automatic full-stack save of database after each import.
 // Useful when you might want to undo an import.
 // Default value is YES
 OBJC_EXTERN NSString *const RZDataManagerSaveAfterImportOptionKey;
