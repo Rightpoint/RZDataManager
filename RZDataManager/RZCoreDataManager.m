@@ -736,7 +736,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 {
                     // fetch items that aren't this item
                     NSFetchRequest *otherItemsFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
-                    otherItemsFetch.predicate = [NSPredicate predicateWithFormat:@"!(%K IN %@)", modelIdKey, [dictionaryOrArray valueForKey:modelIdKey]];
+                    otherItemsFetch.predicate = [NSPredicate predicateWithFormat:@"!(%K IN %@)", modelIdKey, [dictionaryOrArray valueForKey:dataIdKey]];
                     otherItemsFetch.includesPropertyValues = NO;
                     
                     NSArray *otherItems = [self.currentMoc executeFetchRequest:otherItemsFetch error:NULL];
