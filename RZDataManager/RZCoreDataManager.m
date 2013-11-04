@@ -1183,10 +1183,10 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         return;
     }
 
-    [self.managedObjectContext lock];
-
     if ([moc hasChanges])
     {
+        [self.managedObjectContext lock];
+
         [moc performBlockAndWait:^
         {
             NSError *error = nil;
@@ -1195,6 +1195,8 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 RZDataManagerLogError(@"Error saving changes for main MOC: %@", error);
             }
         }];
+        
+        [self.managedObjectContext unlock];
     }
 
     void (^saveBackground)(void) = ^
@@ -1204,7 +1206,6 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         {
             RZDataManagerLogError(@"Error saving changes to disk: %@", error);
         }
-        [self.managedObjectContext unlock];
     };
 
     if ([backgroundMoc hasChanges])
@@ -1217,11 +1218,6 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         {
             [backgroundMoc performBlock:saveBackground];
         }
-    }
-    else
-    {
-        // make sure we unlock the main moc
-        [self.managedObjectContext unlock];
     }
 }
 
