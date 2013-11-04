@@ -1218,6 +1218,11 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             [backgroundMoc performBlock:saveBackground];
         }
     }
+    else
+    {
+        // make sure we unlock the main moc
+        [self.managedObjectContext unlock];
+    }
 }
 
 - (void)resetDatabase
