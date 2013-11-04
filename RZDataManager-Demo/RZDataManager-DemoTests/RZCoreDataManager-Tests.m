@@ -967,6 +967,44 @@
     }
 }
 
+- (void)test_deleteResolution
+{
+    __block BOOL finished = NO;
+    
+    [self.dataManager performDataOperationInBackgroundUsingBlock:^(id context) {
+        
+        DMEntry *bgEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
+        STAssertNotNil(bgEntry, @"Entry should exist in child moc");
+        
+        bgEntry.name = @"yoohoo";
+        
+        // delete object on main moc
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            DMEntry *mainEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
+            STAssertNotNil(mainEntry, @"Zero entry should exist");
+            [self.dataManager.managedObjectContext deleteObject:mainEntry];
+            [self.dataManager saveData:YES];
+        });
+
+
+    } completion:^(NSError *error) {
+        
+        // verify there's a duplicate
+        NSFetchRequest *df = [NSFetchRequest fetchRequestWithEntityName:@"DMEntry"];
+        df.predicate = [NSPredicate predicateWithFormat:@"uid == %@", @"0"];
+        
+        NSArray *deletedResults = [self.dataManager.managedObjectContext executeFetchRequest:df error:NULL];
+        STAssertTrue(deletedResults.count == 0, @"Deleted item is still here...");
+    
+        finished = YES;
+    }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+    
+}
+
 #pragma mark - Dictionary conversion test
 
 - (void)test300ConvertToDictionary

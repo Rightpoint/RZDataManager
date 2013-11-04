@@ -508,7 +508,10 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     request.predicate = [NSPredicate predicateWithFormat:@"%K == %@", keyPath, value];
 
     NSError *error = nil;
+    
+    [self.managedObjectContext lock];
     NSArray *arr   = [moc executeFetchRequest:request error:&error];
+    [self.managedObjectContext unlock];
 
     id fetchedObject = [arr lastObject];
 
@@ -569,7 +572,10 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     request.predicate = predicate;
 
     NSError *error = nil;
+    
+    [self.managedObjectContext lock];
     NSArray *arr   = [moc executeFetchRequest:request error:&error];
+    [self.managedObjectContext unlock];
 
     return arr;
 }
@@ -653,7 +659,10 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             [uidFetch setPropertiesToFetch:@[modelIdProp, objectIdDesc]];
             
             NSError *err          = nil;
+            
+            [self.managedObjectContext lock];
             NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
+            [self.managedObjectContext unlock];
             
             if (err == nil)
             {
@@ -758,7 +767,9 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                     staleFetch.predicate = stalePred;
                     
                     NSError *stFetchErr     = nil;
+                    [self.managedObjectContext lock];
                     NSArray *objectsToCheck = [self.currentMoc executeFetchRequest:staleFetch error:&stFetchErr];
+                    [self.managedObjectContext unlock];
                     if (stFetchErr != nil)
                     {
                         RZDataManagerLogError(@"Error executing fetch for stale objects. %@", stFetchErr);
@@ -1172,6 +1183,8 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         return;
     }
 
+    [self.managedObjectContext lock];
+
     if ([moc hasChanges])
     {
         [moc performBlockAndWait:^
@@ -1191,6 +1204,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         {
             RZDataManagerLogError(@"Error saving changes to disk: %@", error);
         }
+        [self.managedObjectContext unlock];
     };
 
     if ([backgroundMoc hasChanges])
