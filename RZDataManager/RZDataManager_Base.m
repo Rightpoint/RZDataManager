@@ -112,7 +112,7 @@ NSString *const RZDataManagerAdditionalImportDataOptionKey      = @"RZDataManage
         else if ([dataDictOrArray isKindOfClass:[NSDictionary class]])
         {
             NSMutableDictionary *newItem = [NSMutableDictionary dictionaryWithDictionary:dataDictOrArray];
-            [dataDictOrArray addEntriesFromDictionary:additionalDataDict];
+            [newItem addEntriesFromDictionary:additionalDataDict];
             newDictOrArray = newItem;
         }
     }
