@@ -83,7 +83,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^
         {
-            s_RZCoreDataManagerPrivateImportQueue = dispatch_queue_create(s_RZCoreDataManagerPrivateImportQueueName, NULL);
+            s_RZCoreDataManagerPrivateImportQueue = dispatch_queue_create(s_RZCoreDataManagerPrivateImportQueueName, DISPATCH_QUEUE_SERIAL);
         });
         
         _classToEntityMapping       = [NSMutableDictionary dictionary];
@@ -285,6 +285,17 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         importBlock(privateMoc);
 
         NSError *error = nil;
+        
+        // If we are creating new objects, obtain their permanent ID's
+        if (privateMoc.insertedObjects)
+        {
+            NSError *permIdErr = nil;
+            if (![self.currentMoc obtainPermanentIDsForObjects:[privateMoc.insertedObjects allObjects] error:&permIdErr])
+            {
+                RZDataManagerLogError(@"Error obtaining permanent id for new object. %@", permIdErr);
+            }
+        }
+        
         if (![privateMoc save:&error])
         {
             RZDataManagerLogError(@"Error saving import in background: %@", error);
@@ -709,13 +720,6 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                                  if (importedObj == nil)
                                  {
                                      importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
-                                     
-                                     // If we are creating a new object, obtain a permanent ID for it
-                                     NSError *permIdErr = nil;
-                                     if (![self.currentMoc obtainPermanentIDsForObjects:@[importedObj] error:&permIdErr])
-                                     {
-                                         RZDataManagerLogError(@"Error obtaining permanent id for new object. %@", permIdErr);
-                                     }
                                  }
                                  
                                  if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)])
