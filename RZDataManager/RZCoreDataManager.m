@@ -1020,7 +1020,6 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
 - (void)deleteItemsWithEntityName:(NSString *)entityName predicate:(NSPredicate *)predicate
 {
-    // fetch items that aren't this item
     NSFetchRequest *otherItemsFetch = [NSFetchRequest fetchRequestWithEntityName:entityName predicate:predicate];
     otherItemsFetch.includesPropertyValues = NO;
     
