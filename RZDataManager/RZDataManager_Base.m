@@ -12,10 +12,11 @@
 NSString *const kRZDataManagerException     = @"RZDataManagerException";
 NSString *const kRZDataManagerUTCDateFormat = @"yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'";
 
+NSString *const RZDataManagerReplaceItemsOptionKey              = @"RZDataManagerReplaceItemsOptionKey";
 NSString *const RZDataManagerDeleteStaleItemsPredicateOptionKey = @"RZDataManagerDeleteStaleItemsPredicateOptionKey";
-NSString *const RZDataManagerSaveAfterImportOptionKey = @"RZDataManagerSaveAfterImportOptionKey";
-NSString *const RZDataManagerReturnObjectsFromImportOptionKey = @"RZDataManagerReturnObjectsFromImportOptionKey";
-NSString *const RZDataManagerAdditionalImportDataOptionKey = @"RZDataManagerAdditionalImportDataOptionKey";
+NSString *const RZDataManagerSaveAfterImportOptionKey           = @"RZDataManagerSaveAfterImportOptionKey";
+NSString *const RZDataManagerReturnObjectsFromImportOptionKey   = @"RZDataManagerReturnObjectsFromImportOptionKey";
+NSString *const RZDataManagerAdditionalImportDataOptionKey      = @"RZDataManagerAdditionalImportDataOptionKey";
 
 @interface RZDataManager ()
 
@@ -111,7 +112,7 @@ NSString *const RZDataManagerAdditionalImportDataOptionKey = @"RZDataManagerAddi
         else if ([dataDictOrArray isKindOfClass:[NSDictionary class]])
         {
             NSMutableDictionary *newItem = [NSMutableDictionary dictionaryWithDictionary:dataDictOrArray];
-            [dataDictOrArray addEntriesFromDictionary:additionalDataDict];
+            [newItem addEntriesFromDictionary:additionalDataDict];
             newDictOrArray = newItem;
         }
     }

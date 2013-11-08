@@ -6,6 +6,7 @@
 //
 
 #import "RZCoreDataManager.h"
+#import "NSFetchRequest+RZCreationHelpers.h"
 #import "NSDictionary+NonNSNull.h"
 #import "NSObject+RZPropertyUtils.h"
 
@@ -44,7 +45,6 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
              usingMOC:(NSManagedObjectContext *)moc
                create:(BOOL)create;
 
-
 - (NSArray *)objectsForEntity:(NSString *)entity
             matchingPredicate:(NSPredicate *)predicate
                      usingMOC:(NSManagedObjectContext *)moc;
@@ -63,6 +63,8 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
                  withRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
                            objectMapping:(RZDataManagerModelObjectMapping *)objectMapping
                                  andData:(id)dictionaryOrArray;
+
+- (void)deleteItemsWithEntityName:(NSString *)entityName predicate:(NSPredicate *)predicate;
 
 - (void)saveContext:(BOOL)wait;
 
@@ -83,7 +85,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^
         {
-            s_RZCoreDataManagerPrivateImportQueue = dispatch_queue_create(s_RZCoreDataManagerPrivateImportQueueName, NULL);
+            s_RZCoreDataManagerPrivateImportQueue = dispatch_queue_create(s_RZCoreDataManagerPrivateImportQueueName, DISPATCH_QUEUE_SERIAL);
         });
         
         _classToEntityMapping       = [NSMutableDictionary dictionary];
@@ -285,6 +287,17 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         importBlock(privateMoc);
 
         NSError *error = nil;
+        
+        // If we are creating new objects, obtain their permanent ID's
+        if (privateMoc.insertedObjects)
+        {
+            NSError *permIdErr = nil;
+            if (![self.currentMoc obtainPermanentIDsForObjects:[privateMoc.insertedObjects allObjects] error:&permIdErr])
+            {
+                RZDataManagerLogError(@"Error obtaining permanent id for new object. %@", permIdErr);
+            }
+        }
+        
         if (![privateMoc save:&error])
         {
             RZDataManagerLogError(@"Error saving import in background: %@", error);
@@ -508,7 +521,10 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     request.predicate = [NSPredicate predicateWithFormat:@"%K == %@", keyPath, value];
 
     NSError *error = nil;
+    
+    [self.managedObjectContext lock];
     NSArray *arr   = [moc executeFetchRequest:request error:&error];
+    [self.managedObjectContext unlock];
 
     id fetchedObject = [arr lastObject];
 
@@ -569,7 +585,10 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
     request.predicate = predicate;
 
     NSError *error = nil;
+    
+    [self.managedObjectContext lock];
     NSArray *arr   = [moc executeFetchRequest:request error:&error];
+    [self.managedObjectContext unlock];
 
     return arr;
 }
@@ -605,6 +624,13 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             // check for relationships
             [self performRelationshipImportsOnObject:obj withMapping:mapping fromData:dictionaryOrArray];
             
+            
+            // delete other items if necessary
+            if ([[options valueForKey:RZDataManagerReplaceItemsOptionKey] boolValue])
+            {
+                NSPredicate *otherItemsPred = [NSPredicate predicateWithFormat:@"SELF != %@", obj];
+                [self deleteItemsWithEntityName:entityName predicate:otherItemsPred];
+            }
         }
         else
         {
@@ -637,7 +663,10 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             [uidFetch setPropertiesToFetch:@[modelIdProp, objectIdDesc]];
             
             NSError *err          = nil;
+            
+            [self.managedObjectContext lock];
             NSArray *existingObjs = [self.currentMoc executeFetchRequest:uidFetch error:&err];
+            [self.managedObjectContext unlock];
             
             if (err == nil)
             {
@@ -684,13 +713,6 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                                  if (importedObj == nil)
                                  {
                                      importedObj = [NSEntityDescription insertNewObjectForEntityForName:entityName inManagedObjectContext:self.currentMoc];
-                                     
-                                     // If we are creating a new object, obtain a permanent ID for it
-                                     NSError *permIdErr = nil;
-                                     if (![self.currentMoc obtainPermanentIDsForObjects:@[importedObj] error:&permIdErr])
-                                     {
-                                         RZDataManagerLogError(@"Error obtaining permanent id for new object. %@", permIdErr);
-                                     }
                                  }
                                  
                                  if ([importedObj respondsToSelector:@selector(dataImportPerformImportWithData:)])
@@ -715,6 +737,14 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                     
                 }
                 
+                // delete other items if necessary
+                if ([[options valueForKey:RZDataManagerReplaceItemsOptionKey] boolValue])
+                {
+                    NSPredicate *otherItemsPred = [NSPredicate predicateWithFormat:@"!(%K IN %@)", modelIdKey, [dictionaryOrArray valueForKey:dataIdKey]];
+                    [self deleteItemsWithEntityName:entityName predicate:otherItemsPred];
+                }
+                
+                // Delete stale items
                 NSPredicate *stalePred = options[RZDataManagerDeleteStaleItemsPredicateOptionKey];
                 
                 if (stalePred != nil)
@@ -725,7 +755,9 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                     staleFetch.predicate = stalePred;
                     
                     NSError *stFetchErr     = nil;
+                    [self.managedObjectContext lock];
                     NSArray *objectsToCheck = [self.currentMoc executeFetchRequest:staleFetch error:&stFetchErr];
+                    [self.managedObjectContext unlock];
                     if (stFetchErr != nil)
                     {
                         RZDataManagerLogError(@"Error executing fetch for stale objects. %@", stFetchErr);
@@ -986,6 +1018,20 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
 }
 
+- (void)deleteItemsWithEntityName:(NSString *)entityName predicate:(NSPredicate *)predicate
+{
+    NSFetchRequest *otherItemsFetch = [NSFetchRequest fetchRequestWithEntityName:entityName predicate:predicate];
+    otherItemsFetch.includesPropertyValues = NO;
+    
+    NSArray *otherItems = [self.currentMoc executeFetchRequest:otherItemsFetch error:NULL];
+    
+    for (NSManagedObject *item in otherItems)
+    {
+        [self.currentMoc deleteObject:item];
+    }
+    
+}
+
 #pragma mark - Core Data Stack
 
 // Returns the background managed object context for the application.
@@ -1141,6 +1187,8 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
     if ([moc hasChanges])
     {
+        [self.managedObjectContext lock];
+
         [moc performBlockAndWait:^
         {
             NSError *error = nil;
@@ -1149,6 +1197,8 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 RZDataManagerLogError(@"Error saving changes for main MOC: %@", error);
             }
         }];
+        
+        [self.managedObjectContext unlock];
     }
 
     void (^saveBackground)(void) = ^

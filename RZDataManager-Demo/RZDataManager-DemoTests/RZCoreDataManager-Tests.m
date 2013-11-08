@@ -937,6 +937,74 @@
     }
 }
 
+- (void)test_replaceItems
+{
+    NSFetchRequest *allItemFetch = [NSFetchRequest fetchRequestWithEntityName:@"DMEntry"];
+    NSArray *results = [self.dataManager.managedObjectContext executeFetchRequest:allItemFetch error:NULL];
+    
+    STAssertTrue(results.count == 10, @"Should be multiple items in DB at start");
+    
+    
+    NSArray * mockData = @[ @{@"name" : @"Omicron",
+                              @"uid" : @"1000"},
+                            @{@"name" : @"Pi",
+                              @"uid" : @"1001"} ];
+                            
+    
+    __block BOOL finished = NO;
+    [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{RZDataManagerReplaceItemsOptionKey : @(YES)} completion:^(id result, NSError *error)
+     {
+         NSFetchRequest *postImportItemFetch = [NSFetchRequest fetchRequestWithEntityName:@"DMEntry"];
+         NSArray *postImportResults = [self.dataManager.managedObjectContext executeFetchRequest:postImportItemFetch error:NULL];
+
+         STAssertTrue(postImportResults.count == 2, @"Should only two items in database post import");
+         
+         finished = YES;
+     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+}
+
+- (void)test_deleteResolution
+{
+    __block BOOL finished = NO;
+    
+    [self.dataManager performDataOperationInBackgroundUsingBlock:^(id context) {
+        
+        DMEntry *bgEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
+        STAssertNotNil(bgEntry, @"Entry should exist in child moc");
+        
+        bgEntry.name = @"yoohoo";
+        
+        // delete object on main moc
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            DMEntry *mainEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
+            STAssertNotNil(mainEntry, @"Zero entry should exist");
+            [self.dataManager.managedObjectContext deleteObject:mainEntry];
+            [self.dataManager saveData:YES];
+        });
+
+
+    } completion:^(NSError *error) {
+        
+        // verify there's a duplicate
+        NSFetchRequest *df = [NSFetchRequest fetchRequestWithEntityName:@"DMEntry"];
+        df.predicate = [NSPredicate predicateWithFormat:@"uid == %@", @"0"];
+        
+        NSArray *deletedResults = [self.dataManager.managedObjectContext executeFetchRequest:df error:NULL];
+        STAssertTrue(deletedResults.count == 0, @"Deleted item is still here...");
+    
+        finished = YES;
+    }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+    
+}
+
 #pragma mark - Dictionary conversion test
 
 - (void)test300ConvertToDictionary
