@@ -6,6 +6,7 @@
 //
 
 #import "RZCoreDataManager.h"
+#import "NSFetchRequest+RZCreationHelpers.h"
 #import "NSDictionary+NonNSNull.h"
 #import "NSObject+RZPropertyUtils.h"
 
@@ -44,7 +45,6 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
              usingMOC:(NSManagedObjectContext *)moc
                create:(BOOL)create;
 
-
 - (NSArray *)objectsForEntity:(NSString *)entity
             matchingPredicate:(NSPredicate *)predicate
                      usingMOC:(NSManagedObjectContext *)moc;
@@ -63,6 +63,8 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
                  withRelationshipMapping:(RZDataManagerModelObjectRelationshipMapping *)relationshipMapping
                            objectMapping:(RZDataManagerModelObjectMapping *)objectMapping
                                  andData:(id)dictionaryOrArray;
+
+- (void)deleteItemsWithEntityName:(NSString *)entityName predicate:(NSPredicate *)predicate;
 
 - (void)saveContext:(BOOL)wait;
 
@@ -626,17 +628,8 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             // delete other items if necessary
             if ([[options valueForKey:RZDataManagerReplaceItemsOptionKey] boolValue])
             {
-                // fetch items that aren't this item
-                NSFetchRequest *otherItemsFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
-                otherItemsFetch.predicate = [NSPredicate predicateWithFormat:@"SELF != %@", obj];
-                otherItemsFetch.includesPropertyValues = NO;
-                
-                NSArray *otherItems = [self.currentMoc executeFetchRequest:otherItemsFetch error:NULL];
-                
-                for (NSManagedObject *item in otherItems)
-                {
-                    [self.currentMoc deleteObject:item];
-                }
+                NSPredicate *otherItemsPred = [NSPredicate predicateWithFormat:@"SELF != %@", obj];
+                [self deleteItemsWithEntityName:entityName predicate:otherItemsPred];
             }
         }
         else
@@ -747,17 +740,8 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 // delete other items if necessary
                 if ([[options valueForKey:RZDataManagerReplaceItemsOptionKey] boolValue])
                 {
-                    // fetch items that aren't this item
-                    NSFetchRequest *otherItemsFetch = [NSFetchRequest fetchRequestWithEntityName:entityName];
-                    otherItemsFetch.predicate = [NSPredicate predicateWithFormat:@"!(%K IN %@)", modelIdKey, [dictionaryOrArray valueForKey:dataIdKey]];
-                    otherItemsFetch.includesPropertyValues = NO;
-                    
-                    NSArray *otherItems = [self.currentMoc executeFetchRequest:otherItemsFetch error:NULL];
-                    
-                    for (NSManagedObject *item in otherItems)
-                    {
-                        [self.currentMoc deleteObject:item];
-                    }
+                    NSPredicate *otherItemsPred = [NSPredicate predicateWithFormat:@"!(%K IN %@)", modelIdKey, [dictionaryOrArray valueForKey:dataIdKey]];
+                    [self deleteItemsWithEntityName:entityName predicate:otherItemsPred];
                 }
                 
                 // Delete stale items
@@ -1032,6 +1016,21 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         RZDataManagerLogDebug(@"Could not find relationship %@ on entity named %@", relationshipMapping.relationshipPropertyName, entityDesc.name);
     }
 
+}
+
+- (void)deleteItemsWithEntityName:(NSString *)entityName predicate:(NSPredicate *)predicate
+{
+    // fetch items that aren't this item
+    NSFetchRequest *otherItemsFetch = [NSFetchRequest fetchRequestWithEntityName:entityName predicate:predicate];
+    otherItemsFetch.includesPropertyValues = NO;
+    
+    NSArray *otherItems = [self.currentMoc executeFetchRequest:otherItemsFetch error:NULL];
+    
+    for (NSManagedObject *item in otherItems)
+    {
+        [self.currentMoc deleteObject:item];
+    }
+    
 }
 
 #pragma mark - Core Data Stack
