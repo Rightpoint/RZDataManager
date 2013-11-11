@@ -840,17 +840,26 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                         
                     }];
                 }
-                else if (![relData isKindOfClass:[NSDictionary class]])
+                else
                 {
-                    // assume it's the unique ID value
-                    relData = @{ objMapping.dataIdKey : relData };
+                    if (![relData isKindOfClass:[NSDictionary class]])
+                    {
+                        // assume it's the unique ID value
+                        relData = @{ objMapping.dataIdKey : relData };
+                    }
+                    [self handleRelationshipImportOnObject:obj
+                                   withRelationshipMapping:relMapping
+                                             objectMapping:objMapping
+                                                   andData:relData];
                 }
             }
-            
-            [self handleRelationshipImportOnObject:obj
-                           withRelationshipMapping:relMapping
-                                     objectMapping:objMapping
-                                           andData:relData];
+            else
+            {
+                [self handleRelationshipImportOnObject:obj
+                               withRelationshipMapping:relMapping
+                                         objectMapping:objMapping
+                                               andData:relData];
+            }
             
         }];
         
