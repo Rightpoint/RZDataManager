@@ -858,7 +858,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 [self handleRelationshipImportOnObject:obj
                                withRelationshipMapping:relMapping
                                          objectMapping:objMapping
-                                               andData:relData];
+                                               andData:nil];
             }
             
         }];
