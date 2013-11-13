@@ -12,7 +12,9 @@
 
 + (BOOL)rz_hasPropertyNamed:(NSString *)propertyName;
 
+// Default does NOT include inherited classes
 + (NSArray *)rz_getPropertyNames;
++ (NSArray *)rz_getPropertyNamesIncludingInheritedClasses:(BOOL)includeInherited;
 
 + (NSString *)rz_dataTypeForPropertyNamed:(NSString *)propertyName;
 
