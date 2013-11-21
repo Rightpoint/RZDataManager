@@ -25,7 +25,7 @@
     #define RZDataManagerLogDebug(x, ...)
 #endif
 
-typedef void (^RZDataManagerOperationBlock)(id context); // context object depends on particular subclass
+typedef void (^RZDataManagerOperationBlock)(RZDataManager *manager, id context); // context object depends on particular subclass
 typedef void (^RZDataManagerImportCompletionBlock)(id result, NSError *error); // result is either object, collection, or nil
 typedef void (^RZDataManagerBackgroundOperationCompletionBlock)(NSError *error);
 

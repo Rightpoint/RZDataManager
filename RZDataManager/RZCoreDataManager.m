@@ -143,7 +143,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
 
     BOOL synchronousImport = ![[options objectForKey:RZCoreDataManagerImportAsynchronouslyOptionKey] boolValue];
 
-    [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
+    [self importInBackgroundSynchronously:synchronousImport usingBlock:^(RZDataManager *manager, NSManagedObjectContext *moc)
     {
         [self handleDataImportWithEntityName:[self entityNameForClassOrEntityNamed:className]
                                      mapping:mapping
@@ -218,7 +218,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
     BOOL synchronousImport = ![[options objectForKey:RZCoreDataManagerImportAsynchronouslyOptionKey] boolValue];
 
-    [self importInBackgroundSynchronously:synchronousImport usingBlock:^(NSManagedObjectContext *moc)
+    [self importInBackgroundSynchronously:synchronousImport usingBlock:^(RZDataManager *manager, NSManagedObjectContext *moc)
     {
         [self handleRelationshipImportOnObject:object
                        withRelationshipMapping:relationshipMapping
@@ -283,8 +283,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
     void (^internalImportBlock)(BOOL, NSManagedObjectContext *) = ^(BOOL fromMainThread, NSManagedObjectContext *privateMoc)
     {
-
-        importBlock(privateMoc);
+        importBlock(self, privateMoc);
 
         NSError *error = nil;
         
