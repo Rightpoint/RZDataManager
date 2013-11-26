@@ -91,6 +91,7 @@ NSString *const RZCoreDataManagerDidResetDatabaseNotification   = @"RZCoreDataMa
         _classToEntityMapping       = [NSMutableDictionary dictionary];
         _attemptAutomaticMigration  = YES;
         _deleteDatabaseIfUnreadable = YES;
+        _useWriteAheadLog           = YES;
     }
     return self;
 }
@@ -1101,9 +1102,15 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
         
         NSDictionary *options = nil;
         
+        NSString *journalMode = self.useWriteAheadLog ? @"WAL" : @"DELETE";
+        NSDictionary *sqlPragmasOptionDict = @{@"journal_mode" : journalMode};
         if (self.attemptAutomaticMigration && NSSQLiteStoreType == self.persistentStoreType && self.persistentStoreURL)
         {
-            options = @{ NSMigratePersistentStoresAutomaticallyOption : @(YES), NSInferMappingModelAutomaticallyOption : @(YES) };
+            options = @{
+                            NSMigratePersistentStoresAutomaticallyOption    : @(YES),
+                            NSInferMappingModelAutomaticallyOption          : @(YES),
+                            NSSQLitePragmasOption                           : sqlPragmasOptionDict
+                        };
         }
         
         if(![_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:options error:&error])
@@ -1120,7 +1127,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 
                 if ([[NSFileManager defaultManager] removeItemAtURL:self.persistentStoreURL error:&removeFileError])
                 {
-                    if ([_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:nil error:&error])
+                    if ([_persistentStoreCoordinator addPersistentStoreWithType:self.persistentStoreType configuration:nil URL:self.persistentStoreURL options:@{NSSQLitePragmasOption : sqlPragmasOptionDict} error:&error])
                     {
                         // Succeeded! - Nil out previous error to avoid abort
                         [[NSNotificationCenter defaultCenter] postNotificationName:RZCoreDataManagerDidDeleteInvalidDatabaseFile object:self];

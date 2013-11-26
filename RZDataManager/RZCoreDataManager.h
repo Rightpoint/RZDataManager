@@ -63,6 +63,12 @@ OBJC_EXTERN NSString *const RZCoreDataManagerImportAsynchronouslyOptionKey;
  */
 @property (nonatomic, assign) BOOL deleteDatabaseIfUnreadable;
 
+//! Sets the default journal mode to use a write ahead log (WAL). Defaults to YES.
+/*!
+     This flag must be set immediately after instance is created, prior to accessing data stack.
+*/
+@property (nonatomic, assign) BOOL useWriteAheadLog;
+
 //! Provide a model file name here without an extension BEFORE ACCESSING THE STACK. If left nil, will default to bundle display name.
 @property (nonatomic, strong) NSString *managedObjectModelName;
 
