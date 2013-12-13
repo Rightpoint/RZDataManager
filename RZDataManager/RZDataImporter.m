@@ -231,8 +231,7 @@
             for (NSString *subKey in [subDict allKeys])
             {
                 NSString *keyPath = [NSString stringWithFormat:@"%@.%@", key, subKey];
-
-                if ([mapping modelPropertyNameForDataKey:keyPath] != nil)
+                if ([mapping hasMappingDefinedForDataKey:keyPath])
                 {
                     id subValue = [data validObjectForKeyPath:keyPath decodeHTML:NO];
                     [self importValue:subValue toObject:object fromKeyPath:keyPath withMapping:mapping];
