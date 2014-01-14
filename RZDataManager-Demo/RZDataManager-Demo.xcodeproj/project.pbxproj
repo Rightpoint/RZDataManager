@@ -19,6 +19,7 @@
 		9A33666A17553E1F00FCF766 /* NSDictionary+NonNSNull.m in Sources */ = {isa = PBXBuildFile; fileRef = FEA82B041742CC1B00FA206C /* NSDictionary+NonNSNull.m */; };
 		9A33666B17553E1F00FCF766 /* NSString+HTMLEntities.m in Sources */ = {isa = PBXBuildFile; fileRef = FEA82B061742CC1B00FA206C /* NSString+HTMLEntities.m */; };
 		9A58B7A117578D070065D1EA /* NSObject+RZPropertyUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 9A58B7A017578D070065D1EA /* NSObject+RZPropertyUtils.m */; };
+		9AAFE3931885DDEF00542E5C /* NSFetchRequest+RZCreationHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AAFE3921885DDEF00542E5C /* NSFetchRequest+RZCreationHelpers.m */; };
 		9AC66E6D175E641A007C603C /* DMEntry+RZDataManagerModelObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC66E6C175E641A007C603C /* DMEntry+RZDataManagerModelObject.m */; };
 		9AC66E75175E6DE6007C603C /* RZDataManagerModelObjectMapping.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC66E74175E6DE6007C603C /* RZDataManagerModelObjectMapping.m */; };
 		9AC66E7B175E94A1007C603C /* RZDataManagerModelObjectMapping.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AC66E74175E6DE6007C603C /* RZDataManagerModelObjectMapping.m */; };
@@ -72,6 +73,8 @@
 		9A3528511757C57C0009F78B /* RZDataManagerModelObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RZDataManagerModelObject.h; sourceTree = "<group>"; };
 		9A58B79F17578D070065D1EA /* NSObject+RZPropertyUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+RZPropertyUtils.h"; sourceTree = "<group>"; };
 		9A58B7A017578D070065D1EA /* NSObject+RZPropertyUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+RZPropertyUtils.m"; sourceTree = "<group>"; };
+		9AAFE3911885DDEF00542E5C /* NSFetchRequest+RZCreationHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFetchRequest+RZCreationHelpers.h"; sourceTree = "<group>"; };
+		9AAFE3921885DDEF00542E5C /* NSFetchRequest+RZCreationHelpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFetchRequest+RZCreationHelpers.m"; sourceTree = "<group>"; };
 		9AC66E6B175E641A007C603C /* DMEntry+RZDataManagerModelObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "DMEntry+RZDataManagerModelObject.h"; sourceTree = "<group>"; };
 		9AC66E6C175E641A007C603C /* DMEntry+RZDataManagerModelObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = "DMEntry+RZDataManagerModelObject.m"; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		9AC66E73175E6DE6007C603C /* RZDataManagerModelObjectMapping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZDataManagerModelObjectMapping.h; sourceTree = "<group>"; };
@@ -260,6 +263,8 @@
 			children = (
 				FEA82B031742CC1B00FA206C /* NSDictionary+NonNSNull.h */,
 				FEA82B041742CC1B00FA206C /* NSDictionary+NonNSNull.m */,
+				9AAFE3911885DDEF00542E5C /* NSFetchRequest+RZCreationHelpers.h */,
+				9AAFE3921885DDEF00542E5C /* NSFetchRequest+RZCreationHelpers.m */,
 				9A58B79F17578D070065D1EA /* NSObject+RZPropertyUtils.h */,
 				9A58B7A017578D070065D1EA /* NSObject+RZPropertyUtils.m */,
 				FEA82B051742CC1B00FA206C /* NSString+HTMLEntities.h */,
@@ -385,6 +390,7 @@
 				FEA82B001742CB5600FA206C /* RZDataImporter.m in Sources */,
 				FEA82B071742CC1B00FA206C /* NSDictionary+NonNSNull.m in Sources */,
 				FEA82B091742CC1B00FA206C /* NSString+HTMLEntities.m in Sources */,
+				9AAFE3931885DDEF00542E5C /* NSFetchRequest+RZCreationHelpers.m in Sources */,
 				9A3366591755378800FCF766 /* RZDataManager_Base.m in Sources */,
 				9A58B7A117578D070065D1EA /* NSObject+RZPropertyUtils.m in Sources */,
 				9AC66E7B175E94A1007C603C /* RZDataManagerModelObjectMapping.m in Sources */,
