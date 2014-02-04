@@ -176,9 +176,12 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
 #pragma mark - Miscellaneous
 
+// By default does NOT include properties from inherited classes
 - (NSDictionary *)dictionaryFromModelObject:(NSObject *)object;
 
-- (NSDictionary *)dictionaryFromModelObject:(NSObject *)object usingMapping:(RZDataManagerModelObjectMapping *)mapping;
+- (NSDictionary *)dictionaryFromModelObject:(NSObject *)object
+                  includingInheritedClasses:(BOOL)inludeInherited
+                               usingMapping:(RZDataManagerModelObjectMapping *)mapping;
 
 @end
 

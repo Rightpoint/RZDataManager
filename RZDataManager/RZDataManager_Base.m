@@ -222,13 +222,13 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 
 - (NSDictionary *)dictionaryFromModelObject:(NSObject *)object
 {
-    return [self dictionaryFromModelObject:object usingMapping:[self.dataImporter mappingForClassNamed:NSStringFromClass([object class])]];
+    return [self dictionaryFromModelObject:object includingInheritedClasses:NO usingMapping:[self.dataImporter mappingForClassNamed:NSStringFromClass([object class])]];
 }
 
-- (NSDictionary *)dictionaryFromModelObject:(NSObject *)object usingMapping:(RZDataManagerModelObjectMapping *)mapping
+- (NSDictionary *)dictionaryFromModelObject:(NSObject *)object includingInheritedClasses:(BOOL)includeInherited usingMapping:(RZDataManagerModelObjectMapping *)mapping
 {
 
-    NSArray             *propertyNames            = [[object class] rz_getPropertyNames];
+    NSArray             *propertyNames            = [[object class] rz_getPropertyNamesIncludingInheritedClasses:includeInherited];
     NSMutableDictionary *dictionaryRepresentation = [NSMutableDictionary dictionaryWithCapacity:propertyNames.count];
 
     [propertyNames enumerateObjectsUsingBlock:^(NSString *propName, NSUInteger idx, BOOL *stop)

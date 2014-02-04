@@ -180,7 +180,7 @@
         @throw [NSException exceptionWithName:kRZDataManagerException reason:@"Object does not conform to RZDataManagerModelObject protocol" userInfo:nil];
     }
     
-    _classPropertyNames  = [[[self.modelClass class] rz_getPropertyNames] copy];
+    _classPropertyNames  = [[[self.modelClass class] rz_getPropertyNamesIncludingInheritedClasses:YES] copy];
     _dataIdKey           = [[[self.modelClass class] dataImportDefaultDataIdKey] copy];
     _modelIdPropertyName = [[[self.modelClass class] dataImportModelIdPropertyName] copy];
 

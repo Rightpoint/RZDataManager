@@ -119,6 +119,11 @@ static objc_property_t RZGetProperty(NSString *name, Class class)
 
 + (NSArray *)rz_getPropertyNames
 {
+    return [self rz_getPropertyNamesIncludingInheritedClasses:NO];
+}
+
++ (NSArray *)rz_getPropertyNamesIncludingInheritedClasses:(BOOL)includeInherited
+{
     unsigned int count;
     objc_property_t *properties = class_copyPropertyList([self class], &count);
 
@@ -126,19 +131,21 @@ static objc_property_t RZGetProperty(NSString *name, Class class)
 
     for (unsigned int i = 0; i < count; i++)
     {
-
         objc_property_t property = properties[i];
         [names addObject:[NSString stringWithUTF8String:property_getName(property)]];
     }
 
     // Add properties from base classes
-    Class baseClass = class_getSuperclass([self class]);
-    while (baseClass != nil)
+    if (includeInherited)
     {
-        [names addObjectsFromArray:[baseClass rz_getPropertyNames]];
-        baseClass = class_getSuperclass(baseClass);
+        Class baseClass = class_getSuperclass([self class]);
+        while (baseClass != nil)
+        {
+            [names addObjectsFromArray:[baseClass rz_getPropertyNames]];
+            baseClass = class_getSuperclass(baseClass);
+        }
     }
-
+    
     return names;
 }
 
