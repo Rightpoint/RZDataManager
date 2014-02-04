@@ -971,7 +971,7 @@
 {
     __block BOOL finished = NO;
     
-    [self.dataManager performDataOperationInBackgroundUsingBlock:^(id context) {
+    [self.dataManager performDataOperationInBackgroundUsingBlock:^(RZDataManager *manager, id context) {
         
         DMEntry *bgEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
         STAssertNotNil(bgEntry, @"Entry should exist in child moc");

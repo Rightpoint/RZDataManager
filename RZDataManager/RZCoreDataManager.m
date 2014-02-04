@@ -824,6 +824,9 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                 // multiple relationships
                 if ([relData isKindOfClass:[NSArray class]])
                 {
+                    // Still need to pass the whole array - just normalize the data if the objects are not dictionaries.
+                    NSMutableArray *normalizedRelData = [NSMutableArray array];
+                    
                     [(NSArray *)relData enumerateObjectsUsingBlock:^(id thisRelData, NSUInteger idx, BOOL *stop) {
                         
                         id theData = thisRelData;
@@ -832,13 +835,13 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                             // assume it's the unique ID value
                             theData = @{ objMapping.dataIdKey : thisRelData };
                         }
-                        
-                        [self handleRelationshipImportOnObject:obj
-                                       withRelationshipMapping:relMapping
-                                                 objectMapping:objMapping
-                                                       andData:theData];
-                        
+                        [normalizedRelData addObject:theData];
                     }];
+                    
+                    [self handleRelationshipImportOnObject:obj
+                                   withRelationshipMapping:relMapping
+                                             objectMapping:objMapping
+                                                   andData:normalizedRelData];
                 }
                 else
                 {
