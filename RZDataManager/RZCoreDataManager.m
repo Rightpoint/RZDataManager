@@ -969,9 +969,17 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             if (relationshipDesc.isToMany)
             {
                 // optimize lookup for existing objects
-                NSString     *entityName        = [self entityNameForClassOrEntityNamed:relationshipMapping.relationshipClassName];
-                NSArray      *existingObjs      = [(NSSet *)[object valueForKey:relationshipMapping.relationshipPropertyName] allObjects];
-                NSDictionary *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
+                NSString        *entityName        = [self entityNameForClassOrEntityNamed:relationshipMapping.relationshipClassName];
+                NSFetchRequest  *entityRequest     = [NSFetchRequest fetchRequestWithEntityName:entityName];
+                NSError         *existingObjsError = nil;
+                
+                NSArray         *existingObjs      = [self.currentMoc executeFetchRequest:entityRequest error:&existingObjsError];
+                NSDictionary    *existingObjsByUid = [NSDictionary dictionaryWithObjects:existingObjs forKeys:[existingObjs valueForKey:modelIdKey]];
+                
+                if(existingObjsError != nil)
+                {
+                    RZDataManagerLogError(@"Error fetching existing objects of type: %@. Error description: %@", entityName, existingObjsError.localizedDescription);
+                }
                 
                 NSMutableArray *importedRelObjs = [NSMutableArray arrayWithCapacity:[(NSArray *)dictionaryOrArray count]];
                 
