@@ -930,6 +930,9 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                     
                     [self.dataImporter importData:dictionaryOrArray toObject:importedObj usingMapping:objectMapping];
                     
+                    // Check for relationships
+                    [self performRelationshipImportsOnObject:importedObj withMapping:objectMapping fromData:dictionaryOrArray];
+                    
                     if (relationshipMapping.shouldReplaceExistingRelationships)
                     {
                         NSSet *importedRelObjs = [NSSet setWithObject:importedObj];
@@ -952,6 +955,9 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                     // create or update object
                     importedObj = [self objectOfType:relationshipMapping.relationshipClassName withValue:uid forKeyPath:modelIdKey createNew:YES];
                     [self.dataImporter importData:dictionaryOrArray toObject:importedObj usingMapping:objectMapping];
+                    
+                    // Check for relationships
+                    [self performRelationshipImportsOnObject:importedObj withMapping:objectMapping fromData:dictionaryOrArray];
                     
                     // set relationship on other object
                     [object setValue:importedObj forKey:relationshipMapping.relationshipPropertyName];
@@ -997,6 +1003,9 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                          }
                          
                          [self.dataImporter importData:objData toObject:importedObj usingMapping:objectMapping];
+                         
+                         // Check for relationships
+                         [self performRelationshipImportsOnObject:importedObj withMapping:objectMapping fromData:objData];
                          
                          [importedRelObjs addObject:importedObj];
                      }
