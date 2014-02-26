@@ -11,12 +11,14 @@
 #import "DMBaseEntry.h"
 
 @class DMCollection;
+@class DMSubEntry;
 
 @interface DMEntry : DMBaseEntry
 
 @property (nonatomic, retain) NSDate * createdDate;
 @property (nonatomic, retain) NSNumber * popularity;
 @property (nonatomic, retain) DMCollection *collection;
+@property (nonatomic, retain) DMSubEntry *subEntry;
 
 @property (nonatomic, assign) float         testFloat;
 @property (nonatomic, assign) double        testDouble;
