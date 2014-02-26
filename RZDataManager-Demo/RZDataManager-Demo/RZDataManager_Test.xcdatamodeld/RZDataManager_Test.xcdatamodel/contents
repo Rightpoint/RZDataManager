@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="3401" systemVersion="13C64" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+    <entity name="DMBaseEntry" representedClassName="DMBaseEntry" isAbstract="YES" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="uid" optional="YES" attributeType="String" syncable="YES">
+            <userInfo>
+                <entry key="isIdentifierProperty" value="yes"/>
+            </userInfo>
+        </attribute>
+    </entity>
+    <entity name="DMCollection" representedClassName="DMCollection" syncable="YES">
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="entries" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="DMEntry" inverseName="collection" inverseEntity="DMEntry" syncable="YES"/>
+    </entity>
+    <entity name="DMCustomEntry" representedClassName="DMCustomEntry" syncable="YES">
+        <attribute name="age" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="uid" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="DMEntry" representedClassName="DMEntry" parentEntity="DMBaseEntry" syncable="YES">
+        <attribute name="createdDate" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="popularity" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="testBool" optional="YES" attributeType="Boolean" syncable="YES"/>
+        <attribute name="testDouble" optional="YES" attributeType="Double" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="testFloat" optional="YES" attributeType="Float" defaultValueString="0.0" syncable="YES"/>
+        <attribute name="testInt" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="testLongLong" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="testShort" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="testUInt" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="testULongLong" optional="YES" attributeType="Integer 64" defaultValueString="0" syncable="YES"/>
+        <attribute name="testUShort" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <relationship name="collection" optional="YES" minCount="1" maxCount="1" deletionRule="Nullify" destinationEntity="DMCollection" inverseName="entries" inverseEntity="DMCollection" syncable="YES"/>
+        <relationship name="subEntry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DMSubEntry" inverseName="entry" inverseEntity="DMSubEntry" syncable="YES"/>
+    </entity>
+    <entity name="DMSubEntry" representedClassName="DMSubEntry" parentEntity="DMBaseEntry" syncable="YES">
+        <attribute name="subAttribute" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="entry" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DMEntry" inverseName="subEntry" inverseEntity="DMEntry" syncable="YES"/>
+    </entity>
+    <entity name="DMThing" representedClassName="DMThingClass" syncable="YES">
+        <attribute name="attribute1" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="attribute2" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="myIdentifier" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="DMBaseEntry" positionX="-146" positionY="-84" width="128" height="75"/>
+        <element name="DMCollection" positionX="-56" positionY="303" width="128" height="75"/>
+        <element name="DMCustomEntry" positionX="-252" positionY="396" width="128" height="90"/>
+        <element name="DMEntry" positionX="-324" positionY="9" width="128" height="238"/>
+        <element name="DMThing" positionX="396" positionY="144" width="128" height="88"/>
+        <element name="DMSubEntry" positionX="-605" positionY="182" width="128" height="73"/>
+    </elements>
+</model>
