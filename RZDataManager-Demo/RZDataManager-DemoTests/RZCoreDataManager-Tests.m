@@ -10,6 +10,7 @@
 #import "RZCoreDataManager.h"
 #import "DMCollection.h"
 #import "DMEntry.h"
+#import "DMSubEntry.h"
 #import "DMThingClass.h"
 #import "DMCustomEntry.h"
 
@@ -998,6 +999,57 @@
     
         finished = YES;
     }];
+    
+    while (!finished){
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+    }
+    
+}
+
+- (void)test_nestedImport
+{
+    NSDictionary *yellowCollection = @{
+                                       @"name" : @"Yellow",
+                                       @"entries" :
+                                           @[
+                                               @{
+                                                   @"name" : @"Omicron",
+                                                   @"uid" : @"1000",
+                                                   @"subEntry" : @{
+                                                           @"name" : @"SubOmicron",
+                                                           @"uid" : @"9999"
+                                                        }
+                                                },
+                                               @{
+                                                   @"name" : @"Pi",
+                                                   @"uid" : @"1001"
+                                                }
+                                               ]
+                                       };
+
+    __block BOOL finished = NO;
+    
+    [self.dataManager importData:yellowCollection
+                   forClassNamed:@"DMCollection"
+                         options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}
+                      completion:^(id result, NSError *error)
+     {
+         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         
+         // returned result should be array with two objects
+         STAssertTrue([result isKindOfClass:[DMCollection class]], @"Result should be a single object");
+         
+         // first object should be collection named "Yellow" with two entries
+         DMCollection *collection = (DMCollection*)result;
+         STAssertEqualObjects([collection name], @"Yellow", @"Returned collection has incorrect name");
+         STAssertTrue(collection.entries.count == 2, @"Returned collection has wrong number of entries");
+         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
+         STAssertNotNil(entry, @"Imported related entry not found");
+         STAssertNotNil(entry.subEntry, @"Imported sub relationship not found");
+         STAssertTrue([[entry.subEntry name] isEqualToString:@"SubOmicron"], @"Sub entry has wrong name");
+         
+         finished = YES;
+     }];
     
     while (!finished){
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];

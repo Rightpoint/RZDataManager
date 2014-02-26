@@ -23,5 +23,6 @@
 @dynamic testULongLong;
 @dynamic testUShort;
 @dynamic collection;
+@dynamic subEntry;
 
 @end
