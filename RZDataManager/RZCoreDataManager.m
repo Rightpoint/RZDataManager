@@ -731,9 +731,8 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                                  [existingObjIdsByUid setObject:[importedObj valueForKey:@"objectID"] forKey:[importedObj valueForKey:modelIdKey]];
 
                                  // If we imported relationships that point to entities of the same type as importedObj, make sure the newly created objects get added to the existing objects dictionary.
-                                 for(NSString *relationshipMappingKey in mapping.allRelationshipMappings)
-                                 {
-                                     RZDataManagerModelObjectRelationshipMapping *relationshipMapping = mapping.allRelationshipMappings[relationshipMappingKey];
+                                 [mapping.allRelationshipMappings enumerateKeysAndObjectsUsingBlock:^(id key, RZDataManagerModelObjectRelationshipMapping *relationshipMapping, BOOL *stop) {
+
                                      if([relationshipMapping.relationshipClassName isEqualToString:entityName])
                                      {
                                          id relatedObject = [importedObj valueForKey:relationshipMapping.relationshipPropertyName];
@@ -749,7 +748,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                                              [existingObjIdsByUid setObject:[relatedObject valueForKey:@"objectID"] forKey:[relatedObject valueForKey:modelIdKey]];
                                          }
                                      }
-                                 }
+                                 }];
 
                                  if (importedObjIds)
                                  {
