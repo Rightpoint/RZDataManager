@@ -139,7 +139,10 @@ static objc_property_t RZGetProperty(NSString *name, Class class)
         baseClass = class_getSuperclass(baseClass);
     }
     
-    free(properties);
+    if (properties != NULL)
+    {
+        free(properties);
+    }
 
     return names;
 }
