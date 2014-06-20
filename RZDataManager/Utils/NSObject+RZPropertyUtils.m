@@ -144,33 +144,48 @@ static objc_property_t RZGetProperty(NSString *name, Class class)
 
 + (NSString *)rz_dataTypeForPropertyNamed:(NSString *)propertyName
 {
-    NSString *typenameString = nil;
-    objc_property_t property = RZGetProperty(propertyName, [self class]);
-    const char *propAttrString = property_getAttributes(property);
-
-    if (propAttrString != NULL)
+    static NSMutableDictionary *s_dataTypeCache = nil;
+    
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        s_dataTypeCache = [[NSMutableDictionary alloc] init];
+    });
+    
+    NSString *key = [NSStringFromClass([self class]) stringByAppendingPathExtension:propertyName];
+    
+    NSString *typenameString = [s_dataTypeCache objectForKey:key];
+    
+    if (nil == typenameString)
     {
+        objc_property_t property = RZGetProperty(propertyName, [self class]);
+        const char *propAttrString = property_getAttributes(property);
 
-        NSString *propString = [NSString stringWithUTF8String:propAttrString];
-
-        NSScanner *scanner = [NSScanner scannerWithString:propString];
-        [scanner setCaseSensitive:YES];
-        [scanner setCharactersToBeSkipped:nil];
-
-        // Type is first part of property string, no need to split components
-        if ([scanner scanString:@"T" intoString:NULL])
+        if (propAttrString != NULL)
         {
-            [scanner scanUpToString:@"," intoString:&typenameString];
-            typenameString = [typenameString stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"@\""]];
+
+            NSString *propString = [NSString stringWithUTF8String:propAttrString];
+
+            NSScanner *scanner = [NSScanner scannerWithString:propString];
+            [scanner setCaseSensitive:YES];
+            [scanner setCharactersToBeSkipped:nil];
+
+            // Type is first part of property string, no need to split components
+            if ([scanner scanString:@"T" intoString:NULL])
+            {
+                [scanner scanUpToString:@"," intoString:&typenameString];
+                typenameString = [typenameString stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"@\""]];
+            }
         }
-    }
 
-    if (typenameString)
-    {
-        NSString *mappedType = [rz_TypeMappings objectForKey:typenameString];
-        if (mappedType)
+        if (typenameString)
         {
-            typenameString = mappedType;
+            NSString *mappedType = [rz_TypeMappings objectForKey:typenameString];
+            if (mappedType)
+            {
+                typenameString = mappedType;
+            }
+            
+            [s_dataTypeCache setObject:typenameString forKey:key];
         }
     }
 
