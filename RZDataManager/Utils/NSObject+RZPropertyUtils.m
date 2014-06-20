@@ -138,6 +138,11 @@ static objc_property_t RZGetProperty(NSString *name, Class class)
         [names addObjectsFromArray:[baseClass rz_getPropertyNames]];
         baseClass = class_getSuperclass(baseClass);
     }
+    
+    if (properties != NULL)
+    {
+        free(properties);
+    }
 
     return names;
 }
