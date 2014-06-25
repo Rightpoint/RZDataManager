@@ -40,7 +40,6 @@
 		FEA82A8C1742AFFE00FA206C /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = FEA82A8B1742AFFE00FA206C /* Default.png */; };
 		FEA82A8E1742AFFE00FA206C /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FEA82A8D1742AFFE00FA206C /* Default@2x.png */; };
 		FEA82A901742AFFE00FA206C /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = FEA82A8F1742AFFE00FA206C /* Default-568h@2x.png */; };
-		FEA82A9B1742AFFF00FA206C /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A9A1742AFFF00FA206C /* SenTestingKit.framework */; };
 		FEA82A9C1742AFFF00FA206C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A771742AFFE00FA206C /* UIKit.framework */; };
 		FEA82A9D1742AFFF00FA206C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A791742AFFE00FA206C /* Foundation.framework */; };
 		FEA82A9E1742AFFF00FA206C /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FEA82A7D1742AFFE00FA206C /* CoreData.framework */; };
@@ -108,8 +107,7 @@
 		FEA82A8D1742AFFE00FA206C /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		FEA82A8F1742AFFE00FA206C /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		FEA82A921742AFFE00FA206C /* RZDataManager_Test.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = RZDataManager_Test.xcdatamodel; sourceTree = "<group>"; };
-		FEA82A991742AFFF00FA206C /* RZDataManager-DemoTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "RZDataManager-DemoTests.octest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		FEA82A9A1742AFFF00FA206C /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		FEA82A991742AFFF00FA206C /* RZDataManager-DemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "RZDataManager-DemoTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FEA82AA31742AFFF00FA206C /* RZDataManager-DemoTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "RZDataManager-DemoTests-Info.plist"; sourceTree = "<group>"; };
 		FEA82AA51742AFFF00FA206C /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		FEA82AB31742B05100FA206C /* RZCoreDataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RZCoreDataManager.h; sourceTree = "<group>"; };
@@ -138,7 +136,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FEA82A9B1742AFFF00FA206C /* SenTestingKit.framework in Frameworks */,
 				FEA82A9C1742AFFF00FA206C /* UIKit.framework in Frameworks */,
 				FEA82A9D1742AFFF00FA206C /* Foundation.framework in Frameworks */,
 				FEA82A9E1742AFFF00FA206C /* CoreData.framework in Frameworks */,
@@ -178,7 +175,7 @@
 			isa = PBXGroup;
 			children = (
 				FEA82A741742AFFE00FA206C /* RZDataManager-Demo.app */,
-				FEA82A991742AFFF00FA206C /* RZDataManager-DemoTests.octest */,
+				FEA82A991742AFFF00FA206C /* RZDataManager-DemoTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -190,7 +187,6 @@
 				FEA82A791742AFFE00FA206C /* Foundation.framework */,
 				FEA82A7B1742AFFE00FA206C /* CoreGraphics.framework */,
 				FEA82A7D1742AFFE00FA206C /* CoreData.framework */,
-				FEA82A9A1742AFFF00FA206C /* SenTestingKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -321,8 +317,8 @@
 			);
 			name = "RZDataManager-DemoTests";
 			productName = "RZDataManager-DemoTests";
-			productReference = FEA82A991742AFFF00FA206C /* RZDataManager-DemoTests.octest */;
-			productType = "com.apple.product-type.bundle";
+			productReference = FEA82A991742AFFF00FA206C /* RZDataManager-DemoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -330,6 +326,7 @@
 		FEA82A6C1742AFFE00FA206C /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastTestingUpgradeCheck = 0510;
 				LastUpgradeCheck = 0460;
 				ORGANIZATIONNAME = Raizlabs;
 			};
@@ -552,13 +549,13 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"$(inherited)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RZDataManager-Demo/RZDataManager-Demo-Prefix.pch";
 				INFOPLIST_FILE = "RZDataManager-DemoTests/RZDataManager-DemoTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Debug;
 		};
@@ -569,13 +566,13 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"\"$(SDKROOT)/Developer/Library/Frameworks\"",
 					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"$(inherited)",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RZDataManager-Demo/RZDataManager-Demo-Prefix.pch";
 				INFOPLIST_FILE = "RZDataManager-DemoTests/RZDataManager-DemoTests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
-				WRAPPER_EXTENSION = octest;
 			};
 			name = Release;
 		};
