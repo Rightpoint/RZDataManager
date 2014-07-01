@@ -85,8 +85,8 @@
 - (void)test100FetchSingleObject
 {
     DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
-    STAssertNotNil(entry, @"Result should not be nil");
-    STAssertEqualObjects(entry.name, @"Alpha", @"Returned entry has incorrect name");
+    XCTAssertNotNil(entry, @"Result should not be nil");
+    XCTAssertEqualObjects(entry.name, @"Alpha", @"Returned entry has incorrect name");
 }
 
 
@@ -94,7 +94,7 @@
 {
     NSPredicate *pred = [NSPredicate predicateWithFormat:@"collection.name == %@", @"Red"];
     NSArray *entries = [self.dataManager objectsOfType:@"DMEntry" matchingPredicate:pred];
-    STAssertTrue(entries.count == 5, @"Wrong number of entries returned");
+    XCTAssertTrue(entries.count == 5, @"Wrong number of entries returned");
 }
 
 #pragma mark - Import tests
@@ -118,27 +118,27 @@
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)} completion:^(id result, NSError *error)
     {
-        STAssertNotNil(result, @"Result should not be nil");
-        STAssertNil(error, @"Error during import: %@", error);
+        XCTAssertNotNil(result, @"Result should not be nil");
+        XCTAssertNil(error, @"Error during import: %@", error);
         
-        STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
+        XCTAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
         
         // attempt clean fetch of new object
         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
 
-        STAssertNotNil(entry, @"Newly created entry not found");
-        STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
-        STAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+        XCTAssertNotNil(entry, @"Newly created entry not found");
+        XCTAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
+        XCTAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
         
-        STAssertEquals(entry.testFloat, 1.0f, @"Float conversion failed");
-        STAssertEquals(entry.testDouble, 1.0, @"Double conversion failed");
-        STAssertEquals(entry.testUInt, (unsigned int)0xFFFFFFFF, @"Unsigned int conversion failed");
-        STAssertEquals(entry.testInt, (int)-1, @"Int conversion failed");
-        STAssertEquals(entry.testShort, (SInt16)-1, @"Short conversion failed");
-        STAssertEquals(entry.testUShort, (UInt16)0xFFFF, @"Unsigned short conversion failed");
-        STAssertEquals(entry.testLongLong, (SInt64)-1, @"Long long conversion failed");
-        STAssertEquals(entry.testULongLong, (UInt64)0xFFFFFFFFFFFFFFFF, @"Unsigned long long conversion failed");
-        STAssertEquals(entry.testBool, (BOOL)YES, @"Bool conversion failed");
+        XCTAssertEqual(entry.testFloat, 1.0f, @"Float conversion failed");
+        XCTAssertEqual(entry.testDouble, 1.0, @"Double conversion failed");
+        XCTAssertEqual(entry.testUInt, (unsigned int)0xFFFFFFFF, @"Unsigned int conversion failed");
+        XCTAssertEqual(entry.testInt, (int)-1, @"Int conversion failed");
+        XCTAssertEqual(entry.testShort, (SInt16)-1, @"Short conversion failed");
+        XCTAssertEqual(entry.testUShort, (UInt16)0xFFFF, @"Unsigned short conversion failed");
+        XCTAssertEqual(entry.testLongLong, (SInt64)-1, @"Long long conversion failed");
+        XCTAssertEqual(entry.testULongLong, (UInt64)0xFFFFFFFFFFFFFFFF, @"Unsigned long long conversion failed");
+        XCTAssertEqual(entry.testBool, (BOOL)YES, @"Bool conversion failed");
 
         finished = YES;
     }];
@@ -159,15 +159,15 @@
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMCustomEntry" options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)} completion:^(id result, NSError *error)
      {
-         STAssertNotNil(result, @"Result should not be nil");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNotNil(result, @"Result should not be nil");
+         XCTAssertNil(error, @"Error during import: %@", error);
                   
          // attempt clean fetch of new object
          DMCustomEntry *entry = [self.dataManager objectOfType:@"DMCustomEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
          
-         STAssertNotNil(entry, @"Newly created entry not found");
-         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
-         STAssertEqualObjects(entry.age, @21, @"Newly created entry has wrong age.");
+         XCTAssertNotNil(entry, @"Newly created entry not found");
+         XCTAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
+         XCTAssertEqualObjects(entry.age, @21, @"Newly created entry has wrong age.");
          
          finished = YES;
      }];
@@ -187,14 +187,14 @@
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)} completion:^(id result, NSError *error)
      {
-         STAssertNotNil(result, @"Result should not be nil");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNotNil(result, @"Result should not be nil");
+         XCTAssertNil(error, @"Error during import: %@", error);
          
-         STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
+         XCTAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
          
          // attempt clean fetch of new object
          DMEntry *entry = (DMEntry*)result;
-         STAssertNil(entry.createdDate, @"Date was not correctly set to nil");
+         XCTAssertNil(entry.createdDate, @"Date was not correctly set to nil");
          
          finished = YES;
      }];
@@ -229,27 +229,27 @@
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)} completion:^(id result, NSError *error)
      {
-         STAssertNotNil(result, @"Result should not be nil");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNotNil(result, @"Result should not be nil");
+         XCTAssertNil(error, @"Error during import: %@", error);
          
-         STAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be array");
+         XCTAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be array");
                            
          // attempt clean fetch of new objects
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
          
-         STAssertNotNil(entry, @"Newly created entry not found");
-         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
-         STAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+         XCTAssertNotNil(entry, @"Newly created entry not found");
+         XCTAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
+         XCTAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
          
          entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1001" forKeyPath:@"uid" createNew:NO];
          
-         STAssertNotNil(entry, @"Newly created entry not found");
-         STAssertEqualObjects(entry.name, @"Pi", @"Newly created entry has wrong name");
-         STAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+         XCTAssertNotNil(entry, @"Newly created entry not found");
+         XCTAssertEqualObjects(entry.name, @"Pi", @"Newly created entry has wrong name");
+         XCTAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
          
          // look up existing entry, should still be there
          DMEntry *existEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"4444411" forKeyPath:@"uid" createNew:NO];
-         STAssertNotNil(existEntry, @"Existing entry was not present.");
+         XCTAssertNotNil(existEntry, @"Existing entry was not present.");
          
          finished = YES;
      }];
@@ -286,27 +286,27 @@
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:options completion:^(id result, NSError *error)
      {
-         STAssertNotNil(result, @"Result should not be nil");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNotNil(result, @"Result should not be nil");
+         XCTAssertNil(error, @"Error during import: %@", error);
          
-         STAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be array");
+         XCTAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be array");
                   
          // attempt clean fetch of new objects
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
          
-         STAssertNotNil(entry, @"Newly created entry not found");
-         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
-         STAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+         XCTAssertNotNil(entry, @"Newly created entry not found");
+         XCTAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
+         XCTAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
          
          entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1001" forKeyPath:@"uid" createNew:NO];
          
-         STAssertNotNil(entry, @"Newly created entry not found");
-         STAssertEqualObjects(entry.name, @"Pi", @"Newly created entry has wrong name");
-         STAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+         XCTAssertNotNil(entry, @"Newly created entry not found");
+         XCTAssertEqualObjects(entry.name, @"Pi", @"Newly created entry has wrong name");
+         XCTAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
          
          // look up the entry that should have been deleted
          DMEntry *staleEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"4444411" forKeyPath:@"uid" createNew:NO];
-         STAssertNil(staleEntry, @"Stale object was not deleted");
+         XCTAssertNil(staleEntry, @"Stale object was not deleted");
          
          finished = YES;
      }];
@@ -334,23 +334,23 @@
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMCustomEntry" options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)} completion:^(id result, NSError *error)
      {
-         STAssertNotNil(result, @"Result should not be nil");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNotNil(result, @"Result should not be nil");
+         XCTAssertNil(error, @"Error during import: %@", error);
          
-         STAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be array");
+         XCTAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be array");
          
          // attempt clean fetch of new objects
          DMCustomEntry *entry = [self.dataManager objectOfType:@"DMCustomEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
          
-         STAssertNotNil(entry, @"Newly created entry not found");
-         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
-         STAssertEqualObjects(entry.age, @21, @"Newly created entry has wrong age.");
+         XCTAssertNotNil(entry, @"Newly created entry not found");
+         XCTAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
+         XCTAssertEqualObjects(entry.age, @21, @"Newly created entry has wrong age.");
          
          entry = [self.dataManager objectOfType:@"DMCustomEntry" withValue:@"101" forKeyPath:@"uid" createNew:NO];
          
-         STAssertNotNil(entry, @"Newly created entry not found");
-         STAssertEqualObjects(entry.name, @"Delta", @"Newly created entry has wrong name");
-         STAssertEqualObjects(entry.age, @27, @"Newly created entry has wrong age.");
+         XCTAssertNotNil(entry, @"Newly created entry not found");
+         XCTAssertEqualObjects(entry.name, @"Delta", @"Newly created entry has wrong name");
+         XCTAssertEqualObjects(entry.age, @27, @"Newly created entry has wrong age.");
          
          finished = YES;
      }];
@@ -381,27 +381,27 @@
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMEntry" keyMappings:@{ @"mahNameIs" : @"name" } options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}  completion:^(id result, NSError *error)
      {
-         STAssertNotNil(result, @"Result should not be nil");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNotNil(result, @"Result should not be nil");
+         XCTAssertNil(error, @"Error during import: %@", error);
          
-         STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
+         XCTAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
          
          // attempt clean fetch of new object
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
          
-         STAssertNotNil(entry, @"Newly created entry not found");
-         STAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
-         STAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
+         XCTAssertNotNil(entry, @"Newly created entry not found");
+         XCTAssertEqualObjects(entry.name, @"Omicron", @"Newly created entry has wrong name");
+         XCTAssertTrue([entry.createdDate isKindOfClass:[NSDate class]], @"Conversion of date during import failed");
          
-         STAssertEquals(entry.testFloat, 1.0f, @"Float conversion failed");
-         STAssertEquals(entry.testDouble, 1.0, @"Double conversion failed");
-         STAssertEquals(entry.testUInt, (unsigned int)0xFFFFFFFF, @"Unsigned int conversion failed");
-         STAssertEquals(entry.testInt, (int)-1, @"Int conversion failed");
-         STAssertEquals(entry.testShort, (SInt16)-1, @"Short conversion failed");
-         STAssertEquals(entry.testUShort, (UInt16)0xFFFF, @"Unsigned short conversion failed");
-         STAssertEquals(entry.testLongLong, (SInt64)-1, @"Long long conversion failed");
-         STAssertEquals(entry.testULongLong, (UInt64)0xFFFFFFFFFFFFFFFF, @"Unsigned long long conversion failed");
-         STAssertEquals(entry.testBool, (BOOL)YES, @"Bool conversion failed");
+         XCTAssertEqual(entry.testFloat, 1.0f, @"Float conversion failed");
+         XCTAssertEqual(entry.testDouble, 1.0, @"Double conversion failed");
+         XCTAssertEqual(entry.testUInt, (unsigned int)0xFFFFFFFF, @"Unsigned int conversion failed");
+         XCTAssertEqual(entry.testInt, (int)-1, @"Int conversion failed");
+         XCTAssertEqual(entry.testShort, (SInt16)-1, @"Short conversion failed");
+         XCTAssertEqual(entry.testUShort, (UInt16)0xFFFF, @"Unsigned short conversion failed");
+         XCTAssertEqual(entry.testLongLong, (SInt64)-1, @"Long long conversion failed");
+         XCTAssertEqual(entry.testULongLong, (UInt64)0xFFFFFFFFFFFFFFFF, @"Unsigned long long conversion failed");
+         XCTAssertEqual(entry.testBool, (BOOL)YES, @"Bool conversion failed");
          
          finished = YES;
      }];
@@ -421,18 +421,18 @@
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}  completion:^(id result, NSError *error)
      {
-         STAssertNotNil(result, @"Result should not be nil");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNotNil(result, @"Result should not be nil");
+         XCTAssertNil(error, @"Error during import: %@", error);
          
-         STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
+         XCTAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
          
          // attempt clean fetch of collection containing new object
          DMCollection *redcollection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO];
-         STAssertNotNil(redcollection, @"Collection not found");
-         STAssertTrue(redcollection.entries.count == 6, @"New entry not correctly added");
+         XCTAssertNotNil(redcollection, @"Collection not found");
+         XCTAssertTrue(redcollection.entries.count == 6, @"New entry not correctly added");
          
          DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inCollection:redcollection.entries createNew:NO];
-         STAssertNotNil(newEntry, @"New entry not found in collection");
+         XCTAssertNotNil(newEntry, @"New entry not found in collection");
          
          finished = YES;
      }];
@@ -483,33 +483,33 @@
                          options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}
                       completion:^(id result, NSError *error)
     {
-        STAssertTrue(error == nil, @"Import error occured: %@", error);
+        XCTAssertTrue(error == nil, @"Import error occured: %@", error);
         
         // returned result should be array with two objects
-        STAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be an array");
-        STAssertTrue([result count] == 2, @"Resulting array should have two objects");
+        XCTAssertTrue([result isKindOfClass:[NSArray class]], @"Result should be an array");
+        XCTAssertTrue([result count] == 2, @"Resulting array should have two objects");
         
         // first object should be collection named "Yellow" with two entries
         DMCollection *collection = [(NSArray*)result objectAtIndex:0];
-        STAssertEqualObjects([collection name], @"Yellow", @"Returned collection has incorrect name");
-        STAssertTrue(collection.entries.count == 2, @"Returned collection has wrong number of entries");
+        XCTAssertEqualObjects([collection name], @"Yellow", @"Returned collection has incorrect name");
+        XCTAssertTrue(collection.entries.count == 2, @"Returned collection has wrong number of entries");
         DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
-        STAssertNotNil(entry, @"Imported related entry not found");
+        XCTAssertNotNil(entry, @"Imported related entry not found");
 
         
         [collection.entries enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
-            STAssertTrue([[obj name] isEqualToString:@"Omicron"] || [[obj name] isEqualToString:@"Pi"], @"Imported entry for new collection has incorrect name");
+            XCTAssertTrue([[obj name] isEqualToString:@"Omicron"] || [[obj name] isEqualToString:@"Pi"], @"Imported entry for new collection has incorrect name");
         }];
         
         // second object should be collection named "Green" with two entries
         collection = [(NSArray*)result objectAtIndex:1];
-        STAssertEqualObjects([collection name], @"Green", @"Returned collection has incorrect name");
-        STAssertTrue(collection.entries.count == 2, @"Returned collection has wrong number of entries");
+        XCTAssertEqualObjects([collection name], @"Green", @"Returned collection has incorrect name");
+        XCTAssertTrue(collection.entries.count == 2, @"Returned collection has wrong number of entries");
         entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1002" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
-        STAssertNotNil(entry, @"Imported related entry not found");
+        XCTAssertNotNil(entry, @"Imported related entry not found");
 
         [collection.entries enumerateObjectsUsingBlock:^(id obj, BOOL *stop) {
-            STAssertTrue([[obj name] isEqualToString:@"Mu"] || [[obj name] isEqualToString:@"Nu"], @"Imported entry for new collection has incorrect name");
+            XCTAssertTrue([[obj name] isEqualToString:@"Mu"] || [[obj name] isEqualToString:@"Nu"], @"Imported entry for new collection has incorrect name");
         }];
         
         
@@ -547,16 +547,16 @@
                          options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}
                       completion:^(id result, NSError *error)
      {
-         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         XCTAssertTrue(error == nil, @"Import error occured: %@", error);
          
          // result object should be collection named "Red"
          DMCollection *collection = (DMCollection*)result;
-         STAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
-         STAssertTrue(collection.entries.count == 6, @"Returned collection has wrong number of entries");
+         XCTAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
+         XCTAssertTrue(collection.entries.count == 6, @"Returned collection has wrong number of entries");
 
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
-         STAssertNotNil(entry, @"Red entry not found");
-         STAssertTrue(entry.popularity.doubleValue == 0.5, @"Entry not updated correctly");
+         XCTAssertNotNil(entry, @"Red entry not found");
+         XCTAssertTrue(entry.popularity.doubleValue == 0.5, @"Entry not updated correctly");
          
          finished = YES;
      }];
@@ -600,18 +600,18 @@
                          options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}
                       completion:^(id result, NSError *error)
      {
-         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         XCTAssertTrue(error == nil, @"Import error occured: %@", error);
          
          // result object should be collection named "Red"
          DMCollection *collection = (DMCollection*)result;
-         STAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
+         XCTAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
          
          // this time only two entries should exist - we overwrote all of the existing relationships
-         STAssertEquals(collection.entries.count, (NSUInteger)2, @"Returned collection has wrong number of entries");
+         XCTAssertEqual(collection.entries.count, (NSUInteger)2, @"Returned collection has wrong number of entries");
          
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
-         STAssertNotNil(entry, @"Red entry not found");
-         STAssertEquals(entry.popularity.doubleValue, 0.5, @"Entry not updated correctly");
+         XCTAssertNotNil(entry, @"Red entry not found");
+         XCTAssertEqual(entry.popularity.doubleValue, 0.5, @"Entry not updated correctly");
          
          finished = YES;
      }];
@@ -661,18 +661,18 @@
                          options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}
                       completion:^(id result, NSError *error)
      {
-         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         XCTAssertTrue(error == nil, @"Import error occured: %@", error);
          
          // result object should be collection named "Red"
          DMCollection *collection = (DMCollection*)result;
-         STAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
+         XCTAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
          
          // Should have one extra entry
-         STAssertEquals(collection.entries.count, (NSUInteger)6, @"Returned collection has wrong number of entries");
+         XCTAssertEqual(collection.entries.count, (NSUInteger)6, @"Returned collection has wrong number of entries");
          
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1001" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
-         STAssertNotNil(entry, @"Pi entry not found");
-         STAssertEqualObjects(entry.name, @"Pi", @"Entry not updated correctly");
+         XCTAssertNotNil(entry, @"Pi entry not found");
+         XCTAssertEqualObjects(entry.name, @"Pi", @"Entry not updated correctly");
          
          finished = YES;
      }];
@@ -699,17 +699,17 @@
                             options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}
                         completion:^(id result, NSError *error)
      {
-         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         XCTAssertTrue(error == nil, @"Import error occured: %@", error);
          
          // result object should be collection named "Red"
          DMCollection *collection = (DMCollection*)result;
-         STAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
-         STAssertEquals(collection.entries.count, (NSUInteger)0, @"Failed to break relationship for entries");
+         XCTAssertEqualObjects([collection name], @"Red", @"Returned collection has incorrect name");
+         XCTAssertEqual(collection.entries.count, (NSUInteger)0, @"Failed to break relationship for entries");
 
          // Ensure inverse relationship is correctly broken
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
-         STAssertNotNil(entry, @"Entry should still exist");
-         STAssertNil(entry.collection, @"Entry should not have a collection anymore");
+         XCTAssertNotNil(entry, @"Entry should still exist");
+         XCTAssertNil(entry.collection, @"Entry should not have a collection anymore");
          
          finished = YES;
      }];
@@ -736,13 +736,13 @@
                          options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}
                       completion:^(id result, NSError *error)
      {
-         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         XCTAssertTrue(error == nil, @"Import error occured: %@", error);
          
          // is it a DMThingClass?
-         STAssertTrue([result isKindOfClass:[DMThingClass class]], @"Returned object is wrong type");
-         STAssertEqualObjects([result myIdentifier], @"12345", @"Failed to import identifier attribute");
-         STAssertEqualObjects([result attribute1], @"whatup", @"Failed to import attribute1");
-         STAssertEqualObjects([result attribute2], @"withdat", @"Failed to import attribute2");
+         XCTAssertTrue([result isKindOfClass:[DMThingClass class]], @"Returned object is wrong type");
+         XCTAssertEqualObjects([result myIdentifier], @"12345", @"Failed to import identifier attribute");
+         XCTAssertEqualObjects([result attribute1], @"whatup", @"Failed to import attribute1");
+         XCTAssertEqualObjects([result attribute2], @"withdat", @"Failed to import attribute2");
          
          finished = YES;
      }];
@@ -768,20 +768,20 @@
                          options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}
                       completion:^(id result, NSError *error)
      {
-         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         XCTAssertTrue(error == nil, @"Import error occured: %@", error);
          
          // is it a DMThingClass?
-         STAssertTrue([result isKindOfClass:[DMThingClass class]], @"Returned object is wrong type");
-         STAssertEqualObjects([result myIdentifier], @"12345", @"Failed to import identifier attribute");
-         STAssertEqualObjects([result attribute1], @"whatup", @"Failed to import attribute1");
-         STAssertEqualObjects([result attribute2], @"withdat", @"Failed to import attribute2");
+         XCTAssertTrue([result isKindOfClass:[DMThingClass class]], @"Returned object is wrong type");
+         XCTAssertEqualObjects([result myIdentifier], @"12345", @"Failed to import identifier attribute");
+         XCTAssertEqualObjects([result attribute1], @"whatup", @"Failed to import attribute1");
+         XCTAssertEqualObjects([result attribute2], @"withdat", @"Failed to import attribute2");
          
          // Import data for a transient property
          NSDictionary *someThingData = @{@"someOtherProperty" : @"something"};
 
          [self.dataManager.dataImporter importData:someThingData toObject:result];
          
-         STAssertEqualObjects([result someOtherProperty], @"something", @"Failed to import someOtherProperty");
+         XCTAssertEqualObjects([result someOtherProperty], @"something", @"Failed to import someOtherProperty");
          
          // Now clear out the value to nil.
          // DMThingClass defines a custom setter name for this property so this tests whether the importer can handle that.
@@ -789,7 +789,7 @@
          
          [self.dataManager.dataImporter importData:moreThingData toObject:result];
          
-         STAssertNil([result someOtherProperty], @"Failed to nil out someOtherProperty");
+         XCTAssertNil([result someOtherProperty], @"Failed to nil out someOtherProperty");
 
          finished = YES;
          
@@ -813,26 +813,26 @@
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}  completion:^(id result, NSError *error)
      {
-         STAssertNotNil(result, @"Result should not be nil");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNotNil(result, @"Result should not be nil");
+         XCTAssertNil(error, @"Error during import: %@", error);
          
-         STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
+         XCTAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
          
          // attempt clean fetch of collection containing new object
          DMCollection *redcollection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO];
-         STAssertNotNil(redcollection, @"Collection not found");
-         STAssertTrue(redcollection.entries.count == 6, @"New entry not correctly added");
+         XCTAssertNotNil(redcollection, @"Collection not found");
+         XCTAssertTrue(redcollection.entries.count == 6, @"New entry not correctly added");
          
          DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inCollection:redcollection.entries createNew:NO];
-         STAssertNotNil(newEntry, @"New entry not found in collection");
+         XCTAssertNotNil(newEntry, @"New entry not found in collection");
          
-         STAssertNoThrow([self.dataManager saveData:YES], @"Failed to save context");
+         XCTAssertNoThrow([self.dataManager saveData:YES], @"Failed to save context");
          
          // reset context and fetch again
          [self.dataManager.managedObjectContext reset];
          
          newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" createNew:NO];
-         STAssertNotNil(newEntry, @"New entry not found in database after persist and reset");
+         XCTAssertNotNil(newEntry, @"New entry not found in database after persist and reset");
          
          finished = YES;
      }];
@@ -851,23 +851,23 @@
     finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES), RZDataManagerSaveAfterImportOptionKey : @(NO)} completion:^(id result, NSError *error)
      {
-         STAssertNotNil(result, @"Result should not be nil");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNotNil(result, @"Result should not be nil");
+         XCTAssertNil(error, @"Error during import: %@", error);
          
-         STAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
+         XCTAssertEqualObjects([(NSManagedObject*)result managedObjectContext], self.dataManager.managedObjectContext, @"Returned object should be from main thread's MOC");
          
          // attempt clean fetch of collection containing new object
          DMCollection *redcollection = [self.dataManager objectOfType:@"DMCollection" withValue:@"Red" forKeyPath:@"name" createNew:NO];
-         STAssertNotNil(redcollection, @"Collection not found");
-         STAssertTrue(redcollection.entries.count == 7, @"New entry not correctly added");
+         XCTAssertNotNil(redcollection, @"Collection not found");
+         XCTAssertTrue(redcollection.entries.count == 7, @"New entry not correctly added");
          
          DMEntry *newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1001" forKeyPath:@"uid" inCollection:redcollection.entries createNew:NO];
-         STAssertNotNil(newEntry, @"New entry not found in collection");
+         XCTAssertNotNil(newEntry, @"New entry not found in collection");
          
-         STAssertNoThrow([self.dataManager discardChanges], @"Failed to discard changes to context");
+         XCTAssertNoThrow([self.dataManager discardChanges], @"Failed to discard changes to context");
          
          newEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1001" forKeyPath:@"uid" createNew:NO];
-         STAssertNil(newEntry, @"New entry should not exist after discarding changes");
+         XCTAssertNil(newEntry, @"New entry should not exist after discarding changes");
          
          finished = YES;
      }];
@@ -896,8 +896,8 @@
     // import and don't return objects
     [self.dataManager importData:dataToImport forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
-         STAssertNil(result, @"Result should be nil - we didn't pass the option to return objects");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNil(result, @"Result should be nil - we didn't pass the option to return objects");
+         XCTAssertNil(error, @"Error during import: %@", error);
          
          NSTimeInterval executionTime = [NSDate timeIntervalSinceReferenceDate] - startTime;
          NSLog(@"First import finished in %.3f seconds", executionTime);
@@ -924,8 +924,8 @@
     // import and don't return objects
     [self.dataManager importData:dataToImport forClassNamed:@"DMEntry" options:nil completion:^(id result, NSError *error)
      {
-         STAssertNil(result, @"Result should be nil - we did't pass the option to return objects");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNil(result, @"Result should be nil - we did't pass the option to return objects");
+         XCTAssertNil(error, @"Error during import: %@", error);
          
          NSTimeInterval executionTime = [NSDate timeIntervalSinceReferenceDate] - startTime;
          NSLog(@"Second import finished in %.3f seconds", executionTime);
@@ -943,7 +943,7 @@
     NSFetchRequest *allItemFetch = [NSFetchRequest fetchRequestWithEntityName:@"DMEntry"];
     NSArray *results = [self.dataManager.managedObjectContext executeFetchRequest:allItemFetch error:NULL];
     
-    STAssertTrue(results.count == 10, @"Should be multiple items in DB at start");
+    XCTAssertTrue(results.count == 10, @"Should be multiple items in DB at start");
     
     
     NSArray * mockData = @[ @{@"name" : @"Omicron",
@@ -958,7 +958,7 @@
          NSFetchRequest *postImportItemFetch = [NSFetchRequest fetchRequestWithEntityName:@"DMEntry"];
          NSArray *postImportResults = [self.dataManager.managedObjectContext executeFetchRequest:postImportItemFetch error:NULL];
 
-         STAssertTrue(postImportResults.count == 2, @"Should only two items in database post import");
+         XCTAssertTrue(postImportResults.count == 2, @"Should only two items in database post import");
          
          finished = YES;
      }];
@@ -975,14 +975,14 @@
     [self.dataManager performDataOperationInBackgroundUsingBlock:^(RZDataManager *manager, id context) {
         
         DMEntry *bgEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
-        STAssertNotNil(bgEntry, @"Entry should exist in child moc");
+        XCTAssertNotNil(bgEntry, @"Entry should exist in child moc");
         
         bgEntry.name = @"yoohoo";
         
         // delete object on main moc
         dispatch_sync(dispatch_get_main_queue(), ^{
             DMEntry *mainEntry = [self.dataManager objectOfType:@"DMEntry" withValue:@"0" forKeyPath:@"uid" createNew:NO];
-            STAssertNotNil(mainEntry, @"Zero entry should exist");
+            XCTAssertNotNil(mainEntry, @"Zero entry should exist");
             [self.dataManager.managedObjectContext deleteObject:mainEntry];
             [self.dataManager saveData:YES];
         });
@@ -995,7 +995,7 @@
         df.predicate = [NSPredicate predicateWithFormat:@"uid == %@", @"0"];
         
         NSArray *deletedResults = [self.dataManager.managedObjectContext executeFetchRequest:df error:NULL];
-        STAssertTrue(deletedResults.count == 0, @"Deleted item is still here...");
+        XCTAssertTrue(deletedResults.count == 0, @"Deleted item is still here...");
     
         finished = YES;
     }];
@@ -1034,19 +1034,19 @@
                          options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}
                       completion:^(id result, NSError *error)
      {
-         STAssertTrue(error == nil, @"Import error occured: %@", error);
+         XCTAssertTrue(error == nil, @"Import error occured: %@", error);
          
          // returned result should be array with two objects
-         STAssertTrue([result isKindOfClass:[DMCollection class]], @"Result should be a single object");
+         XCTAssertTrue([result isKindOfClass:[DMCollection class]], @"Result should be a single object");
          
          // first object should be collection named "Yellow" with two entries
          DMCollection *collection = (DMCollection*)result;
-         STAssertEqualObjects([collection name], @"Yellow", @"Returned collection has incorrect name");
-         STAssertTrue(collection.entries.count == 2, @"Returned collection has wrong number of entries");
+         XCTAssertEqualObjects([collection name], @"Yellow", @"Returned collection has incorrect name");
+         XCTAssertTrue(collection.entries.count == 2, @"Returned collection has wrong number of entries");
          DMEntry *entry = [self.dataManager objectOfType:@"DMEntry" withValue:@"1000" forKeyPath:@"uid" inCollection:collection.entries createNew:NO];
-         STAssertNotNil(entry, @"Imported related entry not found");
-         STAssertNotNil(entry.subEntry, @"Imported sub relationship not found");
-         STAssertTrue([[entry.subEntry name] isEqualToString:@"SubOmicron"], @"Sub entry has wrong name");
+         XCTAssertNotNil(entry, @"Imported related entry not found");
+         XCTAssertNotNil(entry.subEntry, @"Imported sub relationship not found");
+         XCTAssertTrue([[entry.subEntry name] isEqualToString:@"SubOmicron"], @"Sub entry has wrong name");
          
          finished = YES;
      }];
@@ -1081,8 +1081,8 @@
     __block BOOL finished = NO;
     [self.dataManager importData:mockData forClassNamed:@"DMEntry" options:@{RZDataManagerReturnObjectsFromImportOptionKey : @(YES)}  completion:^(id result, NSError *error)
      {
-         STAssertNotNil(result, @"Result should not be nil");
-         STAssertNil(error, @"Error during import: %@", error);
+         XCTAssertNotNil(result, @"Result should not be nil");
+         XCTAssertNil(error, @"Error during import: %@", error);
          
          if (result){
              
