@@ -603,7 +603,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 {
     NSString *dataIdKey  = mapping.dataIdKey;
     NSString *modelIdKey = mapping.modelIdPropertyName;
-
+    
     if ([dictionaryOrArray isKindOfClass:[NSDictionary class]])
     {
         id obj = nil;
@@ -671,7 +671,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
             if (err == nil)
             {
                 
-                NSDictionary *existingObjIdsByUid = [NSDictionary dictionaryWithObjects:[existingObjs valueForKey:@"objectID"] forKeys:[existingObjs valueForKey:modelIdKey]];
+                NSMutableDictionary *existingObjIdsByUid = [NSMutableDictionary dictionaryWithObjects:[existingObjs valueForKey:@"objectID"] forKeys:[existingObjs valueForKey:modelIdKey]];
                 
                 NSInteger  objectsRemaining = [dictionaryOrArray count];
                 NSUInteger objectOffset     = 0;
@@ -726,6 +726,29 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
                                  
                                  // Check for relationships
                                  [self performRelationshipImportsOnObject:importedObj withMapping:mapping fromData:objData];
+
+                                 // Add the newly created object to the existing objects dictionary.
+                                 [existingObjIdsByUid setObject:[importedObj valueForKey:@"objectID"] forKey:[importedObj valueForKey:modelIdKey]];
+
+                                 // If we imported relationships that point to entities of the same type as importedObj, make sure the newly created objects get added to the existing objects dictionary.
+                                 [mapping.allRelationshipMappings enumerateKeysAndObjectsUsingBlock:^(id key, RZDataManagerModelObjectRelationshipMapping *relationshipMapping, BOOL *stop) {
+
+                                     if([relationshipMapping.relationshipClassName isEqualToString:entityName])
+                                     {
+                                         id relatedObject = [importedObj valueForKey:relationshipMapping.relationshipPropertyName];
+                                         if([relatedObject isKindOfClass:[NSArray class]])
+                                         {
+                                             for(NSManagedObject *nextObject in relatedObject)
+                                             {
+                                                 [existingObjIdsByUid setObject:[nextObject valueForKey:@"objectID"] forKey:[nextObject valueForKey:modelIdKey]];
+                                             }
+                                         }
+                                         else if([relatedObject isKindOfClass:[NSManagedObject class]])
+                                         {
+                                             [existingObjIdsByUid setObject:[relatedObject valueForKey:@"objectID"] forKey:[relatedObject valueForKey:modelIdKey]];
+                                         }
+                                     }
+                                 }];
 
                                  if (importedObjIds)
                                  {
