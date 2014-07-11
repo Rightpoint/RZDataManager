@@ -393,7 +393,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 }
 
 
-- (void)saveData:(BOOL)synchronous
+- (void)saveDataSynchronously:(BOOL)synchronous
 {
     [self saveContext:synchronous];
 }
