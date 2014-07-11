@@ -168,7 +168,7 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 // -------------------------------------------------------------
 
 // Save method. Not all subclasses may need to be explicitly saved/persisted, so this is optional.
-- (void)saveData:(BOOL)synchronous;
+- (void)saveDataSynchronously:(BOOL)synchronous;
 
 // Discard changes. Not all subclasses may need to do this, so this is optional.
 - (void)discardChanges;

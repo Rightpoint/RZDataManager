@@ -208,9 +208,9 @@ forRelationshipWithMapping:(RZDataManagerModelObjectRelationshipMapping *)relati
 }
 
 // optional, default does nothing
-- (void)saveData:(BOOL)synchronous
+- (void)saveDataSynchronously:(BOOL)synchronous
 {
-    NSLog(@"RZDataManager: saveData: is not implemented.");
+    NSLog(@"RZDataManager: saveDataSynchronously: is not implemented.");
 }
 
 - (void)discardChanges
