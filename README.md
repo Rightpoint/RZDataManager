@@ -1,4 +1,6 @@
-#### RZDataManager is now deprecated. There will be no future updates or support. Check out [RZVinyl](https://github.com/Raizlabs/RZVinyl) instead.
+#### Important Notice
+
+This repository is slated for deletion, perhaps as soon as June 1, 2016.  Please find other solutions.  Check out [RZVinyl](https://github.com/Raizlabs/RZVinyl) instead.
 
 RZDataManager
 =============
